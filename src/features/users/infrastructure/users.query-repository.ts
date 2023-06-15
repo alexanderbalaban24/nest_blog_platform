@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModelType } from '../domain/users.entity';
 import { ViewUserModel } from '../api/models/view/ViewUserModel';
@@ -23,6 +23,7 @@ export class UsersQueryRepository {
 
   async findUserById(userId: string) {
     const user = await this.UserModel.findById(userId).lean();
+    if (!user) throw new NotFoundException();
 
     return this._mapUserToViewUserModel(user);
   }

@@ -7,10 +7,7 @@ export class BlogsRepository {
   constructor(@InjectModel(Blog.name) private BlogModel: BlogModelType) {}
 
   async findById(blogId: string): Promise<BlogDocument> {
-    const blogInstance = this.BlogModel.findById(blogId);
-    if (!blogInstance) throw new NotFoundException();
-
-    return blogInstance;
+    return this.BlogModel.findById(blogId);
   }
 
   async create(blogInstance: BlogDocument): Promise<string> {

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostModelType } from '../domain/posts.entity';
 import { ViewPostModel } from '../api/models/view/ViewPostModel';
@@ -25,6 +25,7 @@ export class PostsQueryRepository {
 
   async findPostById(postId: string): Promise<ViewPostModel> {
     const post = await this.PostModel.findById(postId).lean();
+    if (!post) throw new NotFoundException();
 
     return this._mapPostDBToViewPostModel(post);
   }

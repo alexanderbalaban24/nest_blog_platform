@@ -23,7 +23,7 @@ export class BlogsQueryRepository {
 
   async findBlogById(blogId: string): Promise<ViewBlogModel> {
     const blog = await this.BlogModel.findById(blogId).lean();
-    if (!blog) return;
+    if (!blog) throw new NotFoundException();
 
     return this._mapBlogDBToViewBlogModel(blog);
   }

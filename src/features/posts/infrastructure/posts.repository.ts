@@ -6,10 +6,7 @@ export class PostsRepository {
   constructor(@InjectModel(Post.name) private PostModel: PostModelType) {}
 
   async findById(postId: string): Promise<PostDocument> {
-    const postInstance = this.PostModel.findById(postId);
-    if (!postInstance) throw new NotFoundException();
-
-    return postInstance;
+    return this.PostModel.findById(postId);
   }
 
   async save(postInstance: PostDocument): Promise<boolean> {

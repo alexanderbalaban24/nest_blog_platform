@@ -7,10 +7,7 @@ export class UsersRepository {
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
 
   async findById(userId): Promise<UserDocument> {
-    const userInstance = this.UserModel.findById(userId);
-    if (!userInstance) throw new NotFoundException();
-
-    return userInstance;
+    return this.UserModel.findById(userId);
   }
 
   async create(userInstance: UserDocument): Promise<string> {
