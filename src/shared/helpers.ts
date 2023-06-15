@@ -12,11 +12,18 @@ export const queryHelper = {
 
     const skip = pageSize * (pageNumber - 1);
 
-    if (queryData.searchLoginTerm) {
-      this.regex('login', new RegExp(queryData.searchLoginTerm, 'i'));
-    }
-    if (queryData.searchEmailTerm) {
-      this.regex('email', new RegExp(queryData.searchEmailTerm, 'i'));
+    if (queryData.searchLoginTerm && queryData.searchNameTerm) {
+      this.or([
+        { login: new RegExp(queryData.searchLoginTerm, 'i') },
+        { email: new RegExp(queryData.searchEmailTerm, 'i') },
+      ]);
+    } else {
+      if (queryData.searchLoginTerm) {
+        this.regex('login', new RegExp(queryData.searchLoginTerm, 'i'));
+      }
+      if (queryData.searchEmailTerm) {
+        this.regex('email', new RegExp(queryData.searchEmailTerm, 'i'));
+      }
     }
 
     if (queryData.searchNameTerm) {
