@@ -75,6 +75,9 @@ export class BlogsController {
     @Param('id') blogId,
     @Query() queryData: QueryParamsPostModel,
   ) {
+    const blog = await this.BlogsQueryRepository.findBlogById(blogId);
+    if (!blog) throw new NotFoundException();
+
     const post = this.PostsQueryRepository.findPosts(queryData, blogId);
     if (!post) throw new NotFoundException();
 
