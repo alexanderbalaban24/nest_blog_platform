@@ -13,7 +13,7 @@ export const queryHelper = {
     const skip = pageSize * (pageNumber - 1);
 
     if (queryData.searchLoginTerm && queryData.searchNameTerm) {
-      this.or([
+      this.in([
         { login: new RegExp(queryData.searchLoginTerm, 'i') },
         { email: new RegExp(queryData.searchEmailTerm, 'i') },
       ]);
