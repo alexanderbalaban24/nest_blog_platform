@@ -1,13 +1,16 @@
 import { Blog, BlogDocument, BlogModelType } from '../domain/blogs.entity';
 import { InjectModel } from '@nestjs/mongoose';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class BlogsRepository {
   constructor(@InjectModel(Blog.name) private BlogModel: BlogModelType) {}
 
   async findById(blogId: string): Promise<BlogDocument> {
-    return this.BlogModel.findById(blogId);
+    const blogInstance = this.BlogModel.findById(blogId);
+    if (!blogInstance) throw new NotFoundException();
+
+    return blogInstance;
   }
 
   async create(blogInstance: BlogDocument): Promise<string> {
