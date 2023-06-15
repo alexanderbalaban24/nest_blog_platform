@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Post, PostModelType } from '../domain/posts.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-repository';
@@ -19,7 +19,7 @@ export class PostsService {
     content: string,
   ) {
     const blog = await this.BlogsQueryRepository.findBlogById(blogId);
-    if (!blog) return false;
+    if (!blog) throw new NotFoundException();
 
     const postInstance = await this.PostModel.makeInstance(
       title,
@@ -41,10 +41,10 @@ export class PostsService {
     content: string,
   ): Promise<boolean> {
     const blog = await this.BlogsQueryRepository.findBlogById(blogId);
-    if (!blog) return false;
+    if (!blog) throw new NotFoundException();
 
     const postInstance = await this.PostsRepository.findById(postId);
-    if (!postInstance) return false;
+    if (!postInstance) throw new NotFoundException();
 
     await postInstance.changeData(
       title,
@@ -59,7 +59,7 @@ export class PostsService {
 
   async deletePost(postId: string): Promise<boolean> {
     const postInstance = await this.PostsRepository.findById(postId);
-    if (!postInstance) return false;
+    if (!postInstance) throw new NotFoundException();
 
     await postInstance.deleteOne();
 

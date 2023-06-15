@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -40,14 +41,16 @@ export class BlogsController {
       inputModel.description,
       inputModel.websiteUrl,
     );
-    if (!createdBlogId) return false;
 
     return await this.BlogsQueryRepository.findBlogById(createdBlogId);
   }
 
   @Get(':id')
   async getBlog(@Param('id') blogId) {
-    return await this.BlogsQueryRepository.findBlogById(blogId);
+    const blog = await this.BlogsQueryRepository.findBlogById(blogId);
+    if (!blog) throw new NotFoundException();
+
+    return blog;
   }
 
   @Delete(':id')
@@ -72,7 +75,10 @@ export class BlogsController {
     @Param('id') blogId,
     @Query() queryData: QueryParamsPostModel,
   ) {
-    return this.PostsQueryRepository.findPosts(queryData, blogId);
+    const post = this.PostsQueryRepository.findPosts(queryData, blogId);
+    if (!post) throw new NotFoundException();
+
+    return post;
   }
 
   @Post(':id/posts')
@@ -86,7 +92,6 @@ export class BlogsController {
       inputData.shortDescription,
       inputData.content,
     );
-    if (!createdPostId) return false;
 
     return await this.PostsQueryRepository.findPostById(createdPostId);
   }
