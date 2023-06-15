@@ -13,14 +13,14 @@ export const queryHelper = {
     const skip = pageSize * (pageNumber - 1);
 
     if (queryData.searchLoginTerm) {
-      this.regex('login', new RegExp(queryData.searchLoginTerm));
+      this.regex('login', new RegExp(queryData.searchLoginTerm, 'i'));
     }
     if (queryData.searchEmailTerm) {
-      this.regex('email', new RegExp(queryData.searchEmailTerm));
+      this.regex('email', new RegExp(queryData.searchEmailTerm, 'i'));
     }
 
     if (queryData.searchNameTerm) {
-      this.regex('name', new RegExp(queryData.searchNameTerm));
+      this.regex('name', new RegExp(queryData.searchNameTerm, 'i'));
     }
 
     if (id !== undefined) {
