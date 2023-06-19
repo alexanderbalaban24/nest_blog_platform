@@ -12,7 +12,7 @@ export class QueryBuildDTO<T, C> {
     this.#itemsDB = itemsDB;
   }
 
-  map(cb: (val: T) => C) {
+  map(cb: (val: T) => C): void {
     this.items = this.#itemsDB.map((el) => cb(el));
   }
 }

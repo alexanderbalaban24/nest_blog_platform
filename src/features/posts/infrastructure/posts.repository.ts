@@ -1,11 +1,11 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument, PostModelType } from '../domain/posts.entity';
-import { NotFoundException } from '@nestjs/common';
+import { Types } from 'mongoose';
 
 export class PostsRepository {
   constructor(@InjectModel(Post.name) private PostModel: PostModelType) {}
 
-  async findById(postId: string): Promise<PostDocument> {
+  async findById(postId: Types.ObjectId): Promise<PostDocument> {
     return this.PostModel.findById(postId);
   }
 
@@ -14,9 +14,9 @@ export class PostsRepository {
     return true;
   }
 
-  async create(post: PostDocument): Promise<string> {
+  async create(post: PostDocument): Promise<Types.ObjectId> {
     const createdPostInstance = await post.save();
 
-    return createdPostInstance._id.toString();
+    return createdPostInstance._id;
   }
 }

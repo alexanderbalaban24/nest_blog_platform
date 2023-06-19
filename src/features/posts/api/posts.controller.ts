@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   NotFoundException,
   Param,
   Post,
@@ -14,7 +15,8 @@ import { QueryParamsPostModel } from './models/input/QueryParamsPostModel';
 import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
 import { CreatePostModel } from './models/input/CreatePostModel';
 import { PostsService } from '../application/posts.service';
-import { UpdatePostModel } from './models/input/UpdatePostModel';
+import { Types } from 'mongoose';
+import { ParseObjectIdPipe } from '../../../shared/pipes';
 
 @Controller('posts')
 export class PostsController {
@@ -41,7 +43,7 @@ export class PostsController {
   }
 
   @Get(':id')
-  async getPost(@Param('id') postId) {
+  async getPost(@Param('id', ParseObjectIdPipe) postId) {
     const post = await this.PostsQueryRepository.findPostById(postId);
     if (!post) throw new NotFoundException();
 
@@ -49,8 +51,11 @@ export class PostsController {
   }
 
   @Put(':id')
-  @HttpCode(204)
-  async updatePost(@Param('id') postId, @Body() inputData: UpdatePostModel) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updatePost(
+    @Param('id', ParseObjectIdPipe) postId: Types.ObjectId,
+    @Body() inputData: CreatePostModel,
+  ) {
     return await this.PostsService.updatePost(
       postId,
       inputData.blogId,
@@ -61,8 +66,8 @@ export class PostsController {
   }
 
   @Delete(':id')
-  @HttpCode(204)
-  async deletePost(@Param('id') postId) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deletePost(@Param('id', ParseObjectIdPipe) postId: Types.ObjectId) {
     return await this.PostsService.deletePost(postId);
   }
 }

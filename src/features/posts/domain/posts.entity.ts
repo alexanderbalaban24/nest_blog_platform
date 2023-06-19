@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Model, Types } from 'mongoose';
+import { HydratedDocument, Model, ObjectId, Types } from 'mongoose';
 import { queryHelper } from '../../../shared/helpers';
 import { QueryCustomMethods, UserLikeType } from '../../../shared/types';
 
@@ -10,7 +10,7 @@ type PostStaticMethod = {
     title: string,
     shortDescription: string,
     content: string,
-    blogId: string,
+    blogId: Types.ObjectId,
     blogName: string,
     PostModel: PostModelType,
   ) => PostDocument;
@@ -21,7 +21,7 @@ type PostInstanceMethodType = {
     title: string,
     shortDescription: string,
     content: string,
-    blogId: string,
+    blogId: Types.ObjectId,
     blogName: string,
   ): void;
 };
@@ -47,7 +47,7 @@ export class Post {
   content: string;
 
   @Prop({ required: true })
-  blogId: string;
+  blogId: Types.ObjectId;
 
   @Prop({ required: true })
   blogName: string;
@@ -68,7 +68,7 @@ export class Post {
     title: string,
     shortDescription: string,
     content: string,
-    blogId: string,
+    blogId: Types.ObjectId,
     blogName: string,
     PostModel: PostModelType,
   ) {
@@ -85,7 +85,7 @@ export class Post {
     title: string,
     shortDescription: string,
     content: string,
-    blogId: string,
+    blogId: Types.ObjectId,
     blogName: string,
   ) {
     this.title = title;

@@ -2,7 +2,7 @@ import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { Types } from 'mongoose';
 
-export class CreatePostModel {
+export class CreatePostWithoutIdModel {
   @IsString()
   @IsNotEmpty()
   @MaxLength(30)
@@ -15,9 +15,4 @@ export class CreatePostModel {
   @IsNotEmpty()
   @MaxLength(1000)
   content: string;
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100000)
-  @Transform(({ value }) => Types.ObjectId.createFromHexString(value))
-  blogId?: Types.ObjectId;
 }

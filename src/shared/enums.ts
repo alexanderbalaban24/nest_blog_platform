@@ -3,3 +3,8 @@ export enum LikeStatusEnum {
   Like = 'Like',
   Dislike = 'Dislike',
 }
+
+export enum EmailEvents {
+  Registration,
+  Recover_password,
+}

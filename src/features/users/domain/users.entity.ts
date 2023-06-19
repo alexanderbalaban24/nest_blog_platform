@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model, Types } from 'mongoose';
-import { genSalt, hash } from 'bcrypt';
 import { QueryCustomMethods } from '../../../shared/types';
 import { queryHelper } from '../../../shared/helpers';
+import add from 'date-fns/add';
+import { v4 as uuidv4 } from 'uuid';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -10,14 +11,35 @@ type UserStaticMethodType = {
   makeInstance: (
     login: string,
     email: string,
-    password: string,
+    passwordHash: string,
+    isConfirmed: boolean,
     UserModel: UserModelType,
-  ) => Promise<UserDocument>;
+  ) => UserDocument;
 };
 
-export type UserModelType = Model<UserDocument, QueryCustomMethods> &
+type UserInstanceMethodType = {
+  confirmAccount: () => void;
+  updateConfirmationData: () => string;
+};
+
+export type UserModelType = Model<
+  UserDocument,
+  QueryCustomMethods,
+  UserInstanceMethodType
+> &
   UserStaticMethodType;
 
+@Schema({ _id: false, versionKey: false })
+export class EmailConfirmation {
+  @Prop({ default: uuidv4() })
+  confirmationCode: string;
+  @Prop({ default: add(new Date(), { hours: 3 }) })
+  expirationDate: Date;
+  @Prop({ default: false })
+  isConfirmed: boolean;
+}
+
+// TODO в схему сразу ниже можно записать timestamp
 @Schema()
 export class User {
   _id: Types.ObjectId;
@@ -34,16 +56,32 @@ export class User {
   @Prop({ default: Date.now })
   createdAt: Date;
 
-  static async makeInstance(
+  @Prop({ type: EmailConfirmation, default: new EmailConfirmation() })
+  emailConfirmation: EmailConfirmation;
+
+  static makeInstance(
     login: string,
     email: string,
-    password: string,
+    passwordHash: string,
+    isConfirmed: boolean,
     UserModel: UserModelType,
-  ): Promise<UserDocument> {
-    const passwordSalt = await genSalt(10);
-    const passwordHash = await hash(password, passwordSalt);
+  ): UserDocument {
+    const newUser = new UserModel({ login, email, passwordHash });
+    newUser.emailConfirmation.isConfirmed = isConfirmed;
 
-    return new UserModel({ login, email, passwordHash });
+    return newUser;
+  }
+
+  updateConfirmationData(): string {
+    const code = uuidv4();
+    this.emailConfirmation.confirmationCode = code;
+    this.emailConfirmation.expirationDate = add(new Date(), { hours: 3 });
+
+    return code;
+  }
+
+  confirmAccount() {
+    this.emailConfirmation.isConfirmed = true;
   }
 }
 
@@ -53,5 +91,11 @@ const userStaticMethod: UserStaticMethodType = {
   makeInstance: User.makeInstance,
 };
 UserSchema.statics = userStaticMethod;
+
+const userInstanceMethod: UserInstanceMethodType = {
+  confirmAccount: User.prototype.confirmAccount,
+  updateConfirmationData: User.prototype.updateConfirmationData,
+};
+UserSchema.methods = userInstanceMethod;
 
 UserSchema.query = { findWithQuery: queryHelper.findWithQuery };

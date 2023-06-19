@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogModelType } from '../domain/blogs.entity';
+import { Blog, BlogDocument, BlogModelType } from '../domain/blogs.entity';
 import { ViewBlogModel } from '../api/models/view/ViewBlogModel';
 import { QueryParamsBlogModel } from '../api/models/input/QueryParamsBlogModel';
 import { QueryBuildDTO } from '../../../shared/dto';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -16,21 +17,21 @@ export class BlogsQueryRepository {
       Blog,
       ViewBlogModel
     >(query);
-    blogsData.map(this._mapBlogDBToViewBlogModel);
+    blogsData.map(this._mapBlogToView);
 
     return blogsData;
   }
 
-  async findBlogById(blogId: string): Promise<ViewBlogModel> {
+  async findBlogById(blogId: Types.ObjectId): Promise<ViewBlogModel | null> {
     const blog = await this.BlogModel.findById(blogId).lean();
-    if (!blog) throw new NotFoundException();
+    if (!blog) return null;
 
-    return this._mapBlogDBToViewBlogModel(blog);
+    return this._mapBlogToView(blog);
   }
 
-  _mapBlogDBToViewBlogModel(blog: Blog): ViewBlogModel {
+  _mapBlogToView(blog: BlogDocument): ViewBlogModel {
     return {
-      id: blog._id.toString(),
+      id: blog.id,
       name: blog.name,
       description: blog.description,
       websiteUrl: blog.websiteUrl,

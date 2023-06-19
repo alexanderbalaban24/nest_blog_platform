@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
   Post,
   Query,
@@ -12,6 +13,8 @@ import { CreateUserModel } from './models/input/CreateUserModel';
 import { UsersService } from '../application/users.service';
 import { UsersQueryRepository } from '../infrastructure/users.query-repository';
 import { QueryParamsUserModel } from './models/input/QueryParamsUserModel';
+import { ParseObjectIdPipe } from '../../../shared/pipes';
+import { Types } from 'mongoose';
 
 @Controller('users')
 export class UsersController {
@@ -31,6 +34,7 @@ export class UsersController {
       inputModel.login,
       inputModel.email,
       inputModel.password,
+      true,
     );
     if (!createdUserId) return false;
 
@@ -38,8 +42,8 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @HttpCode(204)
-  async deleteUser(@Param('id') userId: string) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteUser(@Param('id', ParseObjectIdPipe) userId: Types.ObjectId) {
     return this.UsersService.deleteUser(userId);
   }
 }

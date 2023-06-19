@@ -1,8 +1,9 @@
 import { QueryBuildDTO } from './dto';
 import { QueryDataType } from './types';
+import { Types } from 'mongoose';
 
 export const queryHelper = {
-  async findWithQuery<T, C>(queryData: QueryDataType, id?: string) {
+  async findWithQuery<T, C>(queryData: QueryDataType, id?: Types.ObjectId) {
     const sortBy = queryData.sortBy ? queryData.sortBy : 'createdAt';
     const sortDirection = queryData.sortDirection
       ? queryData.sortDirection

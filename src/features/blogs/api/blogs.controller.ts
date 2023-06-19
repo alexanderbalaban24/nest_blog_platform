@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   NotFoundException,
   Param,
   Post,
@@ -14,11 +15,12 @@ import { CreateBlogModel } from './models/input/CreateBlogModel';
 import { BlogsService } from '../application/blogs.service';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
 import { QueryParamsBlogModel } from './models/input/QueryParamsBlogModel';
-import { UpdateBlogModel } from './models/input/UpdateBlogModel';
-import { CreatePostModel } from '../../posts/api/models/input/CreatePostModel';
 import { PostsService } from '../../posts/application/posts.service';
 import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
 import { QueryParamsPostModel } from '../../posts/api/models/input/QueryParamsPostModel';
+import { ParseObjectIdPipe } from '../../../shared/pipes';
+import { Types } from 'mongoose';
+import { CreatePostWithoutIdModel } from './models/input/CreatePostWithoutIdModel';
 
 @Controller('blogs')
 export class BlogsController {
@@ -46,7 +48,7 @@ export class BlogsController {
   }
 
   @Get(':id')
-  async getBlog(@Param('id') blogId) {
+  async getBlog(@Param('id', ParseObjectIdPipe) blogId: Types.ObjectId) {
     const blog = await this.BlogsQueryRepository.findBlogById(blogId);
     if (!blog) throw new NotFoundException();
 
@@ -54,14 +56,17 @@ export class BlogsController {
   }
 
   @Delete(':id')
-  @HttpCode(204)
-  async deleteBlog(@Param('id') blogId) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteBlog(@Param('id', ParseObjectIdPipe) blogId: Types.ObjectId) {
     return await this.BlogsService.deleteBlog(blogId);
   }
 
   @Put(':id')
-  @HttpCode(204)
-  async updateBlog(@Param('id') blogId, @Body() inputModel: UpdateBlogModel) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updateBlog(
+    @Param('id', ParseObjectIdPipe) blogId: Types.ObjectId,
+    @Body() inputModel: CreateBlogModel,
+  ) {
     return await this.BlogsService.updateBlog(
       blogId,
       inputModel.name,
@@ -72,7 +77,7 @@ export class BlogsController {
 
   @Get(':id/posts')
   async getPostsByBlogId(
-    @Param('id') blogId,
+    @Param('id', ParseObjectIdPipe) blogId: Types.ObjectId,
     @Query() queryData: QueryParamsPostModel,
   ) {
     const blog = await this.BlogsQueryRepository.findBlogById(blogId);
@@ -86,8 +91,8 @@ export class BlogsController {
 
   @Post(':id/posts')
   async createPostByBlogId(
-    @Param('id') blogId,
-    @Body() inputData: CreatePostModel,
+    @Param('id', ParseObjectIdPipe) blogId: Types.ObjectId,
+    @Body() inputData: CreatePostWithoutIdModel,
   ) {
     const createdPostId = await this.PostsService.createPost(
       blogId,

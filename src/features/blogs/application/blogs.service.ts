@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Blog, BlogModelType } from '../domain/blogs.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { BlogsRepository } from '../infrastructure/blogs.repository';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class BlogsService {
@@ -14,7 +15,7 @@ export class BlogsService {
     name: string,
     description: string,
     websiteUrl: string,
-  ): Promise<string> {
+  ): Promise<Types.ObjectId> {
     const newBlogInstance = this.BlogModel.makeInstance(
       name,
       description,
@@ -25,9 +26,9 @@ export class BlogsService {
     return await this.BlogsRepository.create(newBlogInstance);
   }
 
-  async deleteBlog(blogId: string): Promise<boolean> {
+  async deleteBlog(blogId: Types.ObjectId): Promise<boolean> {
     const blogInstance = await this.BlogsRepository.findById(blogId);
-    if (!blogInstance) throw new NotFoundException();
+    if (!blogInstance) return false;
 
     await blogInstance.deleteOne();
 
@@ -35,13 +36,13 @@ export class BlogsService {
   }
 
   async updateBlog(
-    blogId: string,
+    blogId: Types.ObjectId,
     name: string,
     description: string,
     websiteUrl: string,
   ): Promise<boolean> {
     const blogInstance = await this.BlogsRepository.findById(blogId);
-    if (!blogInstance) throw new NotFoundException();
+    if (!blogInstance) return false;
 
     await blogInstance.changeData(name, description, websiteUrl);
 

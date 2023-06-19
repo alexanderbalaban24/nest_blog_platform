@@ -1,5 +1,6 @@
 import { QueryBuildDTO } from './dto';
 import { LikeStatusEnum } from './enums';
+import { ObjectId, Types } from 'mongoose';
 
 export type QueryDataType = {
   sortBy?: string;
@@ -14,7 +15,7 @@ export type QueryDataType = {
 export type QueryCustomMethods = {
   findWithQuery<T, C>(
     queryData: QueryDataType,
-    id?: string,
+    id?: Types.ObjectId,
   ): Promise<QueryBuildDTO<T, C>>;
 };
 

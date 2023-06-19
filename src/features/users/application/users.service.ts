@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModelType } from '../domain/users.entity';
+import { Types } from 'mongoose';
+import { genSalt, hash } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -10,22 +12,27 @@ export class UsersService {
     private UsersRepository: UsersRepository,
   ) {}
 
+  //TODO количество раундов должно сидеть в env
   async createUser(
     login: string,
     email: string,
     password: string,
-  ): Promise<string> {
-    const newUserInstance = await this.UserModel.makeInstance(
+    isConfirmed: boolean,
+  ): Promise<Types.ObjectId> {
+    const passwordSalt = await genSalt(10);
+    const passwordHash = await hash(password, passwordSalt);
+
+    const newUserInstance = this.UserModel.makeInstance(
       login,
       email,
-      password,
+      passwordHash,
+      isConfirmed,
       this.UserModel,
     );
-
     return this.UsersRepository.create(newUserInstance);
   }
 
-  async deleteUser(userId: string): Promise<boolean> {
+  async deleteUser(userId: Types.ObjectId): Promise<boolean> {
     const userInstance = await this.UsersRepository.findById(userId);
     if (!userInstance) throw new NotFoundException();
 

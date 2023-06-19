@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostModelType } from '../domain/posts.entity';
+import { Post, PostDocument, PostModelType } from '../domain/posts.entity';
 import { ViewPostModel } from '../api/models/view/ViewPostModel';
 import { QueryParamsPostModel } from '../api/models/input/QueryParamsPostModel';
 import { QueryBuildDTO } from '../../../shared/dto';
 import { LikeStatusEnum } from '../../../shared/enums';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -12,31 +13,31 @@ export class PostsQueryRepository {
 
   async findPosts(
     query: QueryParamsPostModel,
-    blogId?: string,
+    blogId?: Types.ObjectId,
   ): Promise<QueryBuildDTO<Post, ViewPostModel>> {
     const postData = await this.PostModel.find({}).findWithQuery<
       Post,
       ViewPostModel
     >(query, blogId);
-    postData.map(this._mapPostDBToViewPostModel);
+    postData.map(this._mapPostToView);
 
     return postData;
   }
 
-  async findPostById(postId: string): Promise<ViewPostModel> {
+  async findPostById(postId: Types.ObjectId): Promise<ViewPostModel | null> {
     const post = await this.PostModel.findById(postId).lean();
-    if (!post) throw new NotFoundException();
+    if (!post) return null;
 
-    return this._mapPostDBToViewPostModel(post);
+    return this._mapPostToView(post);
   }
 
-  _mapPostDBToViewPostModel(post: Post): ViewPostModel {
+  _mapPostToView(post: PostDocument): ViewPostModel {
     return {
-      id: post._id.toString(),
+      id: post.id,
       title: post.title,
       shortDescription: post.shortDescription,
       content: post.content,
-      blogId: post.blogId,
+      blogId: post.blogId.toString(),
       blogName: post.blogName,
       createdAt: post.createdAt.toISOString(),
       extendedLikesInfo: {

@@ -18,6 +18,15 @@ import { UsersService } from './features/users/application/users.service';
 import { UsersQueryRepository } from './features/users/infrastructure/users.query-repository';
 import { UsersRepository } from './features/users/infrastructure/users.repository';
 import { ConfigModule } from '@nestjs/config';
+import { AuthController } from './features/auth/api/auth.controller';
+import { AuthService } from './features/auth/application/auth.service';
+import { AuthQueryRepository } from './features/auth/infrastructure/auth.query-repository';
+import { EmailManager } from './features/email/manager/email.manager';
+import { EmailAdapter } from './features/email/adapter/email.adapter';
+import { BusinessService } from './features/email/application/business.service';
+import { ConfirmationCodeValidator } from './decorators/validators/confirmationCode.validator';
+import { AuthRepository } from './features/auth/infrastructure/auth.repository';
+import { ConfirmEmailValidator } from './decorators/validators/confirmEmail.validator';
 
 @Module({
   imports: [
@@ -45,18 +54,27 @@ import { ConfigModule } from '@nestjs/config';
     BlogsController,
     PostsController,
     UsersController,
+    AuthController,
   ],
   providers: [
     AppService,
     BlogsService,
     PostsService,
     UsersService,
+    AuthService,
+    BusinessService,
     BlogsQueryRepository,
     PostsQueryRepository,
     UsersQueryRepository,
+    AuthQueryRepository,
     BlogsRepository,
     PostsRepository,
     UsersRepository,
+    AuthRepository,
+    EmailManager,
+    EmailAdapter,
+    ConfirmationCodeValidator,
+    ConfirmEmailValidator,
   ],
 })
 export class AppModule {}
