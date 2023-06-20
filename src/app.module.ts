@@ -27,6 +27,7 @@ import { BusinessService } from './features/email/application/business.service';
 import { ConfirmationCodeValidator } from './decorators/validators/confirmationCode.validator';
 import { AuthRepository } from './features/auth/infrastructure/auth.repository';
 import { ConfirmEmailValidator } from './decorators/validators/confirmEmail.validator';
+import { UniqueLoginAndEmailValidator } from './decorators/validators/uniqueLoginAndEmail.validator';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { ConfirmEmailValidator } from './decorators/validators/confirmEmail.vali
     EmailAdapter,
     ConfirmationCodeValidator,
     ConfirmEmailValidator,
+    UniqueLoginAndEmailValidator,
   ],
 })
 export class AppModule {}

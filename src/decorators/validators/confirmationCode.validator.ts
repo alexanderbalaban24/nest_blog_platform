@@ -15,17 +15,11 @@ export class ConfirmationCodeValidator implements ValidatorConstraintInterface {
 
   async validate(code: string): Promise<boolean> {
     try {
-      const userId = await this.authQueryRepository.findUserByConfirmationCode(
-        code,
-      );
-      if (!userId) return false;
+      const data =
+        await this.authQueryRepository.findConfirmationOrRecoveryDataById(code);
+      if (!data) return false;
 
-      const confirmationData =
-        await this.authQueryRepository.findUserWithConfirmationDataById(userId);
-      if (
-        confirmationData.isConfirmed ||
-        isAfter(new Date(), confirmationData.expirationDate)
-      ) {
+      if (data.isConfirmed || isAfter(new Date(), data.expirationDate)) {
         return false;
       }
 
@@ -36,7 +30,7 @@ export class ConfirmationCodeValidator implements ValidatorConstraintInterface {
   }
 
   defaultMessage(): string {
-    return 'Confirmation code should be exist';
+    return 'Confirmation code should be exist and actually';
   }
 }
 

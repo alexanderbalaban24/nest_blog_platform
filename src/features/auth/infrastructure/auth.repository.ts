@@ -15,7 +15,7 @@ export class AuthRepository {
     return this.UserModel.findById(userId);
   }
 
-  findByCredentials(loginOrEmail: string): Promise<UserDocument> {
+  async findByCredentials(loginOrEmail: string): Promise<UserDocument> {
     return this.UserModel.findOne().or([
       { login: loginOrEmail },
       { email: loginOrEmail },

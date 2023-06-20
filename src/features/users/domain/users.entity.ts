@@ -17,15 +17,16 @@ type UserStaticMethodType = {
   ) => UserDocument;
 };
 
-type UserInstanceMethodType = {
+type UserInstanceMethodsType = {
   confirmAccount: () => void;
-  updateConfirmationData: () => string;
+  updatePasswordHash: (newPassHash: string) => void;
+  updateConfirmationOrRecoveryData: (field: string) => string;
 };
 
 export type UserModelType = Model<
   UserDocument,
   QueryCustomMethods,
-  UserInstanceMethodType
+  UserInstanceMethodsType
 > &
   UserStaticMethodType;
 
@@ -34,6 +35,16 @@ export class EmailConfirmation {
   @Prop({ default: uuidv4() })
   confirmationCode: string;
   @Prop({ default: add(new Date(), { hours: 3 }) })
+  expirationDate: Date;
+  @Prop({ default: false })
+  isConfirmed: boolean;
+}
+
+@Schema({ _id: false, versionKey: false })
+export class PasswordRecovery {
+  @Prop({ default: uuidv4() })
+  confirmationCode: string;
+  @Prop({ default: new Date() })
   expirationDate: Date;
   @Prop({ default: false })
   isConfirmed: boolean;
@@ -59,6 +70,9 @@ export class User {
   @Prop({ type: EmailConfirmation, default: new EmailConfirmation() })
   emailConfirmation: EmailConfirmation;
 
+  @Prop({ type: PasswordRecovery, default: new PasswordRecovery() })
+  passwordRecovery: PasswordRecovery;
+
   static makeInstance(
     login: string,
     email: string,
@@ -72,16 +86,26 @@ export class User {
     return newUser;
   }
 
-  updateConfirmationData(): string {
+  updateConfirmationOrRecoveryData(field: string): string {
+    if (!(field in this))
+      throw new Error(
+        'Incorrect field for data updating confirmation email or recovery password',
+      );
+
     const code = uuidv4();
-    this.emailConfirmation.confirmationCode = code;
-    this.emailConfirmation.expirationDate = add(new Date(), { hours: 3 });
+    this[field].confirmationCode = code;
+    this[field].expirationDate = add(new Date(), { hours: 3 });
 
     return code;
   }
 
   confirmAccount() {
     this.emailConfirmation.isConfirmed = true;
+  }
+
+  updatePasswordHash(newPassHash: string) {
+    this.passwordHash = newPassHash;
+    this.passwordRecovery.isConfirmed = true;
   }
 }
 
@@ -92,9 +116,11 @@ const userStaticMethod: UserStaticMethodType = {
 };
 UserSchema.statics = userStaticMethod;
 
-const userInstanceMethod: UserInstanceMethodType = {
+const userInstanceMethod: UserInstanceMethodsType = {
   confirmAccount: User.prototype.confirmAccount,
-  updateConfirmationData: User.prototype.updateConfirmationData,
+  updateConfirmationOrRecoveryData:
+    User.prototype.updateConfirmationOrRecoveryData,
+  updatePasswordHash: User.prototype.updatePasswordHash,
 };
 UserSchema.methods = userInstanceMethod;
 

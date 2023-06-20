@@ -3,6 +3,8 @@ import { RegistrationUserModel } from './models/input/RegistrationUserModel';
 import { AuthService } from '../application/auth.service';
 import { ConfirmRegistrationModel } from './models/input/ConfirmRegistrationModel';
 import { ResendRegistrationModel } from './models/input/ResendRegistrationModel';
+import { PasswordRecoveryModel } from './models/input/PasswordRecoveryModel';
+import { UpdatePasswordModel } from './models/input/UpdatePasswordModel';
 
 @Controller('auth')
 export class AuthController {
@@ -28,5 +30,20 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async confirmRegistration(@Body() inputModel: ConfirmRegistrationModel) {
     return this.authServices.confirmRegistration(inputModel.code);
+  }
+
+  @Post('password-recovery')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async passwordRecovery(@Body() inputMode: PasswordRecoveryModel) {
+    return this.authServices.passwordRecovery(inputMode.email);
+  }
+
+  @Post('new-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async confirmRecoveryPassword(@Body() inputModel: UpdatePasswordModel) {
+    return this.authServices.confirmRecoveryPassword(
+      inputModel.newPassword,
+      inputModel.recoveryCode,
+    );
   }
 }
