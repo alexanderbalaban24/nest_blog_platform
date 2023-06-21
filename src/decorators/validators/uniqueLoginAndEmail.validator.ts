@@ -7,16 +7,17 @@ import {
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
 import { AuthQueryRepository } from '../../features/auth/infrastructure/auth.query-repository';
+import { AuthRepository } from '../../features/auth/infrastructure/auth.repository';
 
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class UniqueLoginAndEmailValidator
   implements ValidatorConstraintInterface
 {
-  constructor(private authQueryRepository: AuthQueryRepository) {}
+  constructor(private authRepository: AuthRepository) {}
   async validate(cred: string): Promise<boolean> {
     try {
-      const user = await this.authQueryRepository.findUserByCredentials(cred);
+      const user = await this.authRepository.findByCredentials(cred);
       if (user) return false;
 
       return true;

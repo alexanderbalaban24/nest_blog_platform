@@ -5,8 +5,7 @@ import { Types } from 'mongoose';
 export class ParseObjectIdPipe implements PipeTransform {
   transform(value: string, metadata: ArgumentMetadata) {
     try {
-      const parsedId = Types.ObjectId.createFromHexString(value);
-      return parsedId;
+      return Types.ObjectId.createFromHexString(value);
     } catch (e) {
       throw new Error('Incorrect ID');
     }

@@ -25,3 +25,8 @@ export type UserLikeType = {
   likeStatus: LikeStatusEnum;
   addedAt: Date;
 };
+
+export type TokenPair = {
+  accessToken: string;
+  refreshToken: string;
+};

@@ -1,10 +1,24 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Ip,
+  Post,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { RegistrationUserModel } from './models/input/RegistrationUserModel';
 import { AuthService } from '../application/auth.service';
 import { ConfirmRegistrationModel } from './models/input/ConfirmRegistrationModel';
 import { ResendRegistrationModel } from './models/input/ResendRegistrationModel';
 import { PasswordRecoveryModel } from './models/input/PasswordRecoveryModel';
 import { UpdatePasswordModel } from './models/input/UpdatePasswordModel';
+import { LoginModel } from './models/input/LoginModel';
+import { Response } from 'express';
+import { LocalAuthGuard } from '../guards/LocalAuthGuard';
 
 @Controller('auth')
 export class AuthController {
@@ -45,5 +59,28 @@ export class AuthController {
       inputModel.newPassword,
       inputModel.recoveryCode,
     );
+  }
+
+  @Post('login')
+  @UseGuards(LocalAuthGuard)
+  async login(
+    @Headers('user-agent') deviceName: string,
+    @Body() inputModel: LoginModel,
+    @Ip() ip: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const tokenPair = await this.authServices.login(
+      inputModel.loginOrEmail,
+      inputModel.password,
+      deviceName,
+      ip,
+    );
+    if (!tokenPair) throw new UnauthorizedException();
+
+    res.cookie('refreshToken', tokenPair.refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    return { accessToken: tokenPair.accessToken };
   }
 }

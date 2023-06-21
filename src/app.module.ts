@@ -28,6 +28,13 @@ import { ConfirmationCodeValidator } from './decorators/validators/confirmationC
 import { AuthRepository } from './features/auth/infrastructure/auth.repository';
 import { ConfirmEmailValidator } from './decorators/validators/confirmEmail.validator';
 import { UniqueLoginAndEmailValidator } from './decorators/validators/uniqueLoginAndEmail.validator';
+import { JwtModule } from '@nestjs/jwt';
+import { DevicesController } from './features/devices/api/devices.controller';
+import { Device, DeviceSchema } from './features/devices/domain/devices.entity';
+import { DevicesService } from './features/devices/application/devices.service';
+import { DevicesRepository } from './features/devices/infrastructure/devices.repository';
+import { PassportModule } from '@nestjs/passport';
+import { LocalStrategy } from './features/auth/strategies/LocalStrategy';
 
 @Module({
   imports: [
@@ -48,7 +55,17 @@ import { UniqueLoginAndEmailValidator } from './decorators/validators/uniqueLogi
         name: User.name,
         schema: UserSchema,
       },
+      {
+        name: Device.name,
+        schema: DeviceSchema,
+      },
     ]),
+    PassportModule,
+    JwtModule.register({
+      global: true,
+      // TODO перенести в env
+      secret: 'test123',
+    }),
   ],
   controllers: [
     AppController,
@@ -56,6 +73,7 @@ import { UniqueLoginAndEmailValidator } from './decorators/validators/uniqueLogi
     PostsController,
     UsersController,
     AuthController,
+    DevicesController,
   ],
   providers: [
     AppService,
@@ -64,6 +82,7 @@ import { UniqueLoginAndEmailValidator } from './decorators/validators/uniqueLogi
     UsersService,
     AuthService,
     BusinessService,
+    DevicesService,
     BlogsQueryRepository,
     PostsQueryRepository,
     UsersQueryRepository,
@@ -72,11 +91,13 @@ import { UniqueLoginAndEmailValidator } from './decorators/validators/uniqueLogi
     PostsRepository,
     UsersRepository,
     AuthRepository,
+    DevicesRepository,
     EmailManager,
     EmailAdapter,
     ConfirmationCodeValidator,
     ConfirmEmailValidator,
     UniqueLoginAndEmailValidator,
+    LocalStrategy,
   ],
 })
 export class AppModule {}

@@ -22,12 +22,6 @@ export class AuthQueryRepository {
     };
   }
 
-  async findUserByCredentials(loginOrEmail: string): Promise<UserDocument> {
-    return this.UserModel.findOne()
-      .or([{ login: loginOrEmail }, { email: loginOrEmail }])
-      .lean();
-  }
-
   async findUserByConfirmationCode(code: string): Promise<Types.ObjectId> {
     const user = await this.UserModel.findOne().or([
       { 'emailConfirmation.confirmationCode': code },

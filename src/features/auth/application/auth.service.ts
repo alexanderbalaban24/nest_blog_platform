@@ -4,7 +4,10 @@ import { BusinessService } from '../../email/application/business.service';
 import { EmailEvents } from '../../../shared/enums';
 import { AuthQueryRepository } from '../infrastructure/auth.query-repository';
 import { AuthRepository } from '../infrastructure/auth.repository';
-import { genSalt, hash } from 'bcrypt';
+import { compare, genSalt, hash } from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { DevicesService } from '../../devices/application/devices.service';
+import { TokenPair } from '../../../shared/types';
 
 @Injectable()
 export class AuthService {
@@ -13,6 +16,8 @@ export class AuthService {
     private businessService: BusinessService,
     private authQueryRepository: AuthQueryRepository,
     private authRepository: AuthRepository,
+    private jwtService: JwtService,
+    private devicesService: DevicesService,
   ) {}
 
   async registration(
@@ -109,5 +114,49 @@ export class AuthService {
 
     userInstance.updatePasswordHash(passwordHash);
     return this.authRepository.save(userInstance);
+  }
+
+  async login(
+    loginOrEmail: string,
+    password: string,
+    deviceName: string,
+    ip: string,
+  ): Promise<TokenPair> {
+    const user = await this.authRepository.findByCredentials(loginOrEmail);
+    if (!user) return null;
+
+    const isValidCredentials = await compare(password, user.passwordHash);
+    if (!isValidCredentials) return null;
+
+    const createdDeviceId = await this.devicesService.createDevice(
+      user._id,
+      ip,
+      deviceName,
+    );
+    if (!createdDeviceId) return null;
+
+    const accessToken = await this.jwtService.signAsync(
+      { userId: user.id },
+      { expiresIn: '5m' },
+    );
+    const refreshToken = await this.jwtService.signAsync(
+      {
+        userId: user.id,
+        deviceId: createdDeviceId,
+      },
+      { expiresIn: '15m' },
+    );
+
+    return { accessToken, refreshToken };
+  }
+
+  async validateUser(loginOrEmail: string, password: string): Promise<boolean> {
+    const user = await this.authRepository.findByCredentials(loginOrEmail);
+    if (!user) return false;
+
+    const isValidUser = await compare(password, user.passwordHash);
+    if (!isValidUser) return false;
+
+    return true;
   }
 }
