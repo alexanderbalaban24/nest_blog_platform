@@ -55,7 +55,7 @@ export class PostsController {
   async updatePost(
     @Param('id', ParseObjectIdPipe) postId: Types.ObjectId,
     @Body() inputData: CreatePostModel,
-  ) {
+  ): Promise<boolean> {
     return await this.PostsService.updatePost(
       postId,
       inputData.blogId,
