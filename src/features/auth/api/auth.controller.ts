@@ -68,7 +68,7 @@ export class AuthController {
     @Body() inputModel: LoginModel,
     @Ip() ip: string,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<{ accessToken: string }> {
     const tokenPair = await this.authServices.login(
       inputModel.loginOrEmail,
       inputModel.password,
