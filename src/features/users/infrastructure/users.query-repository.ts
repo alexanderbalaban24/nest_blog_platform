@@ -31,7 +31,7 @@ export class UsersQueryRepository {
 
   _mapUserToView(user: UserDocument): ViewUserModel {
     return {
-      id: user.id,
+      id: user._id.toString(),
       login: user.login,
       email: user.email,
       createdAt: user.createdAt.toISOString(),

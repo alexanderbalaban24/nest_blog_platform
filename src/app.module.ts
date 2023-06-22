@@ -36,6 +36,8 @@ import { DevicesRepository } from './features/devices/infrastructure/devices.rep
 import { PassportModule } from '@nestjs/passport';
 import { LocalAuthStrategy } from './features/auth/strategies/LocalAuthStrategy';
 import { BasicAuthStrategy } from './features/auth/strategies/BasicAuthStrategy';
+import { ExistUserValidator } from './features/infrastructure/decorators/validators/existUser.validator';
+import { ExistingUserPipe } from './infrastructure/pipes/ExistingUser.pipe';
 
 @Module({
   imports: [
@@ -98,8 +100,10 @@ import { BasicAuthStrategy } from './features/auth/strategies/BasicAuthStrategy'
     ConfirmationCodeValidator,
     ConfirmEmailValidator,
     UniqueLoginAndEmailValidator,
+    ExistUserValidator,
     LocalAuthStrategy,
     BasicAuthStrategy,
+    ExistingUserPipe,
   ],
 })
 export class AppModule {}

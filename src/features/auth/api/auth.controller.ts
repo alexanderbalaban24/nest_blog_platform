@@ -63,6 +63,7 @@ export class AuthController {
 
   @Post('login')
   @UseGuards(LocalAuthGuard)
+  @HttpCode(HttpStatus.OK)
   async login(
     @Headers('user-agent') deviceName: string,
     @Body() inputModel: LoginModel,

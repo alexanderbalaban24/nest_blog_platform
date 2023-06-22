@@ -7,7 +7,7 @@ import { Types } from 'mongoose';
 export class UsersRepository {
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
 
-  async findById(userId): Promise<UserDocument> {
+  async findById(userId: Types.ObjectId): Promise<UserDocument> {
     return this.UserModel.findById(userId);
   }
 

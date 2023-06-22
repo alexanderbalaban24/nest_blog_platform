@@ -34,10 +34,9 @@ export class UsersService {
 
   async deleteUser(userId: Types.ObjectId): Promise<boolean> {
     const userInstance = await this.UsersRepository.findById(userId);
-    if (!userInstance) throw new NotFoundException();
+    if (!userInstance) return false;
 
     await userInstance.deleteOne();
-
     return true;
   }
 }
