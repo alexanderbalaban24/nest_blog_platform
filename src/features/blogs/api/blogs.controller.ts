@@ -18,7 +18,7 @@ import { QueryParamsBlogModel } from './models/input/QueryParamsBlogModel';
 import { PostsService } from '../../posts/application/posts.service';
 import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
 import { QueryParamsPostModel } from '../../posts/api/models/input/QueryParamsPostModel';
-import { ParseObjectIdPipe } from '../../../shared/pipes';
+import { ParseObjectIdPipe } from '../../../infrastructure/pipes';
 import { Types } from 'mongoose';
 import { CreatePostWithoutIdModel } from './models/input/CreatePostWithoutIdModel';
 

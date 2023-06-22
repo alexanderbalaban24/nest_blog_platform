@@ -24,17 +24,18 @@ import { AuthQueryRepository } from './features/auth/infrastructure/auth.query-r
 import { EmailManager } from './features/email/manager/email.manager';
 import { EmailAdapter } from './features/email/adapter/email.adapter';
 import { BusinessService } from './features/email/application/business.service';
-import { ConfirmationCodeValidator } from './decorators/validators/confirmationCode.validator';
+import { ConfirmationCodeValidator } from './features/infrastructure/decorators/validators/confirmationCode.validator';
 import { AuthRepository } from './features/auth/infrastructure/auth.repository';
-import { ConfirmEmailValidator } from './decorators/validators/confirmEmail.validator';
-import { UniqueLoginAndEmailValidator } from './decorators/validators/uniqueLoginAndEmail.validator';
+import { ConfirmEmailValidator } from './features/infrastructure/decorators/validators/confirmEmail.validator';
+import { UniqueLoginAndEmailValidator } from './features/infrastructure/decorators/validators/uniqueLoginAndEmail.validator';
 import { JwtModule } from '@nestjs/jwt';
 import { DevicesController } from './features/devices/api/devices.controller';
 import { Device, DeviceSchema } from './features/devices/domain/devices.entity';
 import { DevicesService } from './features/devices/application/devices.service';
 import { DevicesRepository } from './features/devices/infrastructure/devices.repository';
 import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './features/auth/strategies/LocalStrategy';
+import { LocalAuthStrategy } from './features/auth/strategies/LocalAuthStrategy';
+import { BasicAuthStrategy } from './features/auth/strategies/BasicAuthStrategy';
 
 @Module({
   imports: [
@@ -97,7 +98,8 @@ import { LocalStrategy } from './features/auth/strategies/LocalStrategy';
     ConfirmationCodeValidator,
     ConfirmEmailValidator,
     UniqueLoginAndEmailValidator,
-    LocalStrategy,
+    LocalAuthStrategy,
+    BasicAuthStrategy,
   ],
 })
 export class AppModule {}

@@ -6,8 +6,8 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { AuthQueryRepository } from '../../features/auth/infrastructure/auth.query-repository';
-import { AuthRepository } from '../../features/auth/infrastructure/auth.repository';
+import { AuthQueryRepository } from '../../../auth/infrastructure/auth.query-repository';
+import { AuthRepository } from '../../../auth/infrastructure/auth.repository';
 
 @ValidatorConstraint({ async: true })
 @Injectable()

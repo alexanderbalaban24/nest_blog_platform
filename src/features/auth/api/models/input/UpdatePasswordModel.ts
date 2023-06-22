@@ -1,5 +1,5 @@
 import { IsString, Length, Matches } from 'class-validator';
-import { IsValidConfirmationCode } from '../../../../../decorators/validators/confirmationCode.validator';
+import { IsValidConfirmationCode } from '../../../../infrastructure/decorators/validators/confirmationCode.validator';
 
 export class UpdatePasswordModel {
   @IsString()

@@ -8,14 +8,17 @@ import {
   Param,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserModel } from './models/input/CreateUserModel';
 import { UsersService } from '../application/users.service';
 import { UsersQueryRepository } from '../infrastructure/users.query-repository';
 import { QueryParamsUserModel } from './models/input/QueryParamsUserModel';
-import { ParseObjectIdPipe } from '../../../shared/pipes';
+import { ParseObjectIdPipe } from '../../../infrastructure/pipes';
 import { Types } from 'mongoose';
+import { BasicAuthGuard } from '../../auth/guards/BasicAuthGuard';
 
+@UseGuards(BasicAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(

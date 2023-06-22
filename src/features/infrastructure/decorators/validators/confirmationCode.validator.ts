@@ -5,9 +5,9 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Inject, Injectable } from '@nestjs/common';
-import { AuthQueryRepository } from '../../features/auth/infrastructure/auth.query-repository';
+import { AuthQueryRepository } from '../../../auth/infrastructure/auth.query-repository';
 import { isAfter } from 'date-fns';
-
+// TODO перенести на уровень feature
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class ConfirmationCodeValidator implements ValidatorConstraintInterface {

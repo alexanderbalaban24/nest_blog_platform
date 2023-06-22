@@ -1,5 +1,5 @@
 import { IsString, Length, Matches } from 'class-validator';
-import { IsUniqueLoginWithEmail } from '../../../../../decorators/validators/uniqueLoginAndEmail.validator';
+import { IsUniqueLoginWithEmail } from '../../../../infrastructure/decorators/validators/uniqueLoginAndEmail.validator';
 
 export class RegistrationUserModel {
   @IsString()

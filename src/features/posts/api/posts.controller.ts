@@ -16,7 +16,7 @@ import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
 import { CreatePostModel } from './models/input/CreatePostModel';
 import { PostsService } from '../application/posts.service';
 import { Types } from 'mongoose';
-import { ParseObjectIdPipe } from '../../../shared/pipes';
+import { ParseObjectIdPipe } from '../../../infrastructure/pipes';
 
 @Controller('posts')
 export class PostsController {
