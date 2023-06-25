@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { Types } from 'mongoose';
+import { IsExistBlog } from '../../../../infrastructure/decorators/validators/existBlog.validator';
 
 export class CreatePostModel {
   @IsString()
@@ -22,5 +22,6 @@ export class CreatePostModel {
   @Transform(({ value }) => value.trim())
   @IsNotEmpty()
   @MaxLength(100000)
+  @IsExistBlog()
   blogId?: string;
 }
