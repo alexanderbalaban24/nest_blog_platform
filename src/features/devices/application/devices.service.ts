@@ -8,7 +8,7 @@ import { Types } from 'mongoose';
 export class DevicesService {
   constructor(
     @InjectModel(Device.name) private DeviceModel: DeviceModelType,
-    private deviceRepository: DevicesRepository,
+    private DeviceRepository: DevicesRepository,
   ) {}
 
   async createDevice(
@@ -23,6 +23,20 @@ export class DevicesService {
       this.DeviceModel,
     );
 
-    return this.deviceRepository.create(deviceInstance);
+    return this.DeviceRepository.create(deviceInstance);
   }
+
+  async updateSessionTime(deviceId: string): Promise<boolean> {
+    const deviceInstance = await this.DeviceRepository.findById(deviceId);
+    if (!deviceInstance) return false;
+
+    deviceInstance.updateSession();
+
+    return this.DeviceRepository.save(deviceInstance);
+  }
+
+  /*async deleteAllUserSessions(
+    userId: string,
+    deviceId: string,
+  ): Promise<boolean> {}*/
 }

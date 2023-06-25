@@ -3,7 +3,12 @@ import { HydratedDocument, Model, Types } from 'mongoose';
 
 export type DeviceDocument = HydratedDocument<Device>;
 
-export type DeviceModelType = Model<DeviceDocument> & DeviceStaticMethod;
+export type DeviceModelType = Model<
+  DeviceDocument,
+  {},
+  DeviceInstanceMethodsType
+> &
+  DeviceStaticMethod;
 
 type DeviceStaticMethod = {
   makeInstance: (
@@ -12,6 +17,10 @@ type DeviceStaticMethod = {
     deviceName: string,
     DeviceModel: DeviceModelType,
   ) => DeviceDocument;
+};
+
+type DeviceInstanceMethodsType = {
+  updateSession: () => void;
 };
 
 @Schema()
@@ -33,6 +42,10 @@ export class Device {
   ): DeviceDocument {
     return new DeviceModel({ userId, ip, deviceName });
   }
+
+  updateSession() {
+    this.issuedAt = new Date();
+  }
 }
 
 export const DeviceSchema = SchemaFactory.createForClass(Device);
@@ -41,3 +54,7 @@ const deviceStaticMethod: DeviceStaticMethod = {
   makeInstance: Device.makeInstance,
 };
 DeviceSchema.statics = deviceStaticMethod;
+
+const deviceInstanceMethods: DeviceInstanceMethodsType = {
+  updateSession: Device.prototype.updateSession,
+};

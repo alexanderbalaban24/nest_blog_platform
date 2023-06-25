@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { ExistingCommentPipe } from '../../../infrastructure/pipes/ExistingComment.pipe';
 import { CommentsQueryRepository } from '../infrastructure/comments.query-repository';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { JwtAccessAuthGuard } from '../../auth/guards/jwt-access-auth.guard';
 import { UpdateCommentModel } from './models/input/UpdateCommentModel';
 import { CurrentUserId } from '../../infrastructure/decorators/params/current-user-id.param.decorator';
 import { CommentsService } from '../application/comments.service';
@@ -37,7 +37,7 @@ export class CommentsController {
 
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAccessAuthGuard)
   async updateComment(
     @Param('id', ExistingCommentPipe) commentId: string,
     @Body() inputModel: UpdateCommentModel,
@@ -52,7 +52,7 @@ export class CommentsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAccessAuthGuard)
   async deleteComment(
     @Param('id', ExistingCommentPipe) commentId: string,
     @CurrentUserId() currentUserId: string,
@@ -62,7 +62,7 @@ export class CommentsController {
 
   @Put(':id/like-status')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAccessAuthGuard)
   async likeStatus(
     @Param('id', ExistingCommentPipe) commentId: string,
     @CurrentUserId() currentUserId: string,

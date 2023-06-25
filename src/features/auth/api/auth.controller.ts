@@ -20,9 +20,12 @@ import { UpdatePasswordModel } from './models/input/UpdatePasswordModel';
 import { LoginModel } from './models/input/LoginModel';
 import { Response } from 'express';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { JwtAccessAuthGuard } from '../guards/jwt-access-auth.guard';
 import { CurrentUserId } from '../../infrastructure/decorators/params/current-user-id.param.decorator';
 import { AuthQueryRepository } from '../infrastructure/auth.query-repository';
+import { JwtRefreshAuthGuard } from '../guards/jwt-refresh-auth.guard';
+import { RefreshTokenPayload } from '../../infrastructure/decorators/params/refresh-token-payload.param.decorator';
+import { RefreshTokenPayloadType } from '../../infrastructure/decorators/params/types';
 
 @Controller('auth')
 export class AuthController {
@@ -93,8 +96,19 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAccessAuthGuard)
   async getMe(@CurrentUserId() currentUserId: string) {
     return this.authQueryRepository.findMe(currentUserId);
+  }
+
+  @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtRefreshAuthGuard)
+  async refreshSession(
+    @CurrentUserId() currentUserId: string,
+    @RefreshTokenPayload() refreshTokenPayload: RefreshTokenPayloadType,
+  ) {
+    console.log(refreshTokenPayload);
+    return false;
   }
 }

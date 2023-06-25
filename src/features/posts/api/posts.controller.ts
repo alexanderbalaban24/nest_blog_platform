@@ -19,7 +19,7 @@ import { PostsService } from '../application/posts.service';
 import { CreateCommentModel } from './models/input/CreateCommentModel';
 import { CommentsService } from '../../comments/application/comments.service';
 import { CurrentUserId } from '../../infrastructure/decorators/params/current-user-id.param.decorator';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { JwtAccessAuthGuard } from '../../auth/guards/jwt-access-auth.guard';
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
 import { QueryParamsCommentModel } from '../../comments/api/models/input/QueryParamsCommentModel';
 import { ExistingPostPipe } from '../../../infrastructure/pipes/ExistingPost.pipe';
@@ -104,7 +104,7 @@ export class PostsController {
   }
 
   @Post(':id/comments')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAccessAuthGuard)
   async createComment(
     @Param('id', ExistingPostPipe) postId: string,
     @Body() inputModel: CreateCommentModel,
@@ -141,7 +141,7 @@ export class PostsController {
 
   @Put(':id/like-status')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAccessAuthGuard)
   async likeStatus(
     @Param('id', ExistingPostPipe) postId: string,
     @CurrentUserId() currentUserId: string,

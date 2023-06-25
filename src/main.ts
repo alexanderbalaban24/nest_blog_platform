@@ -6,6 +6,7 @@ import {
   HttpExceptionFilter,
 } from './infrastructure/exception.filter';
 import { useContainer } from 'class-validator';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,6 +26,7 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new ErrorExceptionFilter(), new HttpExceptionFilter());
   app.enableCors();
+  app.use(cookieParser());
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   await app.listen(3003);

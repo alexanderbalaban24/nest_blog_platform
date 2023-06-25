@@ -38,7 +38,7 @@ import { LocalAuthStrategy } from './features/auth/strategies/local-auth.strateg
 import { BasicAuthStrategy } from './features/auth/strategies/basic-auth.strategy';
 import { ExistUserValidator } from './features/infrastructure/decorators/validators/existUser.validator';
 import { ExistingUserPipe } from './infrastructure/pipes/ExistingUser.pipe';
-import { JwtAuthStrategy } from './features/auth/strategies/jwt-auth.strategy';
+import { JwtAccessAuthStrategy } from './features/auth/strategies/jwt-access-auth.strategy';
 import {
   Comment,
   CommentSchema,
@@ -52,6 +52,8 @@ import { ExistingCommentPipe } from './infrastructure/pipes/ExistingComment.pipe
 import { CommentsController } from './features/comments/api/comments.controller';
 import { ExistingBlogPipe } from './infrastructure/pipes/ExistingBlog.pipe';
 import { ExistBlogValidator } from './features/infrastructure/decorators/validators/existBlog.validator';
+import { JwtRefreshAuthStrategy } from './features/auth/strategies/jwt-refresh-auth.strategy';
+import { DevicesQueryRepository } from './features/devices/infrastructure/devices.query-repository';
 
 @Module({
   imports: [
@@ -111,6 +113,7 @@ import { ExistBlogValidator } from './features/infrastructure/decorators/validat
     UsersQueryRepository,
     AuthQueryRepository,
     CommentsQueryRepository,
+    DevicesQueryRepository,
     BlogsRepository,
     PostsRepository,
     UsersRepository,
@@ -127,7 +130,8 @@ import { ExistBlogValidator } from './features/infrastructure/decorators/validat
     ExistBlogValidator,
     LocalAuthStrategy,
     BasicAuthStrategy,
-    JwtAuthStrategy,
+    JwtAccessAuthStrategy,
+    JwtRefreshAuthStrategy,
     ExistingUserPipe,
     ExistingPostPipe,
     ExistingCommentPipe,
