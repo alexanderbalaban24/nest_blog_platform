@@ -68,7 +68,7 @@ export class PostsController {
 
   @Get(':id')
   async getPost(
-    @Param('id') postId: string,
+    @Param('id', ExistingPostPipe) postId: string,
     @CurrentUserId() currentUserId: string,
   ) {
     const post = await this.PostsQueryRepository.findPostById(
@@ -84,7 +84,7 @@ export class PostsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
   async updatePost(
-    @Param('id') postId: string,
+    @Param('id', ExistingPostPipe) postId: string,
     @Body() inputData: CreatePostModel,
   ): Promise<boolean> {
     return await this.PostsService.updatePost(
@@ -99,14 +99,14 @@ export class PostsController {
   @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(@Param('id') postId: string) {
+  async deletePost(@Param('id', ExistingPostPipe) postId: string) {
     return await this.PostsService.deletePost(postId);
   }
 
   @Post(':id/comments')
   @UseGuards(JwtAuthGuard)
   async createComment(
-    @Param('id') postId: string,
+    @Param('id', ExistingPostPipe) postId: string,
     @Body() inputModel: CreateCommentModel,
     @CurrentUserId() currentUserId: string,
   ) {

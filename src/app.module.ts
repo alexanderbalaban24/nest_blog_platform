@@ -50,6 +50,7 @@ import { ExistPostValidator } from './features/infrastructure/decorators/validat
 import { ExistingPostPipe } from './infrastructure/pipes/ExistingPost.pipe';
 import { ExistingCommentPipe } from './infrastructure/pipes/ExistingComment.pipe';
 import { CommentsController } from './features/comments/api/comments.controller';
+import { ExistingBlogPipe } from './infrastructure/pipes/ExistingBlog.pipe';
 
 @Module({
   imports: [
@@ -128,6 +129,7 @@ import { CommentsController } from './features/comments/api/comments.controller'
     ExistingUserPipe,
     ExistingPostPipe,
     ExistingCommentPipe,
+    ExistingBlogPipe,
   ],
 })
 export class AppModule {}

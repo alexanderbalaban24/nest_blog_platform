@@ -21,9 +21,9 @@ import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-rep
 import { QueryParamsPostModel } from '../../posts/api/models/input/QueryParamsPostModel';
 import { ParseObjectIdPipe } from '../../../infrastructure/pipes/ParseObjectId.pipe';
 import { CreatePostWithoutIdModel } from './models/input/CreatePostWithoutIdModel';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUserId } from '../../infrastructure/decorators/params/current-user-id.param.decorator';
 import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
+import { ExistingBlogPipe } from '../../../infrastructure/pipes/ExistingBlog.pipe';
 
 @Controller('blogs')
 export class BlogsController {
@@ -55,7 +55,7 @@ export class BlogsController {
   }
 
   @Get(':id')
-  async getBlog(@Param('id', ParseObjectIdPipe) blogId: string) {
+  async getBlog(@Param('id', ExistingBlogPipe) blogId: string) {
     const blog = await this.BlogsQueryRepository.findBlogById(blogId);
     if (!blog) throw new NotFoundException();
 
@@ -65,7 +65,7 @@ export class BlogsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
-  async deleteBlog(@Param('id', ParseObjectIdPipe) blogId: string) {
+  async deleteBlog(@Param('id', ExistingBlogPipe) blogId: string) {
     return await this.BlogsService.deleteBlog(blogId);
   }
 
@@ -73,7 +73,7 @@ export class BlogsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
   async updateBlog(
-    @Param('id', ParseObjectIdPipe) blogId: string,
+    @Param('id', ExistingBlogPipe) blogId: string,
     @Body() inputModel: CreateBlogModel,
   ) {
     return await this.BlogsService.updateBlog(
@@ -86,7 +86,7 @@ export class BlogsController {
 
   @Get(':id/posts')
   async getPostsByBlogId(
-    @Param('id', ParseObjectIdPipe) blogId: string,
+    @Param('id', ExistingBlogPipe) blogId: string,
     @Query() queryData: QueryParamsPostModel,
     @CurrentUserId() currentUserId: string,
   ) {
@@ -106,7 +106,7 @@ export class BlogsController {
   @Post(':id/posts')
   @UseGuards(BasicAuthGuard)
   async createPostByBlogId(
-    @Param('id', ParseObjectIdPipe) blogId: string,
+    @Param('id', ExistingBlogPipe) blogId: string,
     @Body() inputData: CreatePostWithoutIdModel,
     @CurrentUserId() currentUserId: string,
   ) {
