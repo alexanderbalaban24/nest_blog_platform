@@ -51,6 +51,7 @@ import { ExistingPostPipe } from './infrastructure/pipes/ExistingPost.pipe';
 import { ExistingCommentPipe } from './infrastructure/pipes/ExistingComment.pipe';
 import { CommentsController } from './features/comments/api/comments.controller';
 import { ExistingBlogPipe } from './infrastructure/pipes/ExistingBlog.pipe';
+import { TrimConstraint } from './features/infrastructure/decorators/transformers/trim.transformer';
 
 @Module({
   imports: [
@@ -121,6 +122,7 @@ import { ExistingBlogPipe } from './infrastructure/pipes/ExistingBlog.pipe';
     ConfirmationCodeValidator,
     ConfirmEmailValidator,
     UniqueLoginAndEmailValidator,
+    TrimConstraint,
     ExistUserValidator,
     ExistPostValidator,
     LocalAuthStrategy,
