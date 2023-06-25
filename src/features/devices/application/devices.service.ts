@@ -12,10 +12,10 @@ export class DevicesService {
   ) {}
 
   async createDevice(
-    userId: Types.ObjectId,
+    userId: string,
     ip: string,
     deviceName: string,
-  ): Promise<Types.ObjectId> {
+  ): Promise<string> {
     const deviceInstance = await this.DeviceModel.makeInstance(
       userId,
       ip,

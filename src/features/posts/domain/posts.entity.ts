@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Model, ObjectId, Types } from 'mongoose';
-import { queryHelper } from '../../../shared/helpers';
-import { QueryCustomMethods, UserLikeType } from '../../../shared/types';
+import { HydratedDocument, Model, Types } from 'mongoose';
+import { queryHelper, reverseLikeStatus } from '../../../shared/helpers';
+import { QueryCustomMethods } from '../../../shared/types';
+import { LikeStatusEnum } from '../../../shared/enums';
 
 export type PostDocument = HydratedDocument<Post>;
 
@@ -10,7 +11,7 @@ type PostStaticMethod = {
     title: string,
     shortDescription: string,
     content: string,
-    blogId: Types.ObjectId,
+    blogId: string,
     blogName: string,
     PostModel: PostModelType,
   ) => PostDocument;
@@ -21,9 +22,10 @@ type PostInstanceMethodType = {
     title: string,
     shortDescription: string,
     content: string,
-    blogId: Types.ObjectId,
+    blogId: string,
     blogName: string,
   ): void;
+  like: (userId: string, userLogin: string, likeStatus: LikeStatusEnum) => void;
 };
 
 export type PostModelType = Model<
@@ -32,6 +34,19 @@ export type PostModelType = Model<
   PostInstanceMethodType
 > &
   PostStaticMethod;
+
+@Schema()
+class UserLike {
+  @Prop({ required: true })
+  userId: string;
+
+  @Prop({ required: true })
+  login: string;
+  @Prop({ required: true, enum: LikeStatusEnum })
+  likeStatus: LikeStatusEnum;
+  @Prop({ required: true, type: Date })
+  addedAt: Date;
+}
 
 @Schema()
 export class Post {
@@ -47,7 +62,7 @@ export class Post {
   content: string;
 
   @Prop({ required: true })
-  blogId: Types.ObjectId;
+  blogId: string;
 
   @Prop({ required: true })
   blogName: string;
@@ -61,14 +76,14 @@ export class Post {
   @Prop({ default: 0 })
   dislikesCount: number;
 
-  @Prop({ default: [] })
-  usersLikes: UserLikeType[];
+  @Prop([UserLike])
+  usersLikes: UserLike[];
 
   static makeInstance(
     title: string,
     shortDescription: string,
     content: string,
-    blogId: Types.ObjectId,
+    blogId: string,
     blogName: string,
     PostModel: PostModelType,
   ) {
@@ -85,7 +100,7 @@ export class Post {
     title: string,
     shortDescription: string,
     content: string,
-    blogId: Types.ObjectId,
+    blogId: string,
     blogName: string,
   ) {
     this.title = title;
@@ -93,6 +108,59 @@ export class Post {
     this.content = content;
     this.blogId = blogId;
     this.blogName = blogName;
+  }
+
+  like(userId: string, userLogin: string, likeStatus: LikeStatusEnum) {
+    const ind: number = this.usersLikes.findIndex(
+      (like) => like.userId === userId,
+    );
+    const isLikeExist = ind === -1;
+
+    if (isLikeExist) {
+      const newLike = {
+        userId,
+        login: userLogin,
+        likeStatus,
+        addedAt: new Date(),
+      };
+
+      if (likeStatus !== LikeStatusEnum.None) {
+        if (likeStatus === LikeStatusEnum.Like) this.likesCount++;
+        else this.dislikesCount++;
+      }
+
+      this.usersLikes.push(newLike);
+      return;
+    }
+
+    const myLike: UserLike = this.usersLikes[ind];
+    if (likeStatus === myLike.likeStatus) {
+      return;
+    }
+
+    if (
+      myLike.likeStatus !== LikeStatusEnum.None &&
+      likeStatus !== LikeStatusEnum.None
+    ) {
+      myLike.likeStatus = reverseLikeStatus(myLike.likeStatus);
+
+      if (likeStatus === LikeStatusEnum.Like) {
+        this.likesCount++;
+        this.dislikesCount--;
+      } else {
+        this.dislikesCount++;
+        this.likesCount--;
+      }
+
+      return;
+    }
+
+    myLike.likeStatus = likeStatus;
+
+    if (myLike.likeStatus === LikeStatusEnum.Like) this.likesCount--;
+    else this.dislikesCount--;
+
+    return;
   }
 }
 
@@ -105,6 +173,7 @@ PostSchema.statics = postStaticMethods;
 
 const postInstanceMethod: PostInstanceMethodType = {
   changeData: Post.prototype.changeData,
+  like: Post.prototype.like,
 };
 PostSchema.methods = postInstanceMethod;
 

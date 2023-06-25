@@ -22,7 +22,7 @@ export class UsersQueryRepository {
     return usersData;
   }
 
-  async findUserById(userId: Types.ObjectId) {
+  async findUserById(userId: string) {
     const user = await this.UserModel.findById(userId).lean();
     if (!user) throw new NotFoundException();
 

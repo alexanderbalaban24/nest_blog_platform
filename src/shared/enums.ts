@@ -4,6 +4,12 @@ export enum LikeStatusEnum {
   Dislike = 'Dislike',
 }
 
+export enum ReverseLike {
+  Like = 'Dislike',
+  Dislike = 'Like',
+  None = 'None',
+}
+
 export enum EmailEvents {
   Registration,
   Recover_password,

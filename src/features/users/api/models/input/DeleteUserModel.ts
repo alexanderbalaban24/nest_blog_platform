@@ -3,5 +3,5 @@ import { IsExistUser } from '../../../../infrastructure/decorators/validators/ex
 
 export class DeleteUserModel {
   @IsExistUser()
-  userId: Types.ObjectId;
+  userId: string;
 }

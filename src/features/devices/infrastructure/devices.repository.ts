@@ -11,9 +11,9 @@ import { Types } from 'mongoose';
 export class DevicesRepository {
   constructor(@InjectModel(Device.name) private DeviceModel: DeviceModelType) {}
 
-  async create(deviceInstance: DeviceDocument): Promise<Types.ObjectId> {
+  async create(deviceInstance: DeviceDocument): Promise<string> {
     const createdDevice = await deviceInstance.save();
 
-    return createdDevice._id;
+    return createdDevice._id.toString();
   }
 }

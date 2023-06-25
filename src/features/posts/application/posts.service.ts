@@ -3,7 +3,8 @@ import { Post, PostModelType } from '../domain/posts.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-repository';
 import { PostsRepository } from '../infrastructure/posts.repository';
-import { Types } from 'mongoose';
+import { LikeStatusEnum } from '../../../shared/enums';
+import { UsersRepository } from '../../users/infrastructure/users.repository';
 
 @Injectable()
 export class PostsService {
@@ -11,14 +12,15 @@ export class PostsService {
     @InjectModel(Post.name) private PostModel: PostModelType,
     private BlogsQueryRepository: BlogsQueryRepository,
     private PostsRepository: PostsRepository,
+    private UsersRepository: UsersRepository,
   ) {}
 
   async createPost(
-    blogId: Types.ObjectId,
+    blogId: string,
     title: string,
     shortDescription: string,
     content: string,
-  ): Promise<Types.ObjectId | null> {
+  ): Promise<string | null> {
     const blog = await this.BlogsQueryRepository.findBlogById(blogId);
     if (!blog) return null;
 
@@ -35,8 +37,8 @@ export class PostsService {
   }
 
   async updatePost(
-    postId: Types.ObjectId,
-    blogId: Types.ObjectId,
+    postId: string,
+    blogId: string,
     title: string,
     shortDescription: string,
     content: string,
@@ -58,12 +60,28 @@ export class PostsService {
     return await this.PostsRepository.save(postInstance);
   }
 
-  async deletePost(postId: Types.ObjectId): Promise<boolean> {
+  async deletePost(postId: string): Promise<boolean> {
     const postInstance = await this.PostsRepository.findById(postId);
     if (!postInstance) return false;
 
     await postInstance.deleteOne();
 
     return true;
+  }
+
+  async likeStatus(
+    postId: string,
+    userId: string,
+    likeStatus: LikeStatusEnum,
+  ): Promise<boolean> {
+    const postInstance = await this.PostsRepository.findById(postId);
+    if (!postInstance) return false;
+
+    const userInstance = await this.UsersRepository.findById(userId);
+    if (!userInstance) return false;
+
+    postInstance.like(userId, userInstance.login, likeStatus);
+
+    return this.PostsRepository.save(postInstance);
   }
 }

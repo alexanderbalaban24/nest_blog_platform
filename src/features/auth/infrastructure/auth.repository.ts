@@ -11,7 +11,7 @@ import { Types } from 'mongoose';
 export class AuthRepository {
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
 
-  async findById(userId: Types.ObjectId): Promise<UserDocument> {
+  async findById(userId: string): Promise<UserDocument> {
     return this.UserModel.findById(userId);
   }
 

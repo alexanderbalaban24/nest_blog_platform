@@ -129,7 +129,7 @@ export class AuthService {
     if (!isValidCredentials) return null;
 
     const createdDeviceId = await this.devicesService.createDevice(
-      user._id,
+      user._id.toString(),
       ip,
       deviceName,
     );

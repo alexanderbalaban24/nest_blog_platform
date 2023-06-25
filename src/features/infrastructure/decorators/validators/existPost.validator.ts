@@ -4,18 +4,18 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { UsersRepository } from '../../../users/infrastructure/users.repository';
 import { Injectable } from '@nestjs/common';
+import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
 
 @ValidatorConstraint({ async: true })
 @Injectable()
-export class ExistUserValidator implements ValidatorConstraintInterface {
-  constructor(private usersRepository: UsersRepository) {}
+export class ExistPostValidator implements ValidatorConstraintInterface {
+  constructor(private PostRepository: PostsRepository) {}
 
   async validate(id: string): Promise<boolean> {
     debugger;
     try {
-      const user = await this.usersRepository.findById(id);
+      const user = await this.PostRepository.findById(id);
       return !!user;
     } catch (e) {
       return false;
@@ -27,15 +27,15 @@ export class ExistUserValidator implements ValidatorConstraintInterface {
   }
 }
 
-export function IsExistUser(validationOptions?: ValidationOptions) {
+export function IsExistPost(validationOptions?: ValidationOptions) {
   return function (object: NonNullable<unknown>, propertyName: string) {
     registerDecorator({
-      name: 'IsExistUser',
+      name: 'IsExistPost',
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
       constraints: [],
-      validator: ExistUserValidator,
+      validator: ExistPostValidator,
     });
   };
 }

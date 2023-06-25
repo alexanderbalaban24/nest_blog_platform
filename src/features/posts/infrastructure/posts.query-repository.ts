@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostDocument, PostModelType } from '../domain/posts.entity';
+import { Post, PostModelType } from '../domain/posts.entity';
 import { ViewPostModel } from '../api/models/view/ViewPostModel';
 import { QueryParamsPostModel } from '../api/models/input/QueryParamsPostModel';
 import { QueryBuildDTO } from '../../../shared/dto';
 import { LikeStatusEnum } from '../../../shared/enums';
-import { Types } from 'mongoose';
+import { UserLikeType } from '../../../shared/types';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -13,27 +13,47 @@ export class PostsQueryRepository {
 
   async findPosts(
     query: QueryParamsPostModel,
-    blogId?: Types.ObjectId,
+    blogId?: string,
+    userId?: string,
   ): Promise<QueryBuildDTO<Post, ViewPostModel>> {
     const postData = await this.PostModel.find({}).findWithQuery<
       Post,
       ViewPostModel
     >(query, blogId);
-    postData.map(this._mapPostToView);
+    postData.map((post) => this._mapPostToView(post, userId));
 
     return postData;
   }
 
-  async findPostById(postId: Types.ObjectId): Promise<ViewPostModel | null> {
+  async findPostById(
+    postId: string,
+    userId?: string,
+  ): Promise<ViewPostModel | null> {
     const post = await this.PostModel.findById(postId).lean();
     if (!post) return null;
 
-    return this._mapPostToView(post);
+    return this._mapPostToView(post, userId);
   }
 
-  _mapPostToView(post: PostDocument): ViewPostModel {
+  _mapPostToView(post: Post, userId?: string): ViewPostModel {
+    console.log(post);
+    const userLikeData = post.usersLikes.find((item) => {
+      if (!item.userId) return null;
+
+      return item.userId === userId;
+    });
+
+    const newestLikes = post.usersLikes
+      .sort((a, b) => Number(b.addedAt) - Number(a.addedAt))
+      .filter((item) => item.likeStatus === LikeStatusEnum.Like)
+      .map((item) => ({
+        addedAt: item.addedAt,
+        userId: item.userId,
+        login: item.login,
+      }))
+      .slice(0, 3);
     return {
-      id: post.id,
+      id: post._id.toString(),
       title: post.title,
       shortDescription: post.shortDescription,
       content: post.content,
@@ -43,8 +63,8 @@ export class PostsQueryRepository {
       extendedLikesInfo: {
         likesCount: post.likesCount,
         dislikesCount: post.dislikesCount,
-        myStatus: LikeStatusEnum.None,
-        newestLikes: [],
+        myStatus: userLikeData?.likeStatus ?? LikeStatusEnum.None,
+        newestLikes: newestLikes as UserLikeType[],
       },
     };
   }

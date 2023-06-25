@@ -1,9 +1,10 @@
 import { QueryBuildDTO } from './dto';
 import { QueryDataType } from './types';
 import { Types } from 'mongoose';
+import { LikeStatusEnum, ReverseLike } from './enums';
 
 export const queryHelper = {
-  async findWithQuery<T, C>(queryData: QueryDataType, id?: Types.ObjectId) {
+  async findWithQuery<T, C>(queryData: QueryDataType, id?: string) {
     const sortBy = queryData.sortBy ? queryData.sortBy : 'createdAt';
     const sortDirection = queryData.sortDirection
       ? queryData.sortDirection
@@ -51,4 +52,10 @@ export const queryHelper = {
       items,
     );
   },
+};
+
+export const reverseLikeStatus = (
+  likeStatus: LikeStatusEnum,
+): LikeStatusEnum => {
+  return ReverseLike[likeStatus] as unknown as LikeStatusEnum;
 };

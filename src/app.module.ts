@@ -34,10 +34,22 @@ import { Device, DeviceSchema } from './features/devices/domain/devices.entity';
 import { DevicesService } from './features/devices/application/devices.service';
 import { DevicesRepository } from './features/devices/infrastructure/devices.repository';
 import { PassportModule } from '@nestjs/passport';
-import { LocalAuthStrategy } from './features/auth/strategies/LocalAuthStrategy';
-import { BasicAuthStrategy } from './features/auth/strategies/BasicAuthStrategy';
+import { LocalAuthStrategy } from './features/auth/strategies/local-auth.strategy';
+import { BasicAuthStrategy } from './features/auth/strategies/basic-auth.strategy';
 import { ExistUserValidator } from './features/infrastructure/decorators/validators/existUser.validator';
 import { ExistingUserPipe } from './infrastructure/pipes/ExistingUser.pipe';
+import { JwtAuthStrategy } from './features/auth/strategies/jwt-auth.strategy';
+import {
+  Comment,
+  CommentSchema,
+} from './features/comments/domain/comments.entity';
+import { CommentsService } from './features/comments/application/comments.service';
+import { CommentsQueryRepository } from './features/comments/infrastructure/comments.query-repository';
+import { CommentsRepository } from './features/comments/infrastructure/comments.repository';
+import { ExistPostValidator } from './features/infrastructure/decorators/validators/existPost.validator';
+import { ExistingPostPipe } from './infrastructure/pipes/ExistingPost.pipe';
+import { ExistingCommentPipe } from './infrastructure/pipes/ExistingComment.pipe';
+import { CommentsController } from './features/comments/api/comments.controller';
 
 @Module({
   imports: [
@@ -62,12 +74,16 @@ import { ExistingUserPipe } from './infrastructure/pipes/ExistingUser.pipe';
         name: Device.name,
         schema: DeviceSchema,
       },
+      {
+        name: Comment.name,
+        schema: CommentSchema,
+      },
     ]),
     PassportModule,
     JwtModule.register({
       global: true,
       // TODO перенести в env
-      secret: 'test123',
+      secret: process.env.JWT_SECRET,
     }),
   ],
   controllers: [
@@ -77,6 +93,7 @@ import { ExistingUserPipe } from './infrastructure/pipes/ExistingUser.pipe';
     UsersController,
     AuthController,
     DevicesController,
+    CommentsController,
   ],
   providers: [
     AppService,
@@ -86,24 +103,31 @@ import { ExistingUserPipe } from './infrastructure/pipes/ExistingUser.pipe';
     AuthService,
     BusinessService,
     DevicesService,
+    CommentsService,
     BlogsQueryRepository,
     PostsQueryRepository,
     UsersQueryRepository,
     AuthQueryRepository,
+    CommentsQueryRepository,
     BlogsRepository,
     PostsRepository,
     UsersRepository,
     AuthRepository,
     DevicesRepository,
+    CommentsRepository,
     EmailManager,
     EmailAdapter,
     ConfirmationCodeValidator,
     ConfirmEmailValidator,
     UniqueLoginAndEmailValidator,
     ExistUserValidator,
+    ExistPostValidator,
     LocalAuthStrategy,
     BasicAuthStrategy,
+    JwtAuthStrategy,
     ExistingUserPipe,
+    ExistingPostPipe,
+    ExistingCommentPipe,
   ],
 })
 export class AppModule {}

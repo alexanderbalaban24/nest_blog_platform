@@ -18,7 +18,7 @@ export class UsersService {
     email: string,
     password: string,
     isConfirmed: boolean,
-  ): Promise<Types.ObjectId> {
+  ): Promise<string> {
     const passwordSalt = await genSalt(10);
     const passwordHash = await hash(password, passwordSalt);
 
@@ -32,7 +32,7 @@ export class UsersService {
     return this.UsersRepository.create(newUserInstance);
   }
 
-  async deleteUser(userId: Types.ObjectId): Promise<boolean> {
+  async deleteUser(userId: string): Promise<boolean> {
     const userInstance = await this.UsersRepository.findById(userId);
     if (!userInstance) return false;
 

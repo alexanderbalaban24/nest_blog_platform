@@ -7,13 +7,13 @@ import { Types } from 'mongoose';
 export class UsersRepository {
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
 
-  async findById(userId: Types.ObjectId): Promise<UserDocument> {
+  async findById(userId: string): Promise<UserDocument> {
     return this.UserModel.findById(userId);
   }
 
-  async create(userInstance: UserDocument): Promise<Types.ObjectId> {
+  async create(userInstance: UserDocument): Promise<string> {
     const createdInstance = await userInstance.save();
-    return createdInstance._id;
+    return createdInstance._id.toString();
   }
 
   async save(userInstance: UserDocument): Promise<boolean> {

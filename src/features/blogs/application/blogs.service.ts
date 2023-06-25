@@ -15,7 +15,7 @@ export class BlogsService {
     name: string,
     description: string,
     websiteUrl: string,
-  ): Promise<Types.ObjectId> {
+  ): Promise<string> {
     const newBlogInstance = this.BlogModel.makeInstance(
       name,
       description,
@@ -26,7 +26,7 @@ export class BlogsService {
     return await this.BlogsRepository.create(newBlogInstance);
   }
 
-  async deleteBlog(blogId: Types.ObjectId): Promise<boolean> {
+  async deleteBlog(blogId: string): Promise<boolean> {
     const blogInstance = await this.BlogsRepository.findById(blogId);
     if (!blogInstance) return false;
 
@@ -36,7 +36,7 @@ export class BlogsService {
   }
 
   async updateBlog(
-    blogId: Types.ObjectId,
+    blogId: string,
     name: string,
     description: string,
     websiteUrl: string,

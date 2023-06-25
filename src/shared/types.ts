@@ -15,7 +15,7 @@ export type QueryDataType = {
 export type QueryCustomMethods = {
   findWithQuery<T, C>(
     queryData: QueryDataType,
-    id?: Types.ObjectId,
+    id?: string,
   ): Promise<QueryBuildDTO<T, C>>;
 };
 

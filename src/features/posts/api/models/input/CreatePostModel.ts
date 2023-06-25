@@ -18,6 +18,5 @@ export class CreatePostModel {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100000)
-  @Transform(({ value }) => Types.ObjectId.createFromHexString(value))
-  blogId?: Types.ObjectId;
+  blogId?: string;
 }

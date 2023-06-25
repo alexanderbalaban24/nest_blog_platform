@@ -4,14 +4,14 @@ import {
   NotFoundException,
   PipeTransform,
 } from '@nestjs/common';
-import { UsersRepository } from '../../features/users/infrastructure/users.repository';
+import { PostsRepository } from '../../features/posts/infrastructure/posts.repository';
 
 @Injectable()
-export class ExistingUserPipe implements PipeTransform {
-  constructor(private UserRepository: UsersRepository) {}
+export class ExistingPostPipe implements PipeTransform {
+  constructor(private PostRepository: PostsRepository) {}
 
   async transform(value: string, metadata: ArgumentMetadata) {
-    const user = await this.UserRepository.findById(value);
+    const user = await this.PostRepository.findById(value);
     if (!user) throw new NotFoundException();
 
     return user._id.toString();

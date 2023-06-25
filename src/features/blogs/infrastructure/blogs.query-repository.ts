@@ -4,7 +4,6 @@ import { Blog, BlogDocument, BlogModelType } from '../domain/blogs.entity';
 import { ViewBlogModel } from '../api/models/view/ViewBlogModel';
 import { QueryParamsBlogModel } from '../api/models/input/QueryParamsBlogModel';
 import { QueryBuildDTO } from '../../../shared/dto';
-import { Types } from 'mongoose';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -22,7 +21,7 @@ export class BlogsQueryRepository {
     return blogsData;
   }
 
-  async findBlogById(blogId: Types.ObjectId): Promise<ViewBlogModel | null> {
+  async findBlogById(blogId: string): Promise<ViewBlogModel | null> {
     const blog = await this.BlogModel.findById(blogId).lean();
     if (!blog) return null;
 
@@ -31,7 +30,7 @@ export class BlogsQueryRepository {
 
   _mapBlogToView(blog: BlogDocument): ViewBlogModel {
     return {
-      id: blog.id,
+      id: blog._id.toString(),
       name: blog.name,
       description: blog.description,
       websiteUrl: blog.websiteUrl,

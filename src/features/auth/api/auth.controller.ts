@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Headers,
   HttpCode,
   HttpStatus,
@@ -18,11 +19,17 @@ import { PasswordRecoveryModel } from './models/input/PasswordRecoveryModel';
 import { UpdatePasswordModel } from './models/input/UpdatePasswordModel';
 import { LoginModel } from './models/input/LoginModel';
 import { Response } from 'express';
-import { LocalAuthGuard } from '../guards/LocalAuthGuard';
+import { LocalAuthGuard } from '../guards/local-auth.guard';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { CurrentUserId } from '../../infrastructure/decorators/params/current-user-id.param.decorator';
+import { AuthQueryRepository } from '../infrastructure/auth.query-repository';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authServices: AuthService) {}
+  constructor(
+    private authServices: AuthService,
+    private authQueryRepository: AuthQueryRepository,
+  ) {}
 
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -83,5 +90,11 @@ export class AuthController {
       secure: true,
     });
     return { accessToken: tokenPair.accessToken };
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getMe(@CurrentUserId() currentUserId: string) {
+    return this.authQueryRepository.findMe(currentUserId);
   }
 }

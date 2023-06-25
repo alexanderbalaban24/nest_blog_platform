@@ -15,12 +15,8 @@ import { CreateUserModel } from './models/input/CreateUserModel';
 import { UsersService } from '../application/users.service';
 import { UsersQueryRepository } from '../infrastructure/users.query-repository';
 import { QueryParamsUserModel } from './models/input/QueryParamsUserModel';
-import { Types } from 'mongoose';
-import { BasicAuthGuard } from '../../auth/guards/BasicAuthGuard';
+import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
 import { ExistingUserPipe } from '../../../infrastructure/pipes/ExistingUser.pipe';
-import { ParseObjectIdPipe } from '../../../infrastructure/pipes/ParseObjectId.pipe';
-import { is } from 'date-fns/locale';
-
 @UseGuards(BasicAuthGuard)
 @Controller('users')
 export class UsersController {
@@ -30,11 +26,13 @@ export class UsersController {
   ) {}
 
   @Get()
+  @UseGuards(BasicAuthGuard)
   async getAllUsers(@Query() queryData: QueryParamsUserModel) {
     return await this.UsersQueryRepository.findUsers(queryData);
   }
 
   @Post()
+  @UseGuards(BasicAuthGuard)
   async createUser(@Body() inputModel: CreateUserModel) {
     const createdUserId = await this.UsersService.createUser(
       inputModel.login,
@@ -51,9 +49,10 @@ export class UsersController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(BasicAuthGuard)
   async deleteUser(
     @Param('id', ExistingUserPipe)
-    userId: Types.ObjectId,
+    userId: string,
   ) {
     const isDeleted = await this.UsersService.deleteUser(userId);
     if (!isDeleted) throw new NotFoundException();

@@ -7,7 +7,7 @@ export type DeviceModelType = Model<DeviceDocument> & DeviceStaticMethod;
 
 type DeviceStaticMethod = {
   makeInstance: (
-    userId: Types.ObjectId,
+    userId: string,
     ip: string,
     deviceName: string,
     DeviceModel: DeviceModelType,
@@ -17,7 +17,7 @@ type DeviceStaticMethod = {
 @Schema()
 export class Device {
   @Prop({ required: true })
-  userId: Types.ObjectId;
+  userId: string;
   @Prop({ required: true })
   ip: string;
   @Prop({ required: true })
@@ -26,7 +26,7 @@ export class Device {
   issuedAt: Date;
 
   static makeInstance(
-    userId: Types.ObjectId,
+    userId: string,
     ip: string,
     deviceName: string,
     DeviceModel: DeviceModelType,
