@@ -58,3 +58,4 @@ DeviceSchema.statics = deviceStaticMethod;
 const deviceInstanceMethods: DeviceInstanceMethodsType = {
   updateSession: Device.prototype.updateSession,
 };
+DeviceSchema.methods = deviceInstanceMethods;
