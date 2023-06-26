@@ -11,8 +11,8 @@ import { Schema, Types } from 'mongoose';
 export class DevicesRepository {
   constructor(@InjectModel(Device.name) private DeviceModel: DeviceModelType) {}
 
-  deleteAllDevices(userId: string, excludeId: string) {
-    this.DeviceModel.deleteMany({
+  async deleteAllDevices(userId: string, excludeId: string) {
+    const result = await this.DeviceModel.deleteMany({
       userId,
       _id: { $ne: new Types.ObjectId(excludeId) },
     });
