@@ -15,6 +15,7 @@ import { RefreshTokenPayload } from '../../infrastructure/decorators/params/refr
 import { RefreshTokenPayloadType } from '../../infrastructure/decorators/params/types';
 import { JwtRefreshAuthGuard } from '../../auth/guards/jwt-refresh-auth.guard';
 import { DevicesService } from '../application/devices.service';
+import { ExistingDevicePipe } from '../../../infrastructure/pipes/ExistingDevice.pipe';
 
 @Controller('security/devices')
 export class DevicesController {
@@ -24,9 +25,12 @@ export class DevicesController {
   ) {}
 
   @Get()
+  @UseGuards(JwtRefreshAuthGuard)
   async getAllDevices(@CurrentUserId() currentUserId: string) {
-    const activeSessions =
-      this.DevicesQueryRepository.findDeviceByUserId(currentUserId);
+    const activeSessions = await this.DevicesQueryRepository.findDeviceByUserId(
+      currentUserId,
+    );
+    console.log(activeSessions);
     if (!activeSessions) throw new NotFoundException();
 
     return activeSessions;
@@ -49,11 +53,15 @@ export class DevicesController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtRefreshAuthGuard)
   async deleteDevice(
-    @Param('id') deviceId: string,
-    @RefreshTokenPayload() refreshTokenPayload: RefreshTokenPayloadType,
+    @Param('id', ExistingDevicePipe) deviceId: string,
+    @CurrentUserId() currentUserId: string,
   ) {
-    if (deviceId !== refreshTokenPayload.deviceId)
+    const deviceInfo = await this.DevicesQueryRepository.findDeviceById(
+      deviceId,
+    );
+    if (currentUserId !== deviceInfo.userId) {
       throw new ForbiddenException();
+    }
 
     return this.DevicesService.deleteUserSession(deviceId);
   }

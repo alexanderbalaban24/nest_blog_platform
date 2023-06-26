@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Device, DeviceModelType } from '../domain/devices.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { DevicesRepository } from '../infrastructure/devices.repository';
-import { Types } from 'mongoose';
 
 @Injectable()
 export class DevicesService {

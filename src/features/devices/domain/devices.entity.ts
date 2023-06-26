@@ -5,7 +5,7 @@ export type DeviceDocument = HydratedDocument<Device>;
 
 export type DeviceModelType = Model<
   DeviceDocument,
-  {},
+  unknown,
   DeviceInstanceMethodsType
 > &
   DeviceStaticMethod;
