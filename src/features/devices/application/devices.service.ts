@@ -35,8 +35,19 @@ export class DevicesService {
     return this.DeviceRepository.save(deviceInstance);
   }
 
-  /*async deleteAllUserSessions(
+  async deleteAllUserSessions(
     userId: string,
     deviceId: string,
-  ): Promise<boolean> {}*/
+  ): Promise<boolean> {
+    return this.DeviceRepository.deleteAllDevices(userId, deviceId);
+  }
+
+  async deleteUserSession(deviceId: string): Promise<boolean> {
+    const deviceInstance = await this.DeviceRepository.findById(deviceId);
+    if (!deviceInstance) return false;
+
+    await deviceInstance.deleteOne();
+
+    return true;
+  }
 }

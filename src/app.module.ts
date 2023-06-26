@@ -54,6 +54,12 @@ import { ExistingBlogPipe } from './infrastructure/pipes/ExistingBlog.pipe';
 import { ExistBlogValidator } from './features/infrastructure/decorators/validators/existBlog.validator';
 import { JwtRefreshAuthStrategy } from './features/auth/strategies/jwt-refresh-auth.strategy';
 import { DevicesQueryRepository } from './features/devices/infrastructure/devices.query-repository';
+import {
+  RateLimit,
+  RateLimitSchema,
+} from './features/rateLimit/domain/rateLimit.entity';
+import { RateLimitService } from './features/rateLimit/application/rateLimit.service';
+import { RateLimitRepository } from './features/rateLimit/infrastructure/rateLimit.repository';
 
 @Module({
   imports: [
@@ -82,11 +88,14 @@ import { DevicesQueryRepository } from './features/devices/infrastructure/device
         name: Comment.name,
         schema: CommentSchema,
       },
+      {
+        name: RateLimit.name,
+        schema: RateLimitSchema,
+      },
     ]),
     PassportModule,
     JwtModule.register({
       global: true,
-      // TODO перенести в env
       secret: process.env.JWT_SECRET,
     }),
   ],
@@ -108,10 +117,12 @@ import { DevicesQueryRepository } from './features/devices/infrastructure/device
     BusinessService,
     DevicesService,
     CommentsService,
+    RateLimitService,
     BlogsQueryRepository,
     PostsQueryRepository,
     UsersQueryRepository,
     AuthQueryRepository,
+    RateLimitRepository,
     CommentsQueryRepository,
     DevicesQueryRepository,
     BlogsRepository,
