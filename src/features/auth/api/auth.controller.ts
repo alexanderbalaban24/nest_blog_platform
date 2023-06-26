@@ -129,4 +129,21 @@ export class AuthController {
     });
     return { accessToken: tokenPair.accessToken };
   }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtRefreshAuthGuard)
+  async logout(
+    @CurrentUserId() currentUserId: string,
+    @RefreshTokenPayload() refreshTokenPayload: RefreshTokenPayloadType,
+  ) {
+    const result = await this.AuthServices.logout(
+      currentUserId,
+      refreshTokenPayload.deviceId,
+      refreshTokenPayload.iat,
+    );
+    if (!result) throw new UnauthorizedException();
+
+    return result;
+  }
 }

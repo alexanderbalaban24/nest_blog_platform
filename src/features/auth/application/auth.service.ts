@@ -184,6 +184,21 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  async logout(userId: string, deviceId: string, iat: number) {
+    const deviceInfo = await this.DeviceQueryRepository.findDeviceById(
+      deviceId,
+    );
+    if (!deviceInfo) return null;
+
+    if (
+      deviceInfo.userId !== userId ||
+      iat !== Math.trunc(+deviceInfo.issuedAt / 1000)
+    )
+      return null;
+
+    return this.DevicesService.deleteUserSession(deviceId);
+  }
+
   async validateUser(loginOrEmail: string, password: string): Promise<boolean> {
     const user = await this.AuthRepository.findByCredentials(loginOrEmail);
     if (!user) return false;
