@@ -27,6 +27,7 @@ export class DevicesRepository {
 
   async findById(deviceId: string): Promise<ResultDTO<DeviceDocument>> {
     const deviceInstance = await this.DeviceModel.findById(deviceId);
+    if (!deviceInstance) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(InternalCode.Success, deviceInstance);
   }
