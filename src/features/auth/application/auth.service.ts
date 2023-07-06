@@ -156,7 +156,7 @@ export class AuthService {
     const refreshToken = await this.JwtService.signAsync(
       {
         userId: userResult.payload.id,
-        deviceId: createdDeviceResult.payload,
+        deviceId: createdDeviceResult.payload.deviceId,
       },
       { expiresIn: '20s' },
     );
