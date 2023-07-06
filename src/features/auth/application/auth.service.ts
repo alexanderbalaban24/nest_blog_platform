@@ -209,7 +209,8 @@ export class AuthService {
     const deviceResult = await this.DeviceQueryRepository.findDeviceById(
       deviceId,
     );
-    if (deviceResult.hasError()) return deviceResult as ResultDTO<null>;
+    if (deviceResult.hasError())
+      return new ResultDTO(InternalCode.Unauthorized);
 
     if (
       deviceResult.payload.userId !== userId ||

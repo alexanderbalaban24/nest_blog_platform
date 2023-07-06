@@ -15,10 +15,11 @@ export class UniqueLoginAndEmailValidator
   implements ValidatorConstraintInterface
 {
   constructor(private authRepository: AuthRepository) {}
+
   async validate(cred: string): Promise<boolean> {
     try {
-      const user = await this.authRepository.findByCredentials(cred);
-      if (user) return false;
+      const userResult = await this.authRepository.findByCredentials(cred);
+      if (!userResult.hasError()) return false;
 
       return true;
     } catch (e) {
