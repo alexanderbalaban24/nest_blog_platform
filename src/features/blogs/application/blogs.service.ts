@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Blog, BlogModelType } from '../domain/blogs.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { BlogsRepository } from '../infrastructure/blogs.repository';
-import { Types } from 'mongoose';
+import { ResultDTO } from '../../../shared/dto';
+import { InternalCode } from '../../../shared/enums';
 
 @Injectable()
 export class BlogsService {
@@ -15,7 +16,7 @@ export class BlogsService {
     name: string,
     description: string,
     websiteUrl: string,
-  ): Promise<string> {
+  ): Promise<ResultDTO<{ blogId: string }>> {
     const newBlogInstance = this.BlogModel.makeInstance(
       name,
       description,
@@ -23,16 +24,16 @@ export class BlogsService {
       this.BlogModel,
     );
 
-    return await this.BlogsRepository.create(newBlogInstance);
+    return this.BlogsRepository.create(newBlogInstance);
   }
 
-  async deleteBlog(blogId: string): Promise<boolean> {
-    const blogInstance = await this.BlogsRepository.findById(blogId);
-    if (!blogInstance) return false;
+  async deleteBlog(blogId: string): Promise<ResultDTO<null>> {
+    const blogResult = await this.BlogsRepository.findById(blogId);
+    if (blogResult.hasError()) return new ResultDTO(blogResult.code);
 
-    await blogInstance.deleteOne();
+    await blogResult.payload.deleteOne();
 
-    return true;
+    return new ResultDTO(InternalCode.Success);
   }
 
   async updateBlog(
@@ -40,12 +41,12 @@ export class BlogsService {
     name: string,
     description: string,
     websiteUrl: string,
-  ): Promise<boolean> {
-    const blogInstance = await this.BlogsRepository.findById(blogId);
-    if (!blogInstance) return false;
+  ): Promise<ResultDTO<null>> {
+    const blogResult = await this.BlogsRepository.findById(blogId);
+    if (blogResult.hasError()) return new ResultDTO(blogResult.code);
 
-    await blogInstance.changeData(name, description, websiteUrl);
+    await blogResult.payload.changeData(name, description, websiteUrl);
 
-    return await this.BlogsRepository.save(blogInstance);
+    return this.BlogsRepository.save(blogResult.payload);
   }
 }

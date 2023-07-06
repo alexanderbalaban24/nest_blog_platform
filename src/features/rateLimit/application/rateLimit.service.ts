@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { RateLimit, RateLimitModelType } from '../domain/rateLimit.entity';
 import { RateLimitRepository } from '../infrastructure/rateLimit.repository';
 import { sub } from 'date-fns';
+import { ResultDTO } from '../../../shared/dto';
 
 @Injectable()
 export class RateLimitService {
@@ -11,7 +12,7 @@ export class RateLimitService {
     private RateLimitRepository: RateLimitRepository,
   ) {}
 
-  async addAttempt(ip: string, url: string): Promise<boolean> {
+  async addAttempt(ip: string, url: string): Promise<ResultDTO<null>> {
     const newAttempt = this.RateLimitModel.makeInstance(
       ip,
       url,
@@ -21,7 +22,10 @@ export class RateLimitService {
     return this.RateLimitRepository.save(newAttempt);
   }
 
-  async getCountAttempts(ip: string, url: string) {
+  async getCountAttempts(
+    ip: string,
+    url: string,
+  ): Promise<ResultDTO<{ count: number }>> {
     const limitInterval = sub(new Date(), { seconds: 10 });
 
     return this.RateLimitRepository.getCountAttemptsByIPAndUrl(

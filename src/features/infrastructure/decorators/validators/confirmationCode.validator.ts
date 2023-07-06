@@ -7,7 +7,7 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { AuthQueryRepository } from '../../../auth/infrastructure/auth.query-repository';
 import { isAfter } from 'date-fns';
-// TODO перенести на уровень feature
+
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class ConfirmationCodeValidator implements ValidatorConstraintInterface {
@@ -15,11 +15,14 @@ export class ConfirmationCodeValidator implements ValidatorConstraintInterface {
 
   async validate(code: string): Promise<boolean> {
     try {
-      const data =
+      const findResult =
         await this.authQueryRepository.findConfirmationOrRecoveryDataById(code);
-      if (!data) return false;
+      if (findResult.hasError()) return false;
 
-      if (data.isConfirmed || isAfter(new Date(), data.expirationDate)) {
+      if (
+        findResult.payload.isConfirmed ||
+        isAfter(new Date(), findResult.payload.expirationDate)
+      ) {
         return false;
       }
 

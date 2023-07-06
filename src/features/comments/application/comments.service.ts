@@ -1,10 +1,11 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CommentsRepository } from '../infrastructure/comments.repository';
 import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
 import { UsersQueryRepository } from '../../users/infrastructure/users.query-repository';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentModelType } from '../domain/comments.entity';
-import { LikeStatusEnum } from '../../../shared/enums';
+import { InternalCode, LikeStatusEnum } from '../../../shared/enums';
+import { ResultDTO } from '../../../shared/dto';
 
 @Injectable()
 export class CommentsService {
@@ -19,18 +20,20 @@ export class CommentsService {
     postId: string,
     content: string,
     userId: string,
-  ): Promise<string> {
-    const post = await this.PostsQueryRepository.findPostById(postId);
-    if (!post) return null;
+  ): Promise<ResultDTO<{ commentId: string }>> {
+    const postResult = await this.PostsQueryRepository.findPostById(postId);
+    if (postResult.hasError())
+      return new ResultDTO(InternalCode.Internal_Server);
 
-    const user = await this.UsersQueryRepository.findUserById(userId);
-    if (!user) return null;
+    const userResult = await this.UsersQueryRepository.findUserById(userId);
+    if (userResult.hasError())
+      return new ResultDTO(InternalCode.Internal_Server);
 
     const newCommentInstance = await this.CommentModel.makeInstance(
-      post.id,
+      postResult.payload.id,
       content,
-      user.id,
-      user.login,
+      userResult.payload.id,
+      userResult.payload.login,
       this.CommentModel,
     );
 
@@ -41,42 +44,42 @@ export class CommentsService {
     commentId: string,
     content: string,
     currentUserId: string,
-  ): Promise<boolean> {
-    const commentInstance = await this.CommentRepository.findById(commentId);
-    if (!commentInstance) return false;
+  ): Promise<ResultDTO<null>> {
+    const commentResult = await this.CommentRepository.findById(commentId);
+    if (commentResult.hasError()) return commentResult as ResultDTO<null>;
 
-    //TODO здесь не должно быть этого эксепшена, когда сделаю общение между слоями надо убрать
-    if (commentInstance.commentatorInfo.userId !== currentUserId)
-      throw new ForbiddenException();
-    commentInstance.updateData(content, currentUserId);
+    if (commentResult.payload.commentatorInfo.userId !== currentUserId)
+      return new ResultDTO(InternalCode.Forbidden);
 
-    return this.CommentRepository.save(commentInstance);
+    commentResult.payload.updateData(content, currentUserId);
+
+    return this.CommentRepository.save(commentResult.payload);
   }
 
   async deleteComment(
     commentId: string,
     currentUserId: string,
-  ): Promise<boolean> {
-    const commentInstance = await this.CommentRepository.findById(commentId);
-    if (!commentInstance) return false;
+  ): Promise<ResultDTO<null>> {
+    const commentResult = await this.CommentRepository.findById(commentId);
+    if (commentResult.hasError()) return commentResult as ResultDTO<null>;
 
-    if (commentInstance.commentatorInfo.userId !== currentUserId)
-      throw new ForbiddenException();
-    await commentInstance.deleteOne();
+    if (commentResult.payload.commentatorInfo.userId !== currentUserId)
+      return new ResultDTO(InternalCode.Forbidden);
+    await commentResult.payload.deleteOne();
 
-    return true;
+    return new ResultDTO(InternalCode.Success);
   }
 
   async likeStatus(
     commentId: string,
     userId: string,
     likeStatus: LikeStatusEnum,
-  ): Promise<boolean> {
-    const commentInstance = await this.CommentRepository.findById(commentId);
-    if (!commentInstance) return false;
+  ): Promise<ResultDTO<null>> {
+    const commentResult = await this.CommentRepository.findById(commentId);
+    if (commentResult.hasError()) return commentResult as ResultDTO<null>;
 
-    commentInstance.like(userId, likeStatus);
+    commentResult.payload.like(userId, likeStatus);
 
-    return this.CommentRepository.save(commentInstance);
+    return this.CommentRepository.save(commentResult.payload);
   }
 }

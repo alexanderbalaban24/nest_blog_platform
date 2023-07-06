@@ -11,9 +11,9 @@ export class ExistingCommentPipe implements PipeTransform {
   constructor(private CommentsRepository: CommentsRepository) {}
 
   async transform(value: string, metadata: ArgumentMetadata) {
-    const user = await this.CommentsRepository.findById(value);
-    if (!user) throw new NotFoundException();
+    const userResult = await this.CommentsRepository.findById(value);
+    if (userResult.hasError()) throw new NotFoundException();
 
-    return user._id.toString();
+    return userResult.payload._id.toString();
   }
 }

@@ -23,7 +23,7 @@ export class RateLimitGuard implements CanActivate {
       originalUrl,
     );
 
-    if (attemptsCountResult <= 5) {
+    if (attemptsCountResult.payload.count <= 5) {
       return true;
     } else {
       throw new HttpException(response, HttpStatus.TOO_MANY_REQUESTS);

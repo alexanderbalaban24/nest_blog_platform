@@ -1,3 +1,5 @@
+import { InternalCode } from './enums';
+
 export class QueryBuildDTO<T, C> {
   public items: C[] | null = null;
   #itemsDB: T[];
@@ -14,5 +16,13 @@ export class QueryBuildDTO<T, C> {
 
   map(cb: (val: T) => C): void {
     this.items = this.#itemsDB.map((el) => cb(el));
+  }
+}
+
+export class ResultDTO<T> {
+  constructor(public code: InternalCode, public payload: T | null = null) {}
+
+  hasError() {
+    return this.code <= 0;
   }
 }

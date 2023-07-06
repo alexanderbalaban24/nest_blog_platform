@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Device, DeviceModelType } from '../domain/devices.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { DevicesRepository } from '../infrastructure/devices.repository';
+import { ResultDTO } from '../../../shared/dto';
+import { InternalCode } from '../../../shared/enums';
 
 @Injectable()
 export class DevicesService {
@@ -14,7 +16,7 @@ export class DevicesService {
     userId: string,
     ip: string,
     deviceName: string,
-  ): Promise<string> {
+  ): Promise<ResultDTO<{ deviceId: string }>> {
     const deviceInstance = await this.DeviceModel.makeInstance(
       userId,
       ip,
@@ -25,28 +27,28 @@ export class DevicesService {
     return this.DeviceRepository.create(deviceInstance);
   }
 
-  async updateSessionTime(deviceId: string): Promise<boolean> {
-    const deviceInstance = await this.DeviceRepository.findById(deviceId);
-    if (!deviceInstance) return false;
+  async updateSessionTime(deviceId: string): Promise<ResultDTO<null>> {
+    const deviceResult = await this.DeviceRepository.findById(deviceId);
+    if (deviceResult.hasError()) return deviceResult as ResultDTO<null>;
 
-    deviceInstance.updateSession();
+    deviceResult.payload.updateSession();
 
-    return this.DeviceRepository.save(deviceInstance);
+    return this.DeviceRepository.save(deviceResult.payload);
   }
 
   async deleteAllUserSessions(
     userId: string,
     deviceId: string,
-  ): Promise<boolean> {
+  ): Promise<ResultDTO<null>> {
     return this.DeviceRepository.deleteAllDevices(userId, deviceId);
   }
 
-  async deleteUserSession(deviceId: string): Promise<boolean> {
-    const deviceInstance = await this.DeviceRepository.findById(deviceId);
-    if (!deviceInstance) return false;
+  async deleteUserSession(deviceId: string): Promise<ResultDTO<null>> {
+    const deviceResult = await this.DeviceRepository.findById(deviceId);
+    if (deviceResult.hasError()) return deviceResult as ResultDTO<null>;
 
-    await deviceInstance.deleteOne();
+    await deviceResult.payload.deleteOne();
 
-    return true;
+    return new ResultDTO(InternalCode.Success);
   }
 }

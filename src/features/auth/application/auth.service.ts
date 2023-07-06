@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '../../users/application/users.service';
 import { BusinessService } from '../../email/application/business.service';
-import { EmailEvents } from '../../../shared/enums';
+import { EmailEvents, InternalCode } from '../../../shared/enums';
 import { AuthQueryRepository } from '../infrastructure/auth.query-repository';
 import { AuthRepository } from '../infrastructure/auth.repository';
 import { compare, genSalt, hash } from 'bcrypt';
@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { DevicesService } from '../../devices/application/devices.service';
 import { TokenPair } from '../../../shared/types';
 import { DevicesQueryRepository } from '../../devices/infrastructure/devices.query-repository';
+import { ResultDTO } from '../../../shared/dto';
 
 @Injectable()
 export class AuthService {
@@ -26,41 +27,42 @@ export class AuthService {
     login: string,
     email: string,
     password: string,
-  ): Promise<boolean> {
+  ): Promise<ResultDTO<null>> {
     const createdUserId = await this.UsersService.createUser(
       login,
       email,
       password,
       false,
     );
-    if (!createdUserId) return false;
+    if (createdUserId.hasError())
+      return new ResultDTO(InternalCode.Internal_Server);
 
-    const confirmationData =
+    const confirmationResult =
       await this.AuthQueryRepository.findUserWithConfirmationDataById(
-        createdUserId,
+        createdUserId.payload.userId,
       );
 
     const result = await this.BusinessService.doOperation(
       EmailEvents.Registration,
       email,
-      confirmationData.confirmationCode,
+      confirmationResult.payload.confirmationCode,
     );
 
-    if (!result) {
-      await this.UsersService.deleteUser(createdUserId);
+    if (result.hasError()) {
+      await this.UsersService.deleteUser(createdUserId.payload.userId);
     }
 
     return result;
   }
 
-  async resendRegistration(email: string): Promise<boolean> {
-    const userInstance = await this.AuthRepository.findByCredentials(email);
-    if (!userInstance) return false;
+  async resendRegistration(email: string): Promise<ResultDTO<null>> {
+    const userResult = await this.AuthRepository.findByCredentials(email);
+    if (userResult.hasError()) return userResult as ResultDTO<null>;
 
     const confirmationCode =
-      userInstance.updateConfirmationOrRecoveryData('emailConfirmation');
-    const isSaved = await this.AuthRepository.save(userInstance);
-    if (!isSaved) return false;
+      userResult.payload.updateConfirmationOrRecoveryData('emailConfirmation');
+    const savedResult = await this.AuthRepository.save(userResult.payload);
+    if (savedResult.hasError()) return savedResult;
 
     return await this.BusinessService.doOperation(
       EmailEvents.Registration,
@@ -69,14 +71,14 @@ export class AuthService {
     );
   }
 
-  async passwordRecovery(email: string): Promise<boolean> {
-    const userInstance = await this.AuthRepository.findByCredentials(email);
-    if (!userInstance) return false;
+  async passwordRecovery(email: string): Promise<ResultDTO<null>> {
+    const userResult = await this.AuthRepository.findByCredentials(email);
+    if (userResult.hasError()) return userResult as ResultDTO<null>;
 
     const confirmationCode =
-      userInstance.updateConfirmationOrRecoveryData('passwordRecovery');
-    const isSaved = await this.AuthRepository.save(userInstance);
-    if (!isSaved) return false;
+      userResult.payload.updateConfirmationOrRecoveryData('passwordRecovery');
+    const savedResult = await this.AuthRepository.save(userResult.payload);
+    if (savedResult.hasError()) return savedResult;
 
     return await this.BusinessService.doOperation(
       EmailEvents.Recover_password,
@@ -85,37 +87,41 @@ export class AuthService {
     );
   }
 
-  async confirmRegistration(code: string): Promise<boolean> {
-    const userId = await this.AuthQueryRepository.findUserByConfirmationCode(
-      code,
+  async confirmRegistration(code: string): Promise<ResultDTO<null>> {
+    const userIdResult =
+      await this.AuthQueryRepository.findUserByConfirmationCode(code);
+    if (userIdResult.hasError()) return userIdResult as ResultDTO<null>;
+
+    const userInstanceResult = await this.AuthRepository.findById(
+      userIdResult.payload.userId,
     );
-    if (!userId) return false;
+    if (userInstanceResult.hasError())
+      return userInstanceResult as ResultDTO<null>;
 
-    const userInstance = await this.AuthRepository.findById(userId);
-    if (!userInstance) return false;
+    userInstanceResult.payload.confirmAccount();
 
-    userInstance.confirmAccount();
-
-    return this.AuthRepository.save(userInstance);
+    return this.AuthRepository.save(userInstanceResult.payload);
   }
 
   async confirmRecoveryPassword(
     newPassword: string,
     code: string,
-  ): Promise<boolean> {
-    const userId = await this.AuthQueryRepository.findUserByConfirmationCode(
-      code,
-    );
-    if (!userId) return false;
+  ): Promise<ResultDTO<null>> {
+    const userIdResult =
+      await this.AuthQueryRepository.findUserByConfirmationCode(code);
+    if (userIdResult.hasError()) return userIdResult as ResultDTO<null>;
 
-    const userInstance = await this.AuthRepository.findById(userId);
-    if (!userInstance) return false;
+    const userInstanceResult = await this.AuthRepository.findById(
+      userIdResult.payload.userId,
+    );
+    if (userInstanceResult.hasError())
+      return userInstanceResult as ResultDTO<null>;
     // TODO раунд должен храниться в env
     const passwordSalt = await genSalt(10);
     const passwordHash = await hash(newPassword, passwordSalt);
 
-    userInstance.updatePasswordHash(passwordHash);
-    return this.AuthRepository.save(userInstance);
+    userInstanceResult.payload.updatePasswordHash(passwordHash);
+    return this.AuthRepository.save(userInstanceResult.payload);
   }
 
   async login(
@@ -123,52 +129,62 @@ export class AuthService {
     password: string,
     deviceName: string,
     ip: string,
-  ): Promise<TokenPair> {
-    const user = await this.AuthRepository.findByCredentials(loginOrEmail);
-    if (!user) return null;
+  ): Promise<ResultDTO<TokenPair>> {
+    const userResult = await this.AuthRepository.findByCredentials(
+      loginOrEmail,
+    );
+    if (userResult.hasError()) return new ResultDTO(InternalCode.Unauthorized);
 
-    const isValidCredentials = await compare(password, user.passwordHash);
-    if (!isValidCredentials) return null;
+    const isValidCredentials = await compare(
+      password,
+      userResult.payload.passwordHash,
+    );
+    if (!isValidCredentials) return new ResultDTO(InternalCode.Unauthorized);
 
-    const createdDeviceId = await this.DevicesService.createDevice(
-      user._id.toString(),
+    const createdDeviceResult = await this.DevicesService.createDevice(
+      userResult.payload._id.toString(),
       ip,
       deviceName,
     );
-    if (!createdDeviceId) return null;
+    if (createdDeviceResult.hasError())
+      return createdDeviceResult as ResultDTO<null>;
 
     const accessToken = await this.JwtService.signAsync(
-      { userId: user.id },
+      { userId: userResult.payload.id },
       { expiresIn: '10s' },
     );
     const refreshToken = await this.JwtService.signAsync(
       {
-        userId: user.id,
-        deviceId: createdDeviceId,
+        userId: userResult.payload.id,
+        deviceId: createdDeviceResult.payload,
       },
       { expiresIn: '20s' },
     );
 
-    return { accessToken, refreshToken };
+    return new ResultDTO(InternalCode.Success, { accessToken, refreshToken });
   }
 
   async refreshSession(
     userId: string,
     deviceId: string,
     iat: number,
-  ): Promise<TokenPair> {
-    const deviceInfo = await this.DeviceQueryRepository.findDeviceById(
+  ): Promise<ResultDTO<TokenPair>> {
+    const deviceResult = await this.DeviceQueryRepository.findDeviceById(
       deviceId,
     );
-    if (!deviceInfo) return null;
+    if (deviceResult.hasError()) return deviceResult as ResultDTO<null>;
 
     if (
-      deviceInfo.userId !== userId ||
-      iat !== Math.trunc(+deviceInfo.issuedAt / 1000)
+      deviceResult.payload.userId !== userId ||
+      iat !== Math.trunc(+deviceResult.payload.issuedAt / 1000)
     )
-      return null;
+      return new ResultDTO(InternalCode.Unauthorized);
 
-    await this.DevicesService.updateSessionTime(deviceId);
+    const updatedTimeResult = await this.DevicesService.updateSessionTime(
+      deviceId,
+    );
+    if (updatedTimeResult.hasError()) return updatedTimeResult;
+
     const accessToken = await this.JwtService.signAsync(
       { userId: userId },
       { expiresIn: '10s' },
@@ -181,31 +197,43 @@ export class AuthService {
       { expiresIn: '20s' },
     );
 
-    return { accessToken, refreshToken };
+    return new ResultDTO(InternalCode.Success, { accessToken, refreshToken });
   }
 
-  async logout(userId: string, deviceId: string, iat: number) {
-    const deviceInfo = await this.DeviceQueryRepository.findDeviceById(
+  async logout(
+    userId: string,
+    deviceId: string,
+    iat: number,
+  ): Promise<ResultDTO<null>> {
+    const deviceResult = await this.DeviceQueryRepository.findDeviceById(
       deviceId,
     );
-    if (!deviceInfo) return null;
+    if (deviceResult.hasError()) return deviceResult as ResultDTO<null>;
 
     if (
-      deviceInfo.userId !== userId ||
-      iat !== Math.trunc(+deviceInfo.issuedAt / 1000)
+      deviceResult.payload.userId !== userId ||
+      iat !== Math.trunc(+deviceResult.payload.issuedAt / 1000)
     )
-      return null;
+      return new ResultDTO(InternalCode.Unauthorized);
 
     return this.DevicesService.deleteUserSession(deviceId);
   }
 
-  async validateUser(loginOrEmail: string, password: string): Promise<boolean> {
-    const user = await this.AuthRepository.findByCredentials(loginOrEmail);
-    if (!user) return false;
+  async validateUser(
+    loginOrEmail: string,
+    password: string,
+  ): Promise<ResultDTO<null>> {
+    const userResult = await this.AuthRepository.findByCredentials(
+      loginOrEmail,
+    );
+    if (userResult.hasError()) return userResult as ResultDTO<null>;
 
-    const isValidUser = await compare(password, user.passwordHash);
-    if (!isValidUser) return false;
+    const isValidUser = await compare(
+      password,
+      userResult.payload.passwordHash,
+    );
+    if (!isValidUser) return new ResultDTO(InternalCode.Unauthorized);
 
-    return true;
+    return new ResultDTO(InternalCode.Success);
   }
 }

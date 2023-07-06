@@ -1,7 +1,17 @@
-import { QueryBuildDTO } from './dto';
+import { QueryBuildDTO, ResultDTO } from './dto';
 import { QueryDataType } from './types';
-import { Types } from 'mongoose';
-import { LikeStatusEnum, ReverseLike } from './enums';
+import {
+  ApproachType,
+  InternalCode,
+  LikeStatusEnum,
+  ReverseLike,
+} from './enums';
+import {
+  ForbiddenException,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 export const queryHelper = {
   async findWithQuery<T, C>(queryData: QueryDataType, id?: string) {
@@ -59,3 +69,36 @@ export const reverseLikeStatus = (
 ): LikeStatusEnum => {
   return ReverseLike[likeStatus] as unknown as LikeStatusEnum;
 };
+
+export class ExceptionAndResponseHelper {
+  private readonly typeExceptionMethod: ApproachType;
+
+  constructor(typeExceptionMethod: ApproachType) {
+    console.log();
+    if (!(typeExceptionMethod in this)) throw new Error();
+
+    this.typeExceptionMethod = typeExceptionMethod;
+  }
+
+  sendExceptionOrResponse(dto: ResultDTO<any>) {
+    if (dto.hasError()) {
+      const ExceptionClass = this[this.typeExceptionMethod](dto.code);
+      throw new ExceptionClass();
+    }
+
+    return dto.payload;
+  }
+
+  [ApproachType.http](code: InternalCode) {
+    switch (code) {
+      case InternalCode.NotFound:
+        return NotFoundException;
+      case InternalCode.Internal_Server:
+        return InternalServerErrorException;
+      case InternalCode.Unauthorized:
+        return UnauthorizedException;
+      case InternalCode.Forbidden:
+        return ForbiddenException;
+    }
+  }
+}

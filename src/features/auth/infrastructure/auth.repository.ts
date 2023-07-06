@@ -5,25 +5,34 @@ import {
   UserDocument,
   UserModelType,
 } from '../../users/domain/users.entity';
-import { Types } from 'mongoose';
+import { ResultDTO } from '../../../shared/dto';
+import { InternalCode } from '../../../shared/enums';
 
 @Injectable()
 export class AuthRepository {
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
 
-  async findById(userId: string): Promise<UserDocument> {
-    return this.UserModel.findById(userId);
+  async findById(userId: string): Promise<ResultDTO<UserDocument>> {
+    const userInstance = await this.UserModel.findById(userId);
+
+    return new ResultDTO(InternalCode.Success, userInstance);
   }
 
-  async findByCredentials(loginOrEmail: string): Promise<UserDocument> {
-    return this.UserModel.findOne().or([
+  async findByCredentials(
+    loginOrEmail: string,
+  ): Promise<ResultDTO<UserDocument>> {
+    const userInstance = await this.UserModel.findOne().or([
       { login: loginOrEmail },
       { email: loginOrEmail },
     ]);
+    if (!userInstance) return new ResultDTO(InternalCode.NotFound);
+
+    return new ResultDTO(InternalCode.Success, userInstance);
   }
 
-  async save(user: UserDocument): Promise<boolean> {
+  async save(user: UserDocument): Promise<ResultDTO<null>> {
     await user.save();
-    return true;
+
+    return new ResultDTO(InternalCode.Success);
   }
 }

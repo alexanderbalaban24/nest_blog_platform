@@ -1,22 +1,29 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument, PostModelType } from '../domain/posts.entity';
-import { Types } from 'mongoose';
+import { ResultDTO } from '../../../shared/dto';
+import { InternalCode } from '../../../shared/enums';
 
 export class PostsRepository {
   constructor(@InjectModel(Post.name) private PostModel: PostModelType) {}
 
-  async findById(postId: string): Promise<PostDocument> {
-    return this.PostModel.findById(postId);
+  async findById(postId: string): Promise<ResultDTO<PostDocument>> {
+    const postInstance = await this.PostModel.findById(postId);
+    if (!postInstance) return new ResultDTO(InternalCode.NotFound);
+
+    return new ResultDTO(InternalCode.Success, postInstance);
   }
 
-  async save(postInstance: PostDocument): Promise<boolean> {
+  async save(postInstance: PostDocument): Promise<ResultDTO<null>> {
     await postInstance.save();
-    return true;
+
+    return new ResultDTO(InternalCode.Success);
   }
 
-  async create(post: PostDocument): Promise<string> {
+  async create(post: PostDocument): Promise<ResultDTO<{ postId: string }>> {
     const createdPostInstance = await post.save();
 
-    return createdPostInstance._id.toString();
+    return new ResultDTO(InternalCode.Success, {
+      postId: createdPostInstance._id.toString(),
+    });
   }
 }

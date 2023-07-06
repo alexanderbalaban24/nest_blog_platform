@@ -8,7 +8,6 @@ import {
   Ip,
   Post,
   Res,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { RegistrationUserModel } from './models/input/RegistrationUserModel';
@@ -27,54 +26,82 @@ import { JwtRefreshAuthGuard } from '../guards/jwt-refresh-auth.guard';
 import { RefreshTokenPayload } from '../../infrastructure/decorators/params/refresh-token-payload.param.decorator';
 import { RefreshTokenPayloadType } from '../../infrastructure/decorators/params/types';
 import { RateLimitGuard } from '../../rateLimit/guards/rateLimit.guard';
+import { ExceptionAndResponseHelper } from '../../../shared/helpers';
+import { ApproachType } from '../../../shared/enums';
 
 @Controller('auth')
-export class AuthController {
+export class AuthController extends ExceptionAndResponseHelper {
   constructor(
     private AuthServices: AuthService,
     private AuthQueryRepository: AuthQueryRepository,
-  ) {}
+  ) {
+    super(ApproachType.http);
+  }
 
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(RateLimitGuard)
-  async registration(@Body() inputModel: RegistrationUserModel) {
-    return this.AuthServices.registration(
+  async registration(@Body() inputModel: RegistrationUserModel): Promise<void> {
+    const registrationResult = await this.AuthServices.registration(
       inputModel.login,
       inputModel.email,
       inputModel.password,
     );
+
+    return this.sendExceptionOrResponse(registrationResult);
   }
 
   @Post('registration-email-resending')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(RateLimitGuard)
-  async resendRegistration(@Body() inputModel: ResendRegistrationModel) {
-    return this.AuthServices.resendRegistration(inputModel.email);
+  async resendRegistration(
+    @Body() inputModel: ResendRegistrationModel,
+  ): Promise<void> {
+    const resendingResult = await this.AuthServices.resendRegistration(
+      inputModel.email,
+    );
+
+    return this.sendExceptionOrResponse(resendingResult);
   }
 
   @Post('registration-confirmation')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(RateLimitGuard)
-  async confirmRegistration(@Body() inputModel: ConfirmRegistrationModel) {
-    return this.AuthServices.confirmRegistration(inputModel.code);
+  async confirmRegistration(
+    @Body() inputModel: ConfirmRegistrationModel,
+  ): Promise<void> {
+    const confirmResult = await this.AuthServices.confirmRegistration(
+      inputModel.code,
+    );
+
+    return this.sendExceptionOrResponse(confirmResult);
   }
 
   @Post('password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(RateLimitGuard)
-  async passwordRecovery(@Body() inputMode: PasswordRecoveryModel) {
-    return this.AuthServices.passwordRecovery(inputMode.email);
+  async passwordRecovery(
+    @Body() inputMode: PasswordRecoveryModel,
+  ): Promise<void> {
+    const recoverResult = await this.AuthServices.passwordRecovery(
+      inputMode.email,
+    );
+
+    return this.sendExceptionOrResponse(recoverResult);
   }
 
   @Post('new-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(RateLimitGuard)
-  async confirmRecoveryPassword(@Body() inputModel: UpdatePasswordModel) {
-    return this.AuthServices.confirmRecoveryPassword(
+  async confirmRecoveryPassword(
+    @Body() inputModel: UpdatePasswordModel,
+  ): Promise<void> {
+    const confirmedResult = await this.AuthServices.confirmRecoveryPassword(
       inputModel.newPassword,
       inputModel.recoveryCode,
     );
+
+    return this.sendExceptionOrResponse(confirmedResult);
   }
 
   @Post('login')
@@ -87,25 +114,29 @@ export class AuthController {
     @Ip() ip: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
-    const tokenPair = await this.AuthServices.login(
+    const loginResult = await this.AuthServices.login(
       inputModel.loginOrEmail,
       inputModel.password,
       deviceName,
       ip,
     );
-    if (!tokenPair) throw new UnauthorizedException();
+    this.sendExceptionOrResponse(loginResult);
 
-    res.cookie('refreshToken', tokenPair.refreshToken, {
+    res.cookie('refreshToken', loginResult.payload.refreshToken, {
       httpOnly: true,
       secure: true,
     });
-    return { accessToken: tokenPair.accessToken };
+    return { accessToken: loginResult.payload.accessToken };
   }
 
   @Get('me')
   @UseGuards(JwtAccessAuthGuard)
-  async getMe(@CurrentUserId() currentUserId: string) {
-    return this.AuthQueryRepository.findMe(currentUserId);
+  async getMe(
+    @CurrentUserId() currentUserId: string,
+  ): Promise<{ email: string; login: string; userId: string }> {
+    const userResult = await this.AuthQueryRepository.findMe(currentUserId);
+
+    return this.sendExceptionOrResponse(userResult);
   }
 
   @Post('refresh-token')
@@ -115,19 +146,19 @@ export class AuthController {
     @CurrentUserId() currentUserId: string,
     @RefreshTokenPayload() refreshTokenPayload: RefreshTokenPayloadType,
     @Res({ passthrough: true }) res: Response,
-  ) {
-    const tokenPair = await this.AuthServices.refreshSession(
+  ): Promise<{ accessToken: string }> {
+    const refreshResult = await this.AuthServices.refreshSession(
       currentUserId,
       refreshTokenPayload.deviceId,
       refreshTokenPayload.iat,
     );
-    if (!tokenPair) throw new UnauthorizedException();
+    this.sendExceptionOrResponse(refreshResult);
 
-    res.cookie('refreshToken', tokenPair.refreshToken, {
+    res.cookie('refreshToken', refreshResult.payload.refreshToken, {
       httpOnly: true,
       secure: true,
     });
-    return { accessToken: tokenPair.accessToken };
+    return { accessToken: refreshResult.payload.accessToken };
   }
 
   @Post('logout')
@@ -136,14 +167,13 @@ export class AuthController {
   async logout(
     @CurrentUserId() currentUserId: string,
     @RefreshTokenPayload() refreshTokenPayload: RefreshTokenPayloadType,
-  ) {
-    const result = await this.AuthServices.logout(
+  ): Promise<void> {
+    const logoutResult = await this.AuthServices.logout(
       currentUserId,
       refreshTokenPayload.deviceId,
       refreshTokenPayload.iat,
     );
-    if (!result) throw new UnauthorizedException();
 
-    return result;
+    return this.sendExceptionOrResponse(logoutResult);
   }
 }

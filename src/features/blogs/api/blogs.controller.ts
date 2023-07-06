@@ -5,7 +5,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  NotFoundException,
   Param,
   Post,
   Put,
@@ -23,20 +22,32 @@ import { CreatePostWithoutIdModel } from './models/input/CreatePostWithoutIdMode
 import { CurrentUserId } from '../../infrastructure/decorators/params/current-user-id.param.decorator';
 import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
 import { ExistingBlogPipe } from '../../../infrastructure/pipes/ExistingBlog.pipe';
+import { ExceptionAndResponseHelper } from '../../../shared/helpers';
+import { ApproachType } from '../../../shared/enums';
+import { ViewPostModel } from '../../posts/api/models/view/ViewPostModel';
+import { QueryBuildDTO } from '../../../shared/dto';
+import { Post as PostDB } from '../../posts/domain/posts.entity';
+import { ViewBlogModel } from './models/view/ViewBlogModel';
+import { Blog } from '../domain/blogs.entity';
 
-//TODO затипизировать возвращаемые значения
 @Controller('blogs')
-export class BlogsController {
+export class BlogsController extends ExceptionAndResponseHelper {
   constructor(
     private BlogsService: BlogsService,
     private PostsService: PostsService,
     private BlogsQueryRepository: BlogsQueryRepository,
     private PostsQueryRepository: PostsQueryRepository,
-  ) {}
+  ) {
+    super(ApproachType.http);
+  }
 
   @Get()
-  async getAllBlogs(@Query() queryData: QueryParamsBlogModel) {
-    return this.BlogsQueryRepository.findBlogs(queryData);
+  async getAllBlogs(
+    @Query() queryData: QueryParamsBlogModel,
+  ): Promise<QueryBuildDTO<Blog, ViewBlogModel>> {
+    const blogResult = await this.BlogsQueryRepository.findBlogs(queryData);
+
+    return this.sendExceptionOrResponse(blogResult);
   }
 
   @Post()
@@ -44,29 +55,39 @@ export class BlogsController {
   async createBlog(
     @Body() inputModel: CreateBlogModel,
     @CurrentUserId() currentUserId: string,
-  ) {
-    const createdBlogId = await this.BlogsService.createBlog(
+  ): Promise<ViewBlogModel> {
+    const createdBlogResult = await this.BlogsService.createBlog(
       inputModel.name,
       inputModel.description,
       inputModel.websiteUrl,
     );
+    this.sendExceptionOrResponse(createdBlogResult);
 
-    return await this.BlogsQueryRepository.findBlogById(createdBlogId);
+    const blogResult = await this.BlogsQueryRepository.findBlogById(
+      createdBlogResult.payload.blogId,
+    );
+
+    return this.sendExceptionOrResponse(blogResult);
   }
 
   @Get(':id')
-  async getBlog(@Param('id', ExistingBlogPipe) blogId: string) {
-    const blog = await this.BlogsQueryRepository.findBlogById(blogId);
-    if (!blog) throw new NotFoundException();
+  async getBlog(
+    @Param('id', ExistingBlogPipe) blogId: string,
+  ): Promise<ViewBlogModel> {
+    const blogResult = await this.BlogsQueryRepository.findBlogById(blogId);
 
-    return blog;
+    return this.sendExceptionOrResponse(blogResult);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
-  async deleteBlog(@Param('id', ExistingBlogPipe) blogId: string) {
-    return await this.BlogsService.deleteBlog(blogId);
+  async deleteBlog(
+    @Param('id', ExistingBlogPipe) blogId: string,
+  ): Promise<void> {
+    const deletedResult = await this.BlogsService.deleteBlog(blogId);
+
+    return this.sendExceptionOrResponse(deletedResult);
   }
 
   @Put(':id')
@@ -75,13 +96,15 @@ export class BlogsController {
   async updateBlog(
     @Param('id', ExistingBlogPipe) blogId: string,
     @Body() inputModel: CreateBlogModel,
-  ) {
-    return await this.BlogsService.updateBlog(
+  ): Promise<void> {
+    const updatedResult = await this.BlogsService.updateBlog(
       blogId,
       inputModel.name,
       inputModel.description,
       inputModel.websiteUrl,
     );
+
+    return this.sendExceptionOrResponse(updatedResult);
   }
 
   @Get(':id/posts')
@@ -89,18 +112,14 @@ export class BlogsController {
     @Param('id', ExistingBlogPipe) blogId: string,
     @Query() queryData: QueryParamsPostModel,
     @CurrentUserId() currentUserId: string,
-  ) {
-    const blog = await this.BlogsQueryRepository.findBlogById(blogId);
-    if (!blog) throw new NotFoundException();
-
-    const post = this.PostsQueryRepository.findPosts(
+  ): Promise<QueryBuildDTO<PostDB, ViewPostModel>> {
+    const postResult = await this.PostsQueryRepository.findPosts(
       queryData,
       blogId,
       currentUserId,
     );
-    if (!post) throw new NotFoundException();
 
-    return post;
+    return this.sendExceptionOrResponse(postResult);
   }
 
   @Post(':id/posts')
@@ -109,17 +128,19 @@ export class BlogsController {
     @Param('id', ExistingBlogPipe) blogId: string,
     @Body() inputData: CreatePostWithoutIdModel,
     @CurrentUserId() currentUserId: string,
-  ) {
-    const createdPostId = await this.PostsService.createPost(
+  ): Promise<ViewPostModel> {
+    const createdPostResult = await this.PostsService.createPost(
       blogId,
       inputData.title,
       inputData.shortDescription,
       inputData.content,
     );
+    this.sendExceptionOrResponse(createdPostResult);
 
-    return await this.PostsQueryRepository.findPostById(
-      createdPostId,
+    const postResult = await this.PostsQueryRepository.findPostById(
+      createdPostResult.payload.postId,
       currentUserId,
     );
+    return this.sendExceptionOrResponse(postResult);
   }
 }

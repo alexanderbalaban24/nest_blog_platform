@@ -1,3 +1,4 @@
+import { configModule } from './config/configModule';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -17,7 +18,6 @@ import { UsersController } from './features/users/api/users.controller';
 import { UsersService } from './features/users/application/users.service';
 import { UsersQueryRepository } from './features/users/infrastructure/users.query-repository';
 import { UsersRepository } from './features/users/infrastructure/users.repository';
-import { ConfigModule } from '@nestjs/config';
 import { AuthController } from './features/auth/api/auth.controller';
 import { AuthService } from './features/auth/application/auth.service';
 import { AuthQueryRepository } from './features/auth/infrastructure/auth.query-repository';
@@ -60,10 +60,11 @@ import {
 } from './features/rateLimit/domain/rateLimit.entity';
 import { RateLimitService } from './features/rateLimit/application/rateLimit.service';
 import { RateLimitRepository } from './features/rateLimit/infrastructure/rateLimit.repository';
+import { GlobalConfigService } from './config/globalConfig.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    configModule,
     MongooseModule.forRoot(process.env.MONGO_URL, {
       dbName: 'blog-platform_nest',
     }),
@@ -118,6 +119,7 @@ import { RateLimitRepository } from './features/rateLimit/infrastructure/rateLim
     DevicesService,
     CommentsService,
     RateLimitService,
+    GlobalConfigService,
     BlogsQueryRepository,
     PostsQueryRepository,
     UsersQueryRepository,

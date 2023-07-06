@@ -1,6 +1,7 @@
 import { EmailManager } from '../manager/email.manager';
 import { Injectable } from '@nestjs/common';
-import { EmailEvents } from '../../../shared/enums';
+import { EmailEvents, InternalCode } from '../../../shared/enums';
+import { ResultDTO } from '../../../shared/dto';
 
 @Injectable()
 export class BusinessService {
@@ -10,26 +11,26 @@ export class BusinessService {
     event: EmailEvents,
     email: string,
     code: string,
-  ): Promise<boolean> {
-    let isSending: boolean;
+  ): Promise<ResultDTO<null>> {
+    let sendResult: ResultDTO<null>;
     switch (event) {
       case EmailEvents.Registration:
-        isSending = await this.emailManager.sendEmailRegistrationMessage(
+        sendResult = await this.emailManager.sendEmailRegistrationMessage(
           email,
           code,
         );
         break;
       case EmailEvents.Recover_password:
-        isSending = await this.emailManager.sendEmailRecoverPasswordMessage(
+        sendResult = await this.emailManager.sendEmailRecoverPasswordMessage(
           email,
           code,
         );
         break;
       default:
-        isSending = false;
+        sendResult = new ResultDTO(InternalCode.Internal_Server);
         break;
     }
 
-    return isSending;
+    return sendResult;
   }
 }

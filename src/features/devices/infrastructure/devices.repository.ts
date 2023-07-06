@@ -5,34 +5,45 @@ import {
   DeviceModelType,
 } from '../domain/devices.entity';
 import { InjectModel } from '@nestjs/mongoose';
-import { Schema, Types } from 'mongoose';
+import { Types } from 'mongoose';
+import { ResultDTO } from '../../../shared/dto';
+import { InternalCode } from '../../../shared/enums';
 
 @Injectable()
 export class DevicesRepository {
   constructor(@InjectModel(Device.name) private DeviceModel: DeviceModelType) {}
 
-  async deleteAllDevices(userId: string, excludeId: string) {
-    const result = await this.DeviceModel.deleteMany({
+  async deleteAllDevices(
+    userId: string,
+    excludeId: string,
+  ): Promise<ResultDTO<null>> {
+    await this.DeviceModel.deleteMany({
       userId,
       _id: { $ne: new Types.ObjectId(excludeId) },
     });
 
-    return true;
+    return new ResultDTO(InternalCode.Success);
   }
 
-  async findById(deviceId: string): Promise<DeviceDocument> {
-    return this.DeviceModel.findById(deviceId);
+  async findById(deviceId: string): Promise<ResultDTO<DeviceDocument>> {
+    const deviceInstance = await this.DeviceModel.findById(deviceId);
+
+    return new ResultDTO(InternalCode.Success, deviceInstance);
   }
 
-  async create(deviceInstance: DeviceDocument): Promise<string> {
+  async create(
+    deviceInstance: DeviceDocument,
+  ): Promise<ResultDTO<{ deviceId: string }>> {
     const createdDevice = await deviceInstance.save();
 
-    return createdDevice._id.toString();
+    return new ResultDTO(InternalCode.Success, {
+      deviceId: createdDevice._id.toString(),
+    });
   }
 
-  async save(deviceInstance: DeviceDocument): Promise<boolean> {
+  async save(deviceInstance: DeviceDocument): Promise<ResultDTO<null>> {
     await deviceInstance.save();
 
-    return true;
+    return new ResultDTO(InternalCode.Success);
   }
 }

@@ -7,9 +7,12 @@ import {
 } from './infrastructure/exception.filter';
 import { useContainer } from 'class-validator';
 import cookieParser from 'cookie-parser';
+import { GlobalConfigService } from './config/globalConfig.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const ConfigService = app.get(GlobalConfigService);
+
   app.useGlobalPipes(
     new ValidationPipe({
       forbidUnknownValues: false,
@@ -29,7 +32,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
-  await app.listen(3003);
+  await app.listen(ConfigService.getPort());
 }
 
 bootstrap();

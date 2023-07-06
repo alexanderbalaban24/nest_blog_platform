@@ -5,7 +5,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  NotFoundException,
   Param,
   UseGuards,
 } from '@nestjs/common';
@@ -16,24 +15,28 @@ import { RefreshTokenPayloadType } from '../../infrastructure/decorators/params/
 import { JwtRefreshAuthGuard } from '../../auth/guards/jwt-refresh-auth.guard';
 import { DevicesService } from '../application/devices.service';
 import { ExistingDevicePipe } from '../../../infrastructure/pipes/ExistingDevice.pipe';
+import { ExceptionAndResponseHelper } from '../../../shared/helpers';
+import { ApproachType } from '../../../shared/enums';
+import { ViewDeviceModel } from './models/view/ViewDeviceModel';
 
 @Controller('security/devices')
-export class DevicesController {
+export class DevicesController extends ExceptionAndResponseHelper {
   constructor(
     private DevicesQueryRepository: DevicesQueryRepository,
     private DevicesService: DevicesService,
-  ) {}
+  ) {
+    super(ApproachType.http);
+  }
 
   @Get()
   @UseGuards(JwtRefreshAuthGuard)
-  async getAllDevices(@CurrentUserId() currentUserId: string) {
-    const activeSessions = await this.DevicesQueryRepository.findDeviceByUserId(
-      currentUserId,
-    );
-    console.log(activeSessions);
-    if (!activeSessions) throw new NotFoundException();
+  async getAllDevices(
+    @CurrentUserId() currentUserId: string,
+  ): Promise<ViewDeviceModel[]> {
+    const activeSessionsResult =
+      await this.DevicesQueryRepository.findDeviceByUserId(currentUserId);
 
-    return activeSessions;
+    return this.sendExceptionOrResponse(activeSessionsResult);
   }
 
   @Delete()
@@ -42,11 +45,13 @@ export class DevicesController {
   async deleteAllDevices(
     @CurrentUserId() currentUserId: string,
     @RefreshTokenPayload() refreshTokenPayload: RefreshTokenPayloadType,
-  ) {
-    return this.DevicesService.deleteAllUserSessions(
+  ): Promise<void> {
+    const deletedResult = await this.DevicesService.deleteAllUserSessions(
       currentUserId,
       refreshTokenPayload.deviceId,
     );
+
+    return this.sendExceptionOrResponse(deletedResult);
   }
 
   @Delete(':id')
@@ -55,14 +60,16 @@ export class DevicesController {
   async deleteDevice(
     @Param('id', ExistingDevicePipe) deviceId: string,
     @CurrentUserId() currentUserId: string,
-  ) {
-    const deviceInfo = await this.DevicesQueryRepository.findDeviceById(
+  ): Promise<void> {
+    const deviceResult = await this.DevicesQueryRepository.findDeviceById(
       deviceId,
     );
-    if (currentUserId !== deviceInfo.userId) {
+    if (currentUserId !== deviceResult.payload.userId) {
       throw new ForbiddenException();
     }
 
-    return this.DevicesService.deleteUserSession(deviceId);
+    const deletedResult = await this.DevicesService.deleteUserSession(deviceId);
+
+    return this.sendExceptionOrResponse(deletedResult);
   }
 }

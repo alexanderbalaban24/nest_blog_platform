@@ -3,7 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogDocument, BlogModelType } from '../domain/blogs.entity';
 import { ViewBlogModel } from '../api/models/view/ViewBlogModel';
 import { QueryParamsBlogModel } from '../api/models/input/QueryParamsBlogModel';
-import { QueryBuildDTO } from '../../../shared/dto';
+import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
+import { InternalCode } from '../../../shared/enums';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -11,21 +12,21 @@ export class BlogsQueryRepository {
 
   async findBlogs(
     query: QueryParamsBlogModel,
-  ): Promise<QueryBuildDTO<Blog, ViewBlogModel>> {
+  ): Promise<ResultDTO<QueryBuildDTO<Blog, ViewBlogModel>>> {
     const blogsData = await this.BlogModel.find({}).findWithQuery<
       Blog,
       ViewBlogModel
     >(query);
     blogsData.map(this._mapBlogToView);
 
-    return blogsData;
+    return new ResultDTO(InternalCode.Success, blogsData);
   }
 
-  async findBlogById(blogId: string): Promise<ViewBlogModel | null> {
+  async findBlogById(blogId: string): Promise<ResultDTO<ViewBlogModel>> {
     const blog = await this.BlogModel.findById(blogId).lean();
-    if (!blog) return null;
+    if (!blog) return new ResultDTO(InternalCode.NotFound);
 
-    return this._mapBlogToView(blog);
+    return new ResultDTO(InternalCode.Success, this._mapBlogToView(blog));
   }
 
   _mapBlogToView(blog: BlogDocument): ViewBlogModel {

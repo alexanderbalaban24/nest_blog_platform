@@ -16,6 +16,8 @@ describe('AppController (e2e)', () => {
   });
 
   it('/ (GET)', () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     return request(app.getHttpServer())
       .get('/')
       .expect(200)

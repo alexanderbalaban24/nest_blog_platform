@@ -5,6 +5,8 @@ import {
   CommentModelType,
 } from '../domain/comments.entity';
 import { Injectable } from '@nestjs/common';
+import { ResultDTO } from '../../../shared/dto';
+import { InternalCode } from '../../../shared/enums';
 
 @Injectable()
 export class CommentsRepository {
@@ -12,19 +14,25 @@ export class CommentsRepository {
     @InjectModel(Comment.name) private CommentModel: CommentModelType,
   ) {}
 
-  async findById(commentId: string): Promise<CommentDocument> {
-    return this.CommentModel.findById(commentId);
+  async findById(commentId: string): Promise<ResultDTO<CommentDocument>> {
+    const commentInstance = await this.CommentModel.findById(commentId);
+
+    return new ResultDTO(InternalCode.Success, commentInstance);
   }
 
-  async create(commentInstance: CommentDocument): Promise<string> {
-    const newComment = await commentInstance.save();
+  async create(
+    commentInstance: CommentDocument,
+  ): Promise<ResultDTO<{ commentId: string }>> {
+    const createdCommentInstance = await commentInstance.save();
 
-    return newComment._id.toString();
+    return new ResultDTO(InternalCode.Success, {
+      commentId: createdCommentInstance._id.toString(),
+    });
   }
 
-  async save(commentInstance: CommentDocument): Promise<boolean> {
+  async save(commentInstance: CommentDocument): Promise<ResultDTO<null>> {
     await commentInstance.save();
 
-    return true;
+    return new ResultDTO(InternalCode.Success);
   }
 }

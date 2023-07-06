@@ -11,9 +11,9 @@ export class ExistingDevicePipe implements PipeTransform {
   constructor(private DevicesRepository: DevicesRepository) {}
 
   async transform(value: string, metadata: ArgumentMetadata) {
-    const user = await this.DevicesRepository.findById(value);
-    if (!user) throw new NotFoundException();
+    const deviceResult = await this.DevicesRepository.findById(value);
+    if (deviceResult.hasError()) throw new NotFoundException();
 
-    return user._id.toString();
+    return deviceResult.payload._id.toString();
   }
 }

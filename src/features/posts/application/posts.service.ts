@@ -3,8 +3,9 @@ import { Post, PostModelType } from '../domain/posts.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-repository';
 import { PostsRepository } from '../infrastructure/posts.repository';
-import { LikeStatusEnum } from '../../../shared/enums';
+import { InternalCode, LikeStatusEnum } from '../../../shared/enums';
 import { UsersRepository } from '../../users/infrastructure/users.repository';
+import { ResultDTO } from '../../../shared/dto';
 
 @Injectable()
 export class PostsService {
@@ -20,16 +21,17 @@ export class PostsService {
     title: string,
     shortDescription: string,
     content: string,
-  ): Promise<string | null> {
-    const blog = await this.BlogsQueryRepository.findBlogById(blogId);
-    if (!blog) return null;
+  ): Promise<ResultDTO<{ postId: string }>> {
+    const blogResult = await this.BlogsQueryRepository.findBlogById(blogId);
+    if (blogResult.hasError())
+      return new ResultDTO(InternalCode.Internal_Server);
 
     const postInstance = await this.PostModel.makeInstance(
       title,
       shortDescription,
       content,
       blogId,
-      blog.name,
+      blogResult.payload.name,
       this.PostModel,
     );
 
@@ -42,46 +44,47 @@ export class PostsService {
     title: string,
     shortDescription: string,
     content: string,
-  ): Promise<boolean> {
-    const blog = await this.BlogsQueryRepository.findBlogById(blogId);
-    if (!blog) return false;
+  ): Promise<ResultDTO<null>> {
+    const blogResult = await this.BlogsQueryRepository.findBlogById(blogId);
+    if (blogResult.hasError())
+      return new ResultDTO(InternalCode.Internal_Server);
 
-    const postInstance = await this.PostsRepository.findById(postId);
-    if (!postInstance) return false;
+    const postResult = await this.PostsRepository.findById(postId);
+    if (postResult.hasError()) return postResult as ResultDTO<null>;
 
-    await postInstance.changeData(
+    await postResult.payload.changeData(
       title,
       shortDescription,
       content,
       blogId,
-      blog.name,
+      blogResult.payload.name,
     );
 
-    return await this.PostsRepository.save(postInstance);
+    return await this.PostsRepository.save(postResult.payload);
   }
 
-  async deletePost(postId: string): Promise<boolean> {
-    const postInstance = await this.PostsRepository.findById(postId);
-    if (!postInstance) return false;
+  async deletePost(postId: string): Promise<ResultDTO<null>> {
+    const postResult = await this.PostsRepository.findById(postId);
+    if (postResult.hasError()) return postResult as ResultDTO<null>;
 
-    await postInstance.deleteOne();
+    await postResult.payload.deleteOne();
 
-    return true;
+    return new ResultDTO(InternalCode.Success);
   }
 
   async likeStatus(
     postId: string,
     userId: string,
     likeStatus: LikeStatusEnum,
-  ): Promise<boolean> {
-    const postInstance = await this.PostsRepository.findById(postId);
-    if (!postInstance) return false;
+  ): Promise<ResultDTO<null>> {
+    const postResult = await this.PostsRepository.findById(postId);
+    if (postResult.hasError()) return postResult as ResultDTO<null>;
 
-    const userInstance = await this.UsersRepository.findById(userId);
-    if (!userInstance) return false;
+    const userResult = await this.UsersRepository.findById(userId);
+    if (userResult.hasError()) return userResult as ResultDTO<null>;
 
-    postInstance.like(userId, userInstance.login, likeStatus);
+    postResult.payload.like(userId, userResult.payload.login, likeStatus);
 
-    return this.PostsRepository.save(postInstance);
+    return this.PostsRepository.save(postResult.payload);
   }
 }

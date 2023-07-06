@@ -5,6 +5,8 @@ import {
   RateLimitDocument,
   RateLimitModelType,
 } from '../domain/rateLimit.entity';
+import { ResultDTO } from '../../../shared/dto';
+import { InternalCode } from '../../../shared/enums';
 
 @Injectable()
 export class RateLimitRepository {
@@ -16,17 +18,19 @@ export class RateLimitRepository {
     ip: string,
     url: string,
     limitInterval: Date,
-  ): Promise<number> {
-    return this.RateLimitModel.find({
+  ): Promise<ResultDTO<{ count: number }>> {
+    const count = await this.RateLimitModel.find({
       ip,
       url,
       date: { $gte: limitInterval },
     }).count();
+
+    return new ResultDTO(InternalCode.Success, { count });
   }
 
-  async save(rateLimitInstance: RateLimitDocument): Promise<boolean> {
+  async save(rateLimitInstance: RateLimitDocument): Promise<ResultDTO<null>> {
     await rateLimitInstance.save();
 
-    return true;
+    return new ResultDTO(InternalCode.Success);
   }
 }

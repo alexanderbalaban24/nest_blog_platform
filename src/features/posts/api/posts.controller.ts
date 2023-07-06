@@ -5,7 +5,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  NotFoundException,
   Param,
   Post,
   Put,
@@ -25,26 +24,37 @@ import { QueryParamsCommentModel } from '../../comments/api/models/input/QueryPa
 import { ExistingPostPipe } from '../../../infrastructure/pipes/ExistingPost.pipe';
 import { LikeStatusModel } from './models/input/LikeStatusModel';
 import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
+import { ExceptionAndResponseHelper } from '../../../shared/helpers';
+import { ApproachType } from '../../../shared/enums';
+import { QueryBuildDTO } from '../../../shared/dto';
+import { Post as PostDB } from '../domain/posts.entity';
+import { ViewPostModel } from './models/view/ViewPostModel';
+import { ViewCommentModel } from '../../comments/api/models/view/ViewCommentModel';
+import { Comment } from '../../comments/domain/comments.entity';
 
 @Controller('posts')
-export class PostsController {
+export class PostsController extends ExceptionAndResponseHelper {
   constructor(
     private PostsQueryRepository: PostsQueryRepository,
     private PostsService: PostsService,
     private CommentService: CommentsService,
     private CommentQueryRepository: CommentsQueryRepository,
-  ) {}
+  ) {
+    super(ApproachType.http);
+  }
 
   @Get()
   async getAllPosts(
     @Query() queryData: QueryParamsPostModel,
     @CurrentUserId() currentUserId: string,
-  ) {
-    return await this.PostsQueryRepository.findPosts(
+  ): Promise<QueryBuildDTO<PostDB, ViewPostModel>> {
+    const postResult = await this.PostsQueryRepository.findPosts(
       queryData,
       undefined,
       currentUserId,
     );
+
+    return this.sendExceptionOrResponse(postResult);
   }
 
   @Post()
@@ -52,32 +62,34 @@ export class PostsController {
   async createPost(
     @Body() inputData: CreatePostModel,
     @CurrentUserId() currentUserId: string,
-  ) {
-    const createdPostId = await this.PostsService.createPost(
+  ): Promise<ViewPostModel> {
+    const createdPostResult = await this.PostsService.createPost(
       inputData.blogId,
       inputData.title,
       inputData.shortDescription,
       inputData.content,
     );
+    this.sendExceptionOrResponse(createdPostResult);
 
-    return await this.PostsQueryRepository.findPostById(
-      createdPostId,
+    const postResult = await this.PostsQueryRepository.findPostById(
+      createdPostResult.payload.postId,
       currentUserId,
     );
+
+    return this.sendExceptionOrResponse(postResult);
   }
 
   @Get(':id')
   async getPost(
     @Param('id', ExistingPostPipe) postId: string,
     @CurrentUserId() currentUserId: string,
-  ) {
-    const post = await this.PostsQueryRepository.findPostById(
+  ): Promise<ViewPostModel> {
+    const postResult = await this.PostsQueryRepository.findPostById(
       postId,
       currentUserId,
     );
-    if (!post) throw new NotFoundException();
 
-    return post;
+    return this.sendExceptionOrResponse(postResult);
   }
 
   @Put(':id')
@@ -86,21 +98,27 @@ export class PostsController {
   async updatePost(
     @Param('id', ExistingPostPipe) postId: string,
     @Body() inputData: CreatePostModel,
-  ): Promise<boolean> {
-    return await this.PostsService.updatePost(
+  ): Promise<void> {
+    const updatedResult = await this.PostsService.updatePost(
       postId,
       inputData.blogId,
       inputData.title,
       inputData.shortDescription,
       inputData.content,
     );
+
+    return this.sendExceptionOrResponse(updatedResult);
   }
 
   @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(@Param('id', ExistingPostPipe) postId: string) {
-    return await this.PostsService.deletePost(postId);
+  async deletePost(
+    @Param('id', ExistingPostPipe) postId: string,
+  ): Promise<void> {
+    const deletedResult = await this.PostsService.deletePost(postId);
+
+    return this.sendExceptionOrResponse(deletedResult);
   }
 
   @Post(':id/comments')
@@ -109,18 +127,20 @@ export class PostsController {
     @Param('id', ExistingPostPipe) postId: string,
     @Body() inputModel: CreateCommentModel,
     @CurrentUserId() currentUserId: string,
-  ) {
-    const commentId = await this.CommentService.createComment(
+  ): Promise<ViewCommentModel> {
+    const createdCommentResult = await this.CommentService.createComment(
       postId,
       inputModel.content,
       currentUserId,
     );
-    if (!commentId) throw new NotFoundException();
+    this.sendExceptionOrResponse(createdCommentResult);
 
-    return await this.CommentQueryRepository.findCommentById(
-      commentId,
+    const commentResult = await this.CommentQueryRepository.findCommentById(
+      createdCommentResult.payload.commentId,
       currentUserId,
     );
+
+    return this.sendExceptionOrResponse(commentResult);
   }
 
   @Get(':id/comments')
@@ -128,15 +148,14 @@ export class PostsController {
     @Param('id', ExistingPostPipe) postId: string,
     @Query() queryData: QueryParamsCommentModel,
     @CurrentUserId() currentUserId: string,
-  ) {
-    const commentsData = await this.CommentQueryRepository.findComments(
+  ): Promise<QueryBuildDTO<Comment, ViewCommentModel>> {
+    const commentsResult = await this.CommentQueryRepository.findComments(
       postId,
       queryData,
       currentUserId,
     );
-    if (!commentsData) throw new NotFoundException();
 
-    return commentsData;
+    return this.sendExceptionOrResponse(commentsResult);
   }
 
   @Put(':id/like-status')
@@ -146,11 +165,13 @@ export class PostsController {
     @Param('id', ExistingPostPipe) postId: string,
     @CurrentUserId() currentUserId: string,
     @Body() inputModel: LikeStatusModel,
-  ) {
-    return this.PostsService.likeStatus(
+  ): Promise<void> {
+    const likeResult = await this.PostsService.likeStatus(
       postId,
       currentUserId,
       inputModel.likeStatus,
     );
+
+    return this.sendExceptionOrResponse(likeResult);
   }
 }

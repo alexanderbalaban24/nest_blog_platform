@@ -16,23 +16,30 @@ import { UpdateCommentModel } from './models/input/UpdateCommentModel';
 import { CurrentUserId } from '../../infrastructure/decorators/params/current-user-id.param.decorator';
 import { CommentsService } from '../application/comments.service';
 import { LikeStatusModel } from './models/input/LikeStatusModel';
+import { ExceptionAndResponseHelper } from '../../../shared/helpers';
+import { ApproachType } from '../../../shared/enums';
+import { ViewCommentModel } from './models/view/ViewCommentModel';
 
 @Controller('comments')
-export class CommentsController {
+export class CommentsController extends ExceptionAndResponseHelper {
   constructor(
     private CommentsQueryRepository: CommentsQueryRepository,
     private CommentsService: CommentsService,
-  ) {}
+  ) {
+    super(ApproachType.http);
+  }
 
   @Get(':id')
   async getComment(
     @Param('id', ExistingCommentPipe) commentId: string,
     @CurrentUserId() currentUserId: string,
-  ) {
-    return this.CommentsQueryRepository.findCommentById(
+  ): Promise<ViewCommentModel> {
+    const commentResult = await this.CommentsQueryRepository.findCommentById(
       commentId,
       currentUserId,
     );
+
+    return this.sendExceptionOrResponse(commentResult);
   }
 
   @Put(':id')
@@ -42,12 +49,14 @@ export class CommentsController {
     @Param('id', ExistingCommentPipe) commentId: string,
     @Body() inputModel: UpdateCommentModel,
     @CurrentUserId() currentUserId: string,
-  ) {
-    return this.CommentsService.updateComment(
+  ): Promise<void> {
+    const updatedResult = await this.CommentsService.updateComment(
       commentId,
       inputModel.content,
       currentUserId,
     );
+
+    return this.sendExceptionOrResponse(updatedResult);
   }
 
   @Delete(':id')
@@ -56,8 +65,13 @@ export class CommentsController {
   async deleteComment(
     @Param('id', ExistingCommentPipe) commentId: string,
     @CurrentUserId() currentUserId: string,
-  ) {
-    return this.CommentsService.deleteComment(commentId, currentUserId);
+  ): Promise<void> {
+    const deletedResult = await this.CommentsService.deleteComment(
+      commentId,
+      currentUserId,
+    );
+
+    return this.sendExceptionOrResponse(deletedResult);
   }
 
   @Put(':id/like-status')
@@ -67,11 +81,13 @@ export class CommentsController {
     @Param('id', ExistingCommentPipe) commentId: string,
     @CurrentUserId() currentUserId: string,
     @Body() inputModel: LikeStatusModel,
-  ) {
-    return this.CommentsService.likeStatus(
+  ): Promise<void> {
+    const likeResult = await this.CommentsService.likeStatus(
       commentId,
       currentUserId,
       inputModel.likeStatus,
     );
+
+    return this.sendExceptionOrResponse(likeResult);
   }
 }

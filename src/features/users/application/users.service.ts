@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModelType } from '../domain/users.entity';
-import { Types } from 'mongoose';
 import { genSalt, hash } from 'bcrypt';
+import { ResultDTO } from '../../../shared/dto';
+import { InternalCode } from '../../../shared/enums';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +19,7 @@ export class UsersService {
     email: string,
     password: string,
     isConfirmed: boolean,
-  ): Promise<string> {
+  ): Promise<ResultDTO<{ userId: string }>> {
     const passwordSalt = await genSalt(10);
     const passwordHash = await hash(password, passwordSalt);
 
@@ -32,11 +33,11 @@ export class UsersService {
     return this.UsersRepository.create(newUserInstance);
   }
 
-  async deleteUser(userId: string): Promise<boolean> {
-    const userInstance = await this.UsersRepository.findById(userId);
-    if (!userInstance) return false;
+  async deleteUser(userId: string): Promise<ResultDTO<null>> {
+    const userResult = await this.UsersRepository.findById(userId);
+    if (userResult.hasError()) return new ResultDTO(InternalCode.NotFound);
 
-    await userInstance.deleteOne();
-    return true;
+    await userResult.payload.deleteOne();
+    return new ResultDTO(InternalCode.Success);
   }
 }

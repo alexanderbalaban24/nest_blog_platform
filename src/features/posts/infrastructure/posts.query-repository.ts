@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostModelType } from '../domain/posts.entity';
 import { ViewPostModel } from '../api/models/view/ViewPostModel';
 import { QueryParamsPostModel } from '../api/models/input/QueryParamsPostModel';
-import { QueryBuildDTO } from '../../../shared/dto';
-import { LikeStatusEnum } from '../../../shared/enums';
+import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
+import { InternalCode, LikeStatusEnum } from '../../../shared/enums';
 import { UserLikeType } from '../../../shared/types';
 
 @Injectable()
@@ -15,28 +15,30 @@ export class PostsQueryRepository {
     query: QueryParamsPostModel,
     blogId?: string,
     userId?: string,
-  ): Promise<QueryBuildDTO<Post, ViewPostModel>> {
+  ): Promise<ResultDTO<QueryBuildDTO<Post, ViewPostModel>>> {
     const postData = await this.PostModel.find({}).findWithQuery<
       Post,
       ViewPostModel
     >(query, blogId);
     postData.map((post) => this._mapPostToView(post, userId));
 
-    return postData;
+    return new ResultDTO(InternalCode.Success, postData);
   }
 
   async findPostById(
     postId: string,
     userId?: string,
-  ): Promise<ViewPostModel | null> {
+  ): Promise<ResultDTO<ViewPostModel>> {
     const post = await this.PostModel.findById(postId).lean();
-    if (!post) return null;
+    if (!post) return new ResultDTO(InternalCode.NotFound);
 
-    return this._mapPostToView(post, userId);
+    return new ResultDTO(
+      InternalCode.Success,
+      this._mapPostToView(post, userId),
+    );
   }
 
   _mapPostToView(post: Post, userId?: string): ViewPostModel {
-    console.log(post);
     const userLikeData = post.usersLikes.find((item) => {
       if (!item.userId) return null;
 

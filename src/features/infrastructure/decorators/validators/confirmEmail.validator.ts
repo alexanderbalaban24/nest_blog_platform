@@ -14,8 +14,12 @@ export class ConfirmEmailValidator implements ValidatorConstraintInterface {
 
   async validate(email: string): Promise<boolean> {
     try {
-      const user = await this.authRepository.findByCredentials(email);
-      if (!user || user.emailConfirmation.isConfirmed) return false;
+      const userResult = await this.authRepository.findByCredentials(email);
+      if (
+        userResult.hasError() ||
+        userResult.payload.emailConfirmation.isConfirmed
+      )
+        return false;
 
       return true;
     } catch (e) {
