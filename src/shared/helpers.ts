@@ -74,7 +74,6 @@ export class ExceptionAndResponseHelper {
   private readonly typeExceptionMethod: ApproachType;
 
   constructor(typeExceptionMethod: ApproachType) {
-    console.log();
     if (!(typeExceptionMethod in this)) throw new Error();
 
     this.typeExceptionMethod = typeExceptionMethod;
