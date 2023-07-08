@@ -21,11 +21,15 @@ import { ApproachType } from '../../../shared/enums';
 import { QueryBuildDTO } from '../../../shared/dto';
 import { User } from '../domain/users.entity';
 import { ViewUserModel } from './models/view/ViewUserModel';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateUserCommand } from '../application/use-cases/create-user-use-case';
+import { DeleteUserCommand } from '../application/use-cases/delete-user-use-case';
 
 @UseGuards(BasicAuthGuard)
 @Controller('users')
 export class UsersController extends ExceptionAndResponseHelper {
   constructor(
+    private CommandBus: CommandBus,
     private UsersService: UsersService,
     private UsersQueryRepository: UsersQueryRepository,
   ) {
@@ -47,11 +51,13 @@ export class UsersController extends ExceptionAndResponseHelper {
   async createUser(
     @Body() inputModel: CreateUserModel,
   ): Promise<ViewUserModel> {
-    const createdUserResult = await this.UsersService.createUser(
-      inputModel.login,
-      inputModel.email,
-      inputModel.password,
-      true,
+    const createdUserResult = await this.CommandBus.execute(
+      new CreateUserCommand(
+        inputModel.login,
+        inputModel.email,
+        inputModel.password,
+        true,
+      ),
     );
     this.sendExceptionOrResponse(createdUserResult);
 
@@ -69,7 +75,9 @@ export class UsersController extends ExceptionAndResponseHelper {
     @Param('id', ExistingUserPipe)
     userId: string,
   ): Promise<void> {
-    const deletedResult = await this.UsersService.deleteUser(userId);
+    const deletedResult = await this.CommandBus.execute(
+      new DeleteUserCommand(userId),
+    );
 
     return this.sendExceptionOrResponse(deletedResult);
   }

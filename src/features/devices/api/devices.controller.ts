@@ -18,12 +18,15 @@ import { ExistingDevicePipe } from '../../../infrastructure/pipes/ExistingDevice
 import { ExceptionAndResponseHelper } from '../../../shared/helpers';
 import { ApproachType } from '../../../shared/enums';
 import { ViewDeviceModel } from './models/view/ViewDeviceModel';
+import { DeleteUserSessionCommand } from '../application/use-cases/delete-user-session-use-case';
+import { CommandBus } from '@nestjs/cqrs';
+import { DeleteAllUsersSessionsCommand } from '../application/use-cases/delete-all-users-sessions-use-case';
 
 @Controller('security/devices')
 export class DevicesController extends ExceptionAndResponseHelper {
   constructor(
+    private CommandBus: CommandBus,
     private DevicesQueryRepository: DevicesQueryRepository,
-    private DevicesService: DevicesService,
   ) {
     super(ApproachType.http);
   }
@@ -46,9 +49,11 @@ export class DevicesController extends ExceptionAndResponseHelper {
     @CurrentUserId() currentUserId: string,
     @RefreshTokenPayload() refreshTokenPayload: RefreshTokenPayloadType,
   ): Promise<void> {
-    const deletedResult = await this.DevicesService.deleteAllUserSessions(
-      currentUserId,
-      refreshTokenPayload.deviceId,
+    const deletedResult = await this.CommandBus.execute(
+      new DeleteAllUsersSessionsCommand(
+        currentUserId,
+        refreshTokenPayload.deviceId,
+      ),
     );
 
     return this.sendExceptionOrResponse(deletedResult);
@@ -68,7 +73,9 @@ export class DevicesController extends ExceptionAndResponseHelper {
       throw new ForbiddenException();
     }
 
-    const deletedResult = await this.DevicesService.deleteUserSession(deviceId);
+    const deletedResult = await this.CommandBus.execute(
+      new DeleteUserSessionCommand(deviceId),
+    );
 
     return this.sendExceptionOrResponse(deletedResult);
   }

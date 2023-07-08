@@ -14,17 +14,20 @@ import { CommentsQueryRepository } from '../infrastructure/comments.query-reposi
 import { JwtAccessAuthGuard } from '../../auth/guards/jwt-access-auth.guard';
 import { UpdateCommentModel } from './models/input/UpdateCommentModel';
 import { CurrentUserId } from '../../infrastructure/decorators/params/current-user-id.param.decorator';
-import { CommentsService } from '../application/comments.service';
 import { LikeStatusModel } from './models/input/LikeStatusModel';
 import { ExceptionAndResponseHelper } from '../../../shared/helpers';
 import { ApproachType } from '../../../shared/enums';
 import { ViewCommentModel } from './models/view/ViewCommentModel';
+import { CommandBus } from '@nestjs/cqrs';
+import { UpdateCommentCommand } from '../application/use-cases/update-comment-use-case';
+import { DeleteCommentCommand } from '../application/use-cases/delete-comment-use-case';
+import { LikeStatusCommentCommand } from '../application/use-cases/like-status-comment-use-case';
 
 @Controller('comments')
 export class CommentsController extends ExceptionAndResponseHelper {
   constructor(
+    private CommandBus: CommandBus,
     private CommentsQueryRepository: CommentsQueryRepository,
-    private CommentsService: CommentsService,
   ) {
     super(ApproachType.http);
   }
@@ -50,10 +53,8 @@ export class CommentsController extends ExceptionAndResponseHelper {
     @Body() inputModel: UpdateCommentModel,
     @CurrentUserId() currentUserId: string,
   ): Promise<void> {
-    const updatedResult = await this.CommentsService.updateComment(
-      commentId,
-      inputModel.content,
-      currentUserId,
+    const updatedResult = await this.CommandBus.execute(
+      new UpdateCommentCommand(commentId, inputModel.content, currentUserId),
     );
 
     return this.sendExceptionOrResponse(updatedResult);
@@ -66,9 +67,8 @@ export class CommentsController extends ExceptionAndResponseHelper {
     @Param('id', ExistingCommentPipe) commentId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<void> {
-    const deletedResult = await this.CommentsService.deleteComment(
-      commentId,
-      currentUserId,
+    const deletedResult = await this.CommandBus.execute(
+      new DeleteCommentCommand(commentId, currentUserId),
     );
 
     return this.sendExceptionOrResponse(deletedResult);
@@ -82,10 +82,12 @@ export class CommentsController extends ExceptionAndResponseHelper {
     @CurrentUserId() currentUserId: string,
     @Body() inputModel: LikeStatusModel,
   ): Promise<void> {
-    const likeResult = await this.CommentsService.likeStatus(
-      commentId,
-      currentUserId,
-      inputModel.likeStatus,
+    const likeResult = await this.CommandBus.execute(
+      new LikeStatusCommentCommand(
+        commentId,
+        currentUserId,
+        inputModel.likeStatus,
+      ),
     );
 
     return this.sendExceptionOrResponse(likeResult);

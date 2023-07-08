@@ -12,7 +12,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CreateBlogModel } from './models/input/CreateBlogModel';
-import { BlogsService } from '../application/blogs.service';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
 import { QueryParamsBlogModel } from './models/input/QueryParamsBlogModel';
 import { PostsService } from '../../posts/application/posts.service';
@@ -29,11 +28,16 @@ import { QueryBuildDTO } from '../../../shared/dto';
 import { Post as PostDB } from '../../posts/domain/posts.entity';
 import { ViewBlogModel } from './models/view/ViewBlogModel';
 import { Blog } from '../domain/blogs.entity';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateBlogCommand } from '../application/use-cases/create-blog-use-case';
+import { DeleteBlogCommand } from '../application/use-cases/delete-blog-use-case';
+import { UpdateBlogCommand } from '../application/use-cases/update-blog-use-case';
+import { CreatePostCommand } from '../../posts/application/use-cases/create-post-use-case';
 
 @Controller('blogs')
 export class BlogsController extends ExceptionAndResponseHelper {
   constructor(
-    private BlogsService: BlogsService,
+    private CommandBus: CommandBus,
     private PostsService: PostsService,
     private BlogsQueryRepository: BlogsQueryRepository,
     private PostsQueryRepository: PostsQueryRepository,
@@ -56,10 +60,12 @@ export class BlogsController extends ExceptionAndResponseHelper {
     @Body() inputModel: CreateBlogModel,
     @CurrentUserId() currentUserId: string,
   ): Promise<ViewBlogModel> {
-    const createdBlogResult = await this.BlogsService.createBlog(
-      inputModel.name,
-      inputModel.description,
-      inputModel.websiteUrl,
+    const createdBlogResult = await this.CommandBus.execute(
+      new CreateBlogCommand(
+        inputModel.name,
+        inputModel.description,
+        inputModel.websiteUrl,
+      ),
     );
     this.sendExceptionOrResponse(createdBlogResult);
 
@@ -85,7 +91,9 @@ export class BlogsController extends ExceptionAndResponseHelper {
   async deleteBlog(
     @Param('id', ExistingBlogPipe) blogId: string,
   ): Promise<void> {
-    const deletedResult = await this.BlogsService.deleteBlog(blogId);
+    const deletedResult = await this.CommandBus.execute(
+      new DeleteBlogCommand(blogId),
+    );
 
     return this.sendExceptionOrResponse(deletedResult);
   }
@@ -97,11 +105,13 @@ export class BlogsController extends ExceptionAndResponseHelper {
     @Param('id', ExistingBlogPipe) blogId: string,
     @Body() inputModel: CreateBlogModel,
   ): Promise<void> {
-    const updatedResult = await this.BlogsService.updateBlog(
-      blogId,
-      inputModel.name,
-      inputModel.description,
-      inputModel.websiteUrl,
+    const updatedResult = await this.CommandBus.execute(
+      new UpdateBlogCommand(
+        blogId,
+        inputModel.name,
+        inputModel.description,
+        inputModel.websiteUrl,
+      ),
     );
 
     return this.sendExceptionOrResponse(updatedResult);
@@ -129,11 +139,13 @@ export class BlogsController extends ExceptionAndResponseHelper {
     @Body() inputData: CreatePostWithoutIdModel,
     @CurrentUserId() currentUserId: string,
   ): Promise<ViewPostModel> {
-    const createdPostResult = await this.PostsService.createPost(
-      blogId,
-      inputData.title,
-      inputData.shortDescription,
-      inputData.content,
+    const createdPostResult = await this.CommandBus.execute(
+      new CreatePostCommand(
+        blogId,
+        inputData.title,
+        inputData.shortDescription,
+        inputData.content,
+      ),
     );
     this.sendExceptionOrResponse(createdPostResult);
 

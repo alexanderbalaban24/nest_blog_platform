@@ -61,9 +61,72 @@ import {
 import { RateLimitService } from './features/rateLimit/application/rateLimit.service';
 import { RateLimitRepository } from './features/rateLimit/infrastructure/rateLimit.repository';
 import { GlobalConfigService } from './config/globalConfig.service';
+import { CqrsModule } from '@nestjs/cqrs';
+import { CreateBlogUseCase } from './features/blogs/application/use-cases/create-blog-use-case';
+import { DeleteBlogUseCase } from './features/blogs/application/use-cases/delete-blog-use-case';
+import { UpdateBlogUseCase } from './features/blogs/application/use-cases/update-blog-use-case';
+import { CreatePostUseCase } from './features/posts/application/use-cases/create-post-use-case';
+import { UpdatePostUseCase } from './features/posts/application/use-cases/update-post-use-case';
+import { DeletePostUseCase } from './features/posts/application/use-cases/delete-post-use-case';
+import { LikeStatusPostUseCase } from './features/posts/application/use-cases/like-status-post-use-case';
+import { CreateCommentUseCase } from './features/comments/application/use-cases/create-comment-use-case';
+import { UpdateCommentUseCase } from './features/comments/application/use-cases/update-comment-use-case';
+import { DeleteCommentUseCase } from './features/comments/application/use-cases/delete-comment-use-case';
+import { LikeStatusCommentUseCase } from './features/comments/application/use-cases/like-status-comment-use-case';
+import { CreateUserUseCase } from './features/users/application/use-cases/create-user-use-case';
+import { DeleteUserUseCase } from './features/users/application/use-cases/delete-user-use-case';
+import { DoOperationUseCase } from './features/email/application/use-cases/do-operation-use-case';
+import { RegistrationUseCase } from './features/auth/application/use-cases/registration-use.case';
+import { ResendingEmailRegistrationUseCase } from './features/auth/application/use-cases/resending-email-registration-use-case';
+import { PasswordRecoveryUseCase } from './features/auth/application/use-cases/password-recovery-use-case';
+import { ConfirmRegistrationUseCase } from './features/auth/application/use-cases/confirm-registration-use-case';
+import { ConfirmRecoveryPasswordUseCase } from './features/auth/application/use-cases/confirm-recovery-password-use-case';
+import { CreateDeviceUseCase } from './features/devices/application/use-cases/create-device-use-case';
+import { LoginUseCase } from './features/auth/application/use-cases/login-use-case';
+import { UpdateSessionTimeUseCase } from './features/devices/application/use-cases/update-session-time-use-case';
+import { RefreshSessionUseCase } from './features/auth/application/use-cases/refresh-session-use-case';
+import { DeleteUserSessionUseCase } from './features/devices/application/use-cases/delete-user-session-use-case';
+import { LogoutUseCase } from './features/auth/application/use-cases/logout-use-case';
+import { ValidateUserUseCase } from './features/auth/application/use-cases/validate-user-use-case';
+import { DeleteAllUsersSessionsUseCase } from './features/devices/application/use-cases/delete-all-users-sessions-use-case';
+import { AddAttemptUseCase } from './features/rateLimit/application/use-cases/add-attempt-use-case';
+import { GetCountAttemptsUseCase } from './features/rateLimit/application/use-cases/get-count-attempts-use-case';
+
+const useCases = [
+  CreateBlogUseCase,
+  DeleteBlogUseCase,
+  UpdateBlogUseCase,
+  CreatePostUseCase,
+  UpdatePostUseCase,
+  DeletePostUseCase,
+  LikeStatusPostUseCase,
+  CreateCommentUseCase,
+  UpdateCommentUseCase,
+  DeleteCommentUseCase,
+  LikeStatusCommentUseCase,
+  CreateUserUseCase,
+  DeleteUserUseCase,
+  DoOperationUseCase,
+  RegistrationUseCase,
+  ResendingEmailRegistrationUseCase,
+  PasswordRecoveryUseCase,
+  ConfirmRegistrationUseCase,
+  ConfirmRecoveryPasswordUseCase,
+  LoginUseCase,
+  CreateDeviceUseCase,
+  UpdateSessionTimeUseCase,
+  RefreshSessionUseCase,
+  DeleteUserSessionUseCase,
+  LogoutUseCase,
+  ValidateUserUseCase,
+  DeleteAllUsersSessionsUseCase,
+  AddAttemptUseCase,
+  GetCountAttemptsUseCase,
+];
 
 @Module({
   imports: [
+    CqrsModule,
     configModule,
     MongooseModule.forRoot(process.env.MONGO_URL, {
       dbName: 'blog-platform_nest',
@@ -110,6 +173,7 @@ import { GlobalConfigService } from './config/globalConfig.service';
     CommentsController,
   ],
   providers: [
+    //TODO создать массив с разбиением на сущности, и добавить сюда через деструктуризацию
     AppService,
     BlogsService,
     PostsService,
@@ -149,6 +213,7 @@ import { GlobalConfigService } from './config/globalConfig.service';
     ExistingPostPipe,
     ExistingCommentPipe,
     ExistingBlogPipe,
+    ...useCases,
   ],
 })
 export class AppModule {}

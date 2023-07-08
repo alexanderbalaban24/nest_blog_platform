@@ -31,10 +31,17 @@ import { Post as PostDB } from '../domain/posts.entity';
 import { ViewPostModel } from './models/view/ViewPostModel';
 import { ViewCommentModel } from '../../comments/api/models/view/ViewCommentModel';
 import { Comment } from '../../comments/domain/comments.entity';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreatePostCommand } from '../application/use-cases/create-post-use-case';
+import { UpdatePostCommand } from '../application/use-cases/update-post-use-case';
+import { DeletePostCommand } from '../application/use-cases/delete-post-use-case';
+import { LikeStatusPostCommand } from '../application/use-cases/like-status-post-use-case';
+import { CreateCommentCommand } from '../../comments/application/use-cases/create-comment-use-case';
 
 @Controller('posts')
 export class PostsController extends ExceptionAndResponseHelper {
   constructor(
+    private CommandBus: CommandBus,
     private PostsQueryRepository: PostsQueryRepository,
     private PostsService: PostsService,
     private CommentService: CommentsService,
@@ -63,11 +70,13 @@ export class PostsController extends ExceptionAndResponseHelper {
     @Body() inputData: CreatePostModel,
     @CurrentUserId() currentUserId: string,
   ): Promise<ViewPostModel> {
-    const createdPostResult = await this.PostsService.createPost(
-      inputData.blogId,
-      inputData.title,
-      inputData.shortDescription,
-      inputData.content,
+    const createdPostResult = await this.CommandBus.execute(
+      new CreatePostCommand(
+        inputData.blogId,
+        inputData.title,
+        inputData.shortDescription,
+        inputData.content,
+      ),
     );
     this.sendExceptionOrResponse(createdPostResult);
 
@@ -99,12 +108,14 @@ export class PostsController extends ExceptionAndResponseHelper {
     @Param('id', ExistingPostPipe) postId: string,
     @Body() inputData: CreatePostModel,
   ): Promise<void> {
-    const updatedResult = await this.PostsService.updatePost(
-      postId,
-      inputData.blogId,
-      inputData.title,
-      inputData.shortDescription,
-      inputData.content,
+    const updatedResult = await this.CommandBus.execute(
+      new UpdatePostCommand(
+        postId,
+        inputData.blogId,
+        inputData.title,
+        inputData.shortDescription,
+        inputData.content,
+      ),
     );
 
     return this.sendExceptionOrResponse(updatedResult);
@@ -116,7 +127,9 @@ export class PostsController extends ExceptionAndResponseHelper {
   async deletePost(
     @Param('id', ExistingPostPipe) postId: string,
   ): Promise<void> {
-    const deletedResult = await this.PostsService.deletePost(postId);
+    const deletedResult = await this.CommandBus.execute(
+      new DeletePostCommand(postId),
+    );
 
     return this.sendExceptionOrResponse(deletedResult);
   }
@@ -128,10 +141,8 @@ export class PostsController extends ExceptionAndResponseHelper {
     @Body() inputModel: CreateCommentModel,
     @CurrentUserId() currentUserId: string,
   ): Promise<ViewCommentModel> {
-    const createdCommentResult = await this.CommentService.createComment(
-      postId,
-      inputModel.content,
-      currentUserId,
+    const createdCommentResult = await this.CommandBus.execute(
+      new CreateCommentCommand(postId, inputModel.content, currentUserId),
     );
     this.sendExceptionOrResponse(createdCommentResult);
 
@@ -166,10 +177,8 @@ export class PostsController extends ExceptionAndResponseHelper {
     @CurrentUserId() currentUserId: string,
     @Body() inputModel: LikeStatusModel,
   ): Promise<void> {
-    const likeResult = await this.PostsService.likeStatus(
-      postId,
-      currentUserId,
-      inputModel.likeStatus,
+    const likeResult = await this.CommandBus.execute(
+      new LikeStatusPostCommand(postId, currentUserId, inputModel.likeStatus),
     );
 
     return this.sendExceptionOrResponse(likeResult);
