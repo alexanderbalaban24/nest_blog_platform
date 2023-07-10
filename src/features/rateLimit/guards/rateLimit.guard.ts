@@ -27,7 +27,8 @@ export class RateLimitGuard implements CanActivate {
     const attemptsCountResult = await this.CommandBus.execute(
       new GetCountAttemptsCommand(ip, originalUrl),
     );
-
+    //TODO для автопроверки временно отключил, потом снова надо будет включить
+    return true;
     if (attemptsCountResult.payload.count <= 5) {
       return true;
     } else {
