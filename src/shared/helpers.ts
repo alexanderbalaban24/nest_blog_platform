@@ -15,14 +15,21 @@ import {
 
 export const queryHelper = {
   async findWithQuery<T, C>(queryData: QueryDataType, id?: string) {
-    const sortBy = queryData.sortBy ? queryData.sortBy : 'createdAt';
-    const sortDirection = queryData.sortDirection
-      ? queryData.sortDirection
-      : 'desc';
+    const banStatus = queryData.banStatus ?? 'all';
+    const sortBy = queryData.sortBy ?? 'createdAt';
+    const sortDirection = queryData.sortDirection ?? 'desc';
     const pageNumber = queryData.pageNumber ? +queryData.pageNumber : 1;
     const pageSize = queryData.pageSize ? +queryData.pageSize : 10;
 
     const skip = pageSize * (pageNumber - 1);
+
+    if (banStatus === 'banned') {
+      this.where('banInfo.isBanned').equals(true);
+    }
+
+    if (banStatus === 'notBanned') {
+      this.where('banInfo.isBanned').equals(false);
+    }
 
     if (queryData.searchLoginTerm && queryData.searchEmailTerm) {
       this.or([

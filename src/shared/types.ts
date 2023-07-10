@@ -3,6 +3,7 @@ import { LikeStatusEnum } from './enums';
 import { ObjectId, Types } from 'mongoose';
 
 export type QueryDataType = {
+  banStatus?: 'all' | 'banned' | 'notBanned';
   sortBy?: string;
   sortDirection?: string;
   pageNumber?: string;

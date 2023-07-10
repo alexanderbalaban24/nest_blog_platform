@@ -1,6 +1,5 @@
-import { IsString } from 'class-validator';
-
 export class QueryParamsUserModel {
+  banStatus: 'all' | 'banned' | 'notBanned';
   sortBy?: string;
   sortDirection?: 'desc' | 'asc';
   pageNumber?: string;
