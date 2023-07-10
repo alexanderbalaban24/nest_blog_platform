@@ -5,6 +5,7 @@ import { InternalCode, LikeStatusEnum } from '../../../shared/enums';
 import { ViewCommentModel } from '../api/models/view/ViewCommentModel';
 import { QueryParamsCommentModel } from '../api/models/input/QueryParamsCommentModel';
 import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -30,7 +31,10 @@ export class CommentsQueryRepository {
     commentId: string,
     userId?: string,
   ): Promise<ResultDTO<ViewCommentModel>> {
-    const comment = await this.CommentModel.findById(commentId).lean();
+    const comment = await this.CommentModel.findOne({
+      _id: new Types.ObjectId(commentId),
+      isDeactivate: { $ne: false },
+    }).lean();
     if (!comment) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(

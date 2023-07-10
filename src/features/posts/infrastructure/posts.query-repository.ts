@@ -6,6 +6,7 @@ import { QueryParamsPostModel } from '../api/models/input/QueryParamsPostModel';
 import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
 import { InternalCode, LikeStatusEnum } from '../../../shared/enums';
 import { UserLikeType } from '../../../shared/types';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -28,7 +29,10 @@ export class PostsQueryRepository {
     postId: string,
     userId?: string,
   ): Promise<ResultDTO<ViewPostModel>> {
-    const post = await this.PostModel.findById(postId).lean();
+    const post = await this.PostModel.findOne({
+      _id: new Types.ObjectId(postId),
+      isDeactivate: { $ne: false },
+    }).lean();
     if (!post) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(
