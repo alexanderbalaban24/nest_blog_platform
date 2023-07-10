@@ -10,6 +10,8 @@ export class BlogsRepository {
 
   async findById(blogId: string): Promise<ResultDTO<BlogDocument>> {
     const blogInstance = await this.BlogModel.findById(blogId);
+    if (!blogInstance) return new ResultDTO(InternalCode.NotFound);
+
     return new ResultDTO<BlogDocument>(InternalCode.Success, blogInstance);
   }
 

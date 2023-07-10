@@ -1,9 +1,11 @@
 import { ResultDTO } from '../../../../shared/dto';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { InternalCode } from '../../../../shared/enums';
 
 export class UpdateBlogCommand {
   constructor(
+    public userId: string,
     public blogId: string,
     public name: string,
     public description: string,
@@ -18,6 +20,9 @@ export class UpdateBlogUseCase implements ICommandHandler<UpdateBlogCommand> {
   async execute(command: UpdateBlogCommand): Promise<ResultDTO<null>> {
     const blogResult = await this.BlogsRepository.findById(command.blogId);
     if (blogResult.hasError()) return new ResultDTO(blogResult.code);
+
+    if (blogResult.payload.blogOwnerInfo.userId !== command.userId)
+      return new ResultDTO(InternalCode.Forbidden);
 
     await blogResult.payload.changeData(
       command.name,

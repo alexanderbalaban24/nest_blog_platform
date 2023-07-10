@@ -100,9 +100,11 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
   async updateBlog(
     @Param('id', ExistingBlogPipe) blogId: string,
     @Body() inputModel: CreateBlogModel,
+    @CurrentUserId() userId: string,
   ): Promise<void> {
     const updatedResult = await this.CommandBus.execute(
       new UpdateBlogCommand(
+        userId,
         blogId,
         inputModel.name,
         inputModel.description,
