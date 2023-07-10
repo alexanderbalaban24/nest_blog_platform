@@ -33,7 +33,7 @@ export class CommentsQueryRepository {
   ): Promise<ResultDTO<ViewCommentModel>> {
     const comment = await this.CommentModel.findOne({
       _id: new Types.ObjectId(commentId),
-      isDeactivate: { $ne: false },
+      isDeactivate: { $ne: true },
     }).lean();
     if (!comment) return new ResultDTO(InternalCode.NotFound);
 

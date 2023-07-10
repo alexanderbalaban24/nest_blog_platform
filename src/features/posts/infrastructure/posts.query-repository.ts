@@ -31,7 +31,7 @@ export class PostsQueryRepository {
   ): Promise<ResultDTO<ViewPostModel>> {
     const post = await this.PostModel.findOne({
       _id: new Types.ObjectId(postId),
-      isDeactivate: { $ne: false },
+      isDeactivate: { $ne: true },
     }).lean();
     if (!post) return new ResultDTO(InternalCode.NotFound);
 
