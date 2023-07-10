@@ -124,8 +124,13 @@ export class User {
 
   banUser(isBanned: boolean, banReason: string) {
     this.banInfo.isBanned = isBanned;
-    this.banInfo.banReason = banReason;
-    this.banInfo.banDate = new Date();
+    if (isBanned) {
+      this.banInfo.banReason = banReason;
+      this.banInfo.banDate = new Date();
+    } else {
+      this.banInfo.banReason = null;
+      this.banInfo.banDate = null;
+    }
   }
 }
 

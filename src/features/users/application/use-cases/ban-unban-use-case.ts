@@ -25,11 +25,13 @@ export class BanUnbanUseCase implements ICommandHandler<BanUnbanCommand> {
 
   async execute(command: BanUnbanCommand): Promise<ResultDTO<null>> {
     // Delete all devices
-    const deleteDevicesResult = await this.DevicesRepository.deleteAllDevices(
-      command.userId,
-    );
-    if (deleteDevicesResult.hasError())
-      return new ResultDTO(InternalCode.Internal_Server);
+    if (command.isBanned) {
+      const deleteDevicesResult = await this.DevicesRepository.deleteAllDevices(
+        command.userId,
+      );
+      if (deleteDevicesResult.hasError())
+        return new ResultDTO(InternalCode.Internal_Server);
+    }
 
     const userResult = await this.UsersRepository.findById(command.userId);
     if (!userResult) return new ResultDTO(InternalCode.Internal_Server);

@@ -94,6 +94,7 @@ import { GetCountAttemptsUseCase } from './features/rateLimit/application/use-ca
 import { BindUserUseCase } from './features/blogs/application/use-cases/bind-user-use-case';
 import { BloggerBlogsController } from './features/blogs/api/blogger/blogger-blogs.controller';
 import { PublicBlogsController } from './features/blogs/api/public/public-blogs.controller';
+import { BanUnbanUseCase } from './features/users/application/use-cases/ban-unban-use-case';
 
 const useCases = [
   CreateBlogUseCase,
@@ -128,6 +129,7 @@ const useCases = [
   BindUserUseCase,
   UpdatePostUseCase,
   DeletePostUseCase,
+  BanUnbanUseCase,
 ];
 
 @Module({
