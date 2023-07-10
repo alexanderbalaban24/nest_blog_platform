@@ -10,6 +10,7 @@ export class UsersRepository {
 
   async findById(userId: string): Promise<ResultDTO<UserDocument>> {
     const userInstance = await this.UserModel.findById(userId);
+    if (!userInstance) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(InternalCode.Success, userInstance);
   }
