@@ -13,6 +13,20 @@ export class PostsRepository {
     return new ResultDTO(InternalCode.Success, postInstance);
   }
 
+  async findByUserId(userId: string): Promise<ResultDTO<PostDocument[]>> {
+    const postInstances = await this.PostModel.find({ ownerId: userId });
+
+    return new ResultDTO(InternalCode.Success, postInstances);
+  }
+
+  async findByUserLike(userId: string): Promise<ResultDTO<PostDocument[]>> {
+    const postInstances = await this.PostModel.find({
+      'usersLikes.userId': userId,
+    });
+
+    return new ResultDTO(InternalCode.Success, postInstances);
+  }
+
   async save(postInstance: PostDocument): Promise<ResultDTO<null>> {
     await postInstance.save();
 

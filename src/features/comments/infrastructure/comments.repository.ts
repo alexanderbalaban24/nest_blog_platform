@@ -16,8 +16,25 @@ export class CommentsRepository {
 
   async findById(commentId: string): Promise<ResultDTO<CommentDocument>> {
     const commentInstance = await this.CommentModel.findById(commentId);
+    if (!commentInstance) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(InternalCode.Success, commentInstance);
+  }
+
+  async findByUserId(userId: string): Promise<ResultDTO<CommentDocument[]>> {
+    const commentInstances = await this.CommentModel.find({
+      'commentatorInfo.userId': userId,
+    });
+
+    return new ResultDTO(InternalCode.Success, commentInstances);
+  }
+
+  async findByUserLike(userId: string): Promise<ResultDTO<CommentDocument[]>> {
+    const commentInstances = await this.CommentModel.find({
+      'usersLikes.userId': userId,
+    });
+
+    return new ResultDTO(InternalCode.Success, commentInstances);
   }
 
   async create(

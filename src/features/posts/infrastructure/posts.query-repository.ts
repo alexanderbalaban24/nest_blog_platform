@@ -16,10 +16,9 @@ export class PostsQueryRepository {
     blogId?: string,
     userId?: string,
   ): Promise<ResultDTO<QueryBuildDTO<Post, ViewPostModel>>> {
-    const postData = await this.PostModel.find({}).findWithQuery<
-      Post,
-      ViewPostModel
-    >(query, blogId);
+    const postData = await this.PostModel.find({
+      isDeactivate: { $ne: false },
+    }).findWithQuery<Post, ViewPostModel>(query, blogId);
     postData.map((post) => this._mapPostToView(post, userId));
 
     return new ResultDTO(InternalCode.Success, postData);
@@ -47,7 +46,9 @@ export class PostsQueryRepository {
 
     const newestLikes = post.usersLikes
       .sort((a, b) => Number(b.addedAt) - Number(a.addedAt))
-      .filter((item) => item.likeStatus === LikeStatusEnum.Like)
+      .filter(
+        (item) => item.likeStatus === LikeStatusEnum.Like && !item.isDeactivate,
+      )
       .map((item) => ({
         addedAt: item.addedAt,
         userId: item.userId,

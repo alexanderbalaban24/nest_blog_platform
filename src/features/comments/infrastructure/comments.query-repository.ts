@@ -17,10 +17,10 @@ export class CommentsQueryRepository {
     query: QueryParamsCommentModel,
     userId?: string,
   ): Promise<ResultDTO<QueryBuildDTO<Comment, ViewCommentModel>>> {
-    const commentsData = await this.CommentModel.find({ postId }).findWithQuery<
-      Comment,
-      ViewCommentModel
-    >(query);
+    const commentsData = await this.CommentModel.find({
+      postId,
+      isDeactivate: { $ne: false },
+    }).findWithQuery<Comment, ViewCommentModel>(query);
     commentsData.map((comment) => this._mapCommentToView(comment, userId));
 
     return new ResultDTO(InternalCode.Success, commentsData);

@@ -10,20 +10,31 @@ type BlogStaticMethod = {
     name: string,
     description: string,
     websiteUrl: string,
+    userId: string,
+    userLogin: string,
     BlogModel: BlogModelType,
   ) => BlogDocument;
 };
 
-type BlogInstanceMethodType = {
+type BlogInstanceMethodsType = {
   changeData(name: string, description: string, websiteUrl: string): void;
+  bindUser(userId: string, userLogin: string): void;
 };
 
 export type BlogModelType = Model<
   BlogDocument,
   QueryCustomMethods,
-  BlogInstanceMethodType
+  BlogInstanceMethodsType
 > &
   BlogStaticMethod;
+
+@Schema({ _id: false, versionKey: false })
+class BlogOwnerInfo {
+  @Prop({ required: true })
+  userId: string;
+  @Prop({ required: true })
+  userLogin: string;
+}
 
 @Schema()
 export class Blog {
@@ -44,19 +55,33 @@ export class Blog {
   @Prop({ default: Date.now })
   createdAt: Date;
 
+  @Prop({ type: BlogOwnerInfo, required: true })
+  blogOwnerInfo: BlogOwnerInfo;
+
   static makeInstance(
     name: string,
     description: string,
     websiteUrl: string,
+    userId: string,
+    userLogin: string,
     BlogModel: BlogModelType,
   ): BlogDocument {
-    return new BlogModel({ name, description, websiteUrl });
+    return new BlogModel({
+      name,
+      description,
+      websiteUrl,
+      blogOwnerInfo: { userId, userLogin },
+    });
   }
 
   changeData(name: string, description: string, websiteUrl: string) {
     this.name = name;
     this.description = description;
     this.websiteUrl = websiteUrl;
+  }
+
+  bindUser(userId: string, userLogin: string) {
+    this.blogOwnerInfo = { userId, userLogin };
   }
 }
 
@@ -67,9 +92,10 @@ const blogStaticMethods: BlogStaticMethod = {
 };
 BlogSchema.statics = blogStaticMethods;
 
-const blogInstanceMethod: BlogInstanceMethodType = {
+const blogInstancesMethod: BlogInstanceMethodsType = {
   changeData: Blog.prototype.changeData,
+  bindUser: Blog.prototype.bindUser,
 };
-BlogSchema.methods = blogInstanceMethod;
+BlogSchema.methods = blogInstancesMethod;
 
 BlogSchema.query = { findWithQuery: queryHelper.findWithQuery };

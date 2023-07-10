@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { BlogsController } from './features/blogs/api/blogs.controller';
+import { SaBlogsController } from './features/blogs/api/sa/sa-blogs.controller';
 import { Blog, BlogSchema } from './features/blogs/domain/blogs.entity';
 import { BlogsService } from './features/blogs/application/blogs.service';
 import { BlogsQueryRepository } from './features/blogs/infrastructure/blogs.query-repository';
@@ -14,11 +14,11 @@ import { PostsQueryRepository } from './features/posts/infrastructure/posts.quer
 import { PostsRepository } from './features/posts/infrastructure/posts.repository';
 import { PostsController } from './features/posts/api/posts.controller';
 import { User, UserSchema } from './features/users/domain/users.entity';
-import { UsersController } from './features/users/api/users.controller';
+import { SaUsersController } from './features/users/api/sa/sa-users.controller';
 import { UsersService } from './features/users/application/users.service';
 import { UsersQueryRepository } from './features/users/infrastructure/users.query-repository';
 import { UsersRepository } from './features/users/infrastructure/users.repository';
-import { AuthController } from './features/auth/api/auth.controller';
+import { AuthController } from './features/auth/api/publicApi/auth.controller';
 import { AuthService } from './features/auth/application/auth.service';
 import { AuthQueryRepository } from './features/auth/infrastructure/auth.query-repository';
 import { EmailManager } from './features/email/manager/email.manager';
@@ -29,7 +29,7 @@ import { AuthRepository } from './features/auth/infrastructure/auth.repository';
 import { ConfirmEmailValidator } from './features/infrastructure/decorators/validators/confirmEmail.validator';
 import { UniqueLoginAndEmailValidator } from './features/infrastructure/decorators/validators/uniqueLoginAndEmail.validator';
 import { JwtModule } from '@nestjs/jwt';
-import { DevicesController } from './features/devices/api/devices.controller';
+import { DevicesController } from './features/devices/api/public/devices.controller';
 import { Device, DeviceSchema } from './features/devices/domain/devices.entity';
 import { DevicesService } from './features/devices/application/devices.service';
 import { DevicesRepository } from './features/devices/infrastructure/devices.repository';
@@ -49,7 +49,7 @@ import { CommentsRepository } from './features/comments/infrastructure/comments.
 import { ExistPostValidator } from './features/infrastructure/decorators/validators/existPost.validator';
 import { ExistingPostPipe } from './infrastructure/pipes/ExistingPost.pipe';
 import { ExistingCommentPipe } from './infrastructure/pipes/ExistingComment.pipe';
-import { CommentsController } from './features/comments/api/comments.controller';
+import { CommentsController } from './features/comments/api/public/comments.controller';
 import { ExistingBlogPipe } from './infrastructure/pipes/ExistingBlog.pipe';
 import { ExistBlogValidator } from './features/infrastructure/decorators/validators/existBlog.validator';
 import { JwtRefreshAuthStrategy } from './features/auth/strategies/jwt-refresh-auth.strategy';
@@ -88,9 +88,12 @@ import { RefreshSessionUseCase } from './features/auth/application/use-cases/ref
 import { DeleteUserSessionUseCase } from './features/devices/application/use-cases/delete-user-session-use-case';
 import { LogoutUseCase } from './features/auth/application/use-cases/logout-use-case';
 import { ValidateUserUseCase } from './features/auth/application/use-cases/validate-user-use-case';
-import { DeleteAllUsersSessionsUseCase } from './features/devices/application/use-cases/delete-all-users-sessions-use-case';
+import { DeleteAllUserSessionsExcludeCurrentUseCase } from './features/devices/application/use-cases/delete-all-user-sessions-exclude-current-use-case';
 import { AddAttemptUseCase } from './features/rateLimit/application/use-cases/add-attempt-use-case';
 import { GetCountAttemptsUseCase } from './features/rateLimit/application/use-cases/get-count-attempts-use-case';
+import { BindUserUseCase } from './features/blogs/application/use-cases/bind-user-use-case';
+import { BloggerBlogsController } from './features/blogs/api/blogger/blogger-blogs.controller';
+import { PublicBlogsController } from './features/blogs/api/public/public-blogs.controller';
 
 const useCases = [
   CreateBlogUseCase,
@@ -119,9 +122,12 @@ const useCases = [
   DeleteUserSessionUseCase,
   LogoutUseCase,
   ValidateUserUseCase,
-  DeleteAllUsersSessionsUseCase,
+  DeleteAllUserSessionsExcludeCurrentUseCase,
   AddAttemptUseCase,
   GetCountAttemptsUseCase,
+  BindUserUseCase,
+  UpdatePostUseCase,
+  DeletePostUseCase,
 ];
 
 @Module({
@@ -165,9 +171,11 @@ const useCases = [
   ],
   controllers: [
     AppController,
-    BlogsController,
+    SaBlogsController,
+    BloggerBlogsController,
+    PublicBlogsController,
     PostsController,
-    UsersController,
+    SaUsersController,
     AuthController,
     DevicesController,
     CommentsController,

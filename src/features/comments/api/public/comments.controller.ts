@@ -9,19 +9,19 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { ExistingCommentPipe } from '../../../infrastructure/pipes/ExistingComment.pipe';
-import { CommentsQueryRepository } from '../infrastructure/comments.query-repository';
-import { JwtAccessAuthGuard } from '../../auth/guards/jwt-access-auth.guard';
-import { UpdateCommentModel } from './models/input/UpdateCommentModel';
-import { CurrentUserId } from '../../infrastructure/decorators/params/current-user-id.param.decorator';
-import { LikeStatusModel } from './models/input/LikeStatusModel';
-import { ExceptionAndResponseHelper } from '../../../shared/helpers';
-import { ApproachType } from '../../../shared/enums';
-import { ViewCommentModel } from './models/view/ViewCommentModel';
+import { ExistingCommentPipe } from '../../../../infrastructure/pipes/ExistingComment.pipe';
+import { CommentsQueryRepository } from '../../infrastructure/comments.query-repository';
+import { JwtAccessAuthGuard } from '../../../auth/guards/jwt-access-auth.guard';
+import { UpdateCommentModel } from '../models/input/UpdateCommentModel';
+import { CurrentUserId } from '../../../infrastructure/decorators/params/current-user-id.param.decorator';
+import { LikeStatusModel } from '../models/input/LikeStatusModel';
+import { ExceptionAndResponseHelper } from '../../../../shared/helpers';
+import { ApproachType } from '../../../../shared/enums';
+import { ViewCommentModel } from '../models/view/ViewCommentModel';
 import { CommandBus } from '@nestjs/cqrs';
-import { UpdateCommentCommand } from '../application/use-cases/update-comment-use-case';
-import { DeleteCommentCommand } from '../application/use-cases/delete-comment-use-case';
-import { LikeStatusCommentCommand } from '../application/use-cases/like-status-comment-use-case';
+import { UpdateCommentCommand } from '../../application/use-cases/update-comment-use-case';
+import { DeleteCommentCommand } from '../../application/use-cases/delete-comment-use-case';
+import { LikeStatusCommentCommand } from '../../application/use-cases/like-status-comment-use-case';
 
 @Controller('comments')
 export class CommentsController extends ExceptionAndResponseHelper {

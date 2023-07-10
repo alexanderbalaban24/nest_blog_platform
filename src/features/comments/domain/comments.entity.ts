@@ -18,6 +18,10 @@ type CommentStaticsMethodType = {
 
 type CommentInstanceMethods = {
   updateData: (content: string, currentUserId: string) => void;
+  deactivate: () => void;
+  activate: () => void;
+  deactivateLike: (userId: string) => void;
+  activateLike: (userId: string) => void;
   like: (userId: string, likeStatus: LikeStatusEnum) => void;
 };
 
@@ -32,6 +36,7 @@ export type CommentModelType = Model<
 class CommentatorInfo {
   @Prop({ require: true })
   userId: string;
+
   @Prop({ require: true })
   userLogin: string;
 }
@@ -40,27 +45,41 @@ class CommentatorInfo {
 class UserLike {
   @Prop({ required: true })
   userId: string;
+
   @Prop({ required: true, enum: LikeStatusEnum })
   likeStatus: LikeStatusEnum;
+
+  @Prop({ default: false })
+  isDeactivate: boolean;
 }
 
 @Schema()
 export class Comment {
   _id: Types.ObjectId;
+
   @Prop({ require: true })
   postId: string;
+
   @Prop({ require: true })
   content: string;
+
   @Prop({ type: CommentatorInfo, required: true })
   commentatorInfo: CommentatorInfo;
+
   @Prop({ default: 0 })
   likesCount: number;
+
   @Prop({ default: 0 })
   dislikesCount: number;
+
   @Prop([UserLike])
   usersLikes: UserLike[];
+
   @Prop({ default: Date.now })
   createdAt: Date;
+
+  @Prop({ default: false })
+  isDeactivate: boolean;
 
   static makeInstance(
     postId: string,
@@ -83,13 +102,43 @@ export class Comment {
     this.content = content;
   }
 
+  deactivateLike(userId: string) {
+    const ind = this.usersLikes.findIndex((like) => like.userId === userId);
+    this.usersLikes[ind].isDeactivate = true;
+
+    if (this.usersLikes[ind].likeStatus === LikeStatusEnum.Like) {
+      --this.likesCount;
+    } else {
+      --this.dislikesCount;
+    }
+  }
+
+  activateLike(userId: string) {
+    const ind = this.usersLikes.findIndex((like) => like.userId === userId);
+    this.usersLikes[ind].isDeactivate = false;
+
+    if (this.usersLikes[ind].likeStatus === LikeStatusEnum.Like) {
+      ++this.likesCount;
+    } else {
+      ++this.dislikesCount;
+    }
+  }
+
+  deactivate() {
+    this.isDeactivate = true;
+  }
+
+  activate() {
+    this.isDeactivate = false;
+  }
+
   like(userId: string, likeStatus: LikeStatusEnum) {
     const ind = this.usersLikes.findIndex(
       (like: UserLike) => like.userId === userId,
     );
 
     if (ind === -1) {
-      const newLike = { userId, likeStatus };
+      const newLike = { userId, likeStatus, isDeactivate: false };
 
       if (likeStatus !== LikeStatusEnum.None) {
         if (likeStatus === LikeStatusEnum.Like) this.likesCount++;
@@ -142,6 +191,10 @@ CommentSchema.query = { findWithQuery: queryHelper.findWithQuery };
 
 const commentInstanceMethods: CommentInstanceMethods = {
   updateData: Comment.prototype.updateData,
+  deactivate: Comment.prototype.deactivate,
+  activate: Comment.prototype.activate,
+  deactivateLike: Comment.prototype.deactivateLike,
+  activateLike: Comment.prototype.activateLike,
   like: Comment.prototype.like,
 };
 CommentSchema.methods = commentInstanceMethods;

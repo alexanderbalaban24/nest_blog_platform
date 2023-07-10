@@ -72,6 +72,7 @@ export class PostsController extends ExceptionAndResponseHelper {
   ): Promise<ViewPostModel> {
     const createdPostResult = await this.CommandBus.execute(
       new CreatePostCommand(
+        currentUserId,
         inputData.blogId,
         inputData.title,
         inputData.shortDescription,

@@ -21,6 +21,7 @@ type UserInstanceMethodsType = {
   confirmAccount: () => void;
   updatePasswordHash: (newPassHash: string) => void;
   updateConfirmationOrRecoveryData: (field: string) => string;
+  banUser: (isBanned: boolean, banReason: string) => void;
 };
 
 export type UserModelType = Model<
@@ -50,6 +51,16 @@ export class PasswordRecovery {
   isConfirmed: boolean;
 }
 
+@Schema({ _id: false, versionKey: false })
+export class BanUserInfo {
+  @Prop({ default: false })
+  isBanned: boolean;
+  @Prop({ default: null })
+  banDate: Date;
+  @Prop({ default: null })
+  banReason: string;
+}
+
 // TODO в схему сразу ниже можно записать timestamp
 @Schema()
 export class User {
@@ -72,6 +83,9 @@ export class User {
 
   @Prop({ type: PasswordRecovery, default: new PasswordRecovery() })
   passwordRecovery: PasswordRecovery;
+
+  @Prop({ type: BanUserInfo, default: new BanUserInfo() })
+  banInfo: BanUserInfo;
 
   static makeInstance(
     login: string,
@@ -107,6 +121,12 @@ export class User {
     this.passwordHash = newPassHash;
     this.passwordRecovery.isConfirmed = true;
   }
+
+  banUser(isBanned: boolean, banReason: string) {
+    this.banInfo.isBanned = isBanned;
+    this.banInfo.banReason = banReason;
+    this.banInfo.banDate = new Date();
+  }
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -121,6 +141,7 @@ const userInstanceMethod: UserInstanceMethodsType = {
   updateConfirmationOrRecoveryData:
     User.prototype.updateConfirmationOrRecoveryData,
   updatePasswordHash: User.prototype.updatePasswordHash,
+  banUser: User.prototype.banUser,
 };
 UserSchema.methods = userInstanceMethod;
 

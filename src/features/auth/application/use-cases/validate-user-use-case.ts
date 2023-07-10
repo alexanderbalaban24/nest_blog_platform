@@ -24,7 +24,8 @@ export class ValidateUserUseCase
       command.password,
       userResult.payload.passwordHash,
     );
-    if (!isValidUser) return new ResultDTO(InternalCode.Unauthorized);
+    if (!isValidUser || userResult.payload.banInfo.isBanned)
+      return new ResultDTO(InternalCode.Unauthorized);
 
     return new ResultDTO(InternalCode.Success);
   }

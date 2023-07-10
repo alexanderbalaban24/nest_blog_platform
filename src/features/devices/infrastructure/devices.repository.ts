@@ -13,13 +13,21 @@ import { InternalCode } from '../../../shared/enums';
 export class DevicesRepository {
   constructor(@InjectModel(Device.name) private DeviceModel: DeviceModelType) {}
 
-  async deleteAllDevices(
+  async deleteAllDevicesExcludeCurrent(
     userId: string,
     excludeId: string,
   ): Promise<ResultDTO<null>> {
     await this.DeviceModel.deleteMany({
       userId,
       _id: { $ne: new Types.ObjectId(excludeId) },
+    });
+
+    return new ResultDTO(InternalCode.Success);
+  }
+
+  async deleteAllDevices(userId: string): Promise<ResultDTO<null>> {
+    await this.DeviceModel.deleteMany({
+      userId,
     });
 
     return new ResultDTO(InternalCode.Success);

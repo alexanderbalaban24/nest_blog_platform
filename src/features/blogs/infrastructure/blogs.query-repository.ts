@@ -12,12 +12,30 @@ export class BlogsQueryRepository {
 
   async findBlogs(
     query: QueryParamsBlogModel,
+    bloggerId?: string,
+  ): Promise<ResultDTO<QueryBuildDTO<Blog, ViewBlogModel>>> {
+    const queryObj = bloggerId
+      ? {
+          'blogOwnerInfo.userId': bloggerId,
+        }
+      : {};
+    const blogsData = await this.BlogModel.find(queryObj).findWithQuery<
+      Blog,
+      ViewBlogModel
+    >(query);
+    blogsData.map(this._mapBlogToView);
+
+    return new ResultDTO(InternalCode.Success, blogsData);
+  }
+
+  async findBlogsForSA(
+    query: QueryParamsBlogModel,
   ): Promise<ResultDTO<QueryBuildDTO<Blog, ViewBlogModel>>> {
     const blogsData = await this.BlogModel.find({}).findWithQuery<
       Blog,
       ViewBlogModel
     >(query);
-    blogsData.map(this._mapBlogToView);
+    blogsData.map((blog) => this._mapBlogToView(blog, true));
 
     return new ResultDTO(InternalCode.Success, blogsData);
   }
@@ -29,8 +47,8 @@ export class BlogsQueryRepository {
     return new ResultDTO(InternalCode.Success, this._mapBlogToView(blog));
   }
 
-  _mapBlogToView(blog: BlogDocument): ViewBlogModel {
-    return {
+  _mapBlogToView(blog: Blog, isSuperAdmin?: boolean): ViewBlogModel {
+    const result = {
       id: blog._id.toString(),
       name: blog.name,
       description: blog.description,
@@ -38,5 +56,11 @@ export class BlogsQueryRepository {
       createdAt: blog.createdAt.toISOString(),
       isMembership: blog.isMembership,
     };
+
+    if (isSuperAdmin) {
+      return { ...result, blogOwnerInfo: blog.blogOwnerInfo };
+    }
+
+    return result;
   }
 }

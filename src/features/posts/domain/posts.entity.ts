@@ -8,6 +8,7 @@ export type PostDocument = HydratedDocument<Post>;
 
 type PostStaticMethod = {
   makeInstance: (
+    ownerId: string,
     title: string,
     shortDescription: string,
     content: string,
@@ -17,21 +18,25 @@ type PostStaticMethod = {
   ) => PostDocument;
 };
 
-type PostInstanceMethodType = {
-  changeData(
+type PostInstanceMethodsType = {
+  changeData: (
     title: string,
     shortDescription: string,
     content: string,
     blogId: string,
     blogName: string,
-  ): void;
+  ) => void;
+  deactivate: () => void;
+  activate: () => void;
+  deactivateLike: (userId: string) => void;
+  activateLike: (userId: string) => void;
   like: (userId: string, userLogin: string, likeStatus: LikeStatusEnum) => void;
 };
 
 export type PostModelType = Model<
   PostDocument,
   QueryCustomMethods,
-  PostInstanceMethodType
+  PostInstanceMethodsType
 > &
   PostStaticMethod;
 
@@ -42,15 +47,23 @@ class UserLike {
 
   @Prop({ required: true })
   login: string;
+
   @Prop({ required: true, enum: LikeStatusEnum })
   likeStatus: LikeStatusEnum;
+
   @Prop({ required: true, type: Date })
   addedAt: Date;
+
+  @Prop({ default: false })
+  isDeactivate: boolean;
 }
 
 @Schema()
 export class Post {
   _id: Types.ObjectId;
+
+  @Prop({ required: true })
+  ownerId: string;
 
   @Prop({ required: true })
   title: string;
@@ -79,7 +92,11 @@ export class Post {
   @Prop([UserLike])
   usersLikes: UserLike[];
 
+  @Prop({ default: false })
+  isDeactivate: boolean;
+
   static makeInstance(
+    ownerId: string,
     title: string,
     shortDescription: string,
     content: string,
@@ -88,6 +105,7 @@ export class Post {
     PostModel: PostModelType,
   ) {
     return new PostModel({
+      ownerId,
       title,
       shortDescription,
       content,
@@ -110,6 +128,36 @@ export class Post {
     this.blogName = blogName;
   }
 
+  deactivate() {
+    this.isDeactivate = true;
+  }
+
+  activate() {
+    this.isDeactivate = false;
+  }
+
+  deactivateLike(userId: string) {
+    const ind = this.usersLikes.findIndex((like) => like.userId === userId);
+    this.usersLikes[ind].isDeactivate = true;
+
+    if (this.usersLikes[ind].likeStatus === LikeStatusEnum.Like) {
+      --this.likesCount;
+    } else {
+      --this.dislikesCount;
+    }
+  }
+
+  activateLike(userId: string) {
+    const ind = this.usersLikes.findIndex((like) => like.userId === userId);
+    this.usersLikes[ind].isDeactivate = false;
+
+    if (this.usersLikes[ind].likeStatus === LikeStatusEnum.Like) {
+      ++this.likesCount;
+    } else {
+      ++this.dislikesCount;
+    }
+  }
+
   like(userId: string, userLogin: string, likeStatus: LikeStatusEnum) {
     const ind: number = this.usersLikes.findIndex(
       (like) => like.userId === userId,
@@ -122,6 +170,7 @@ export class Post {
         login: userLogin,
         likeStatus,
         addedAt: new Date(),
+        isDeactivate: false,
       };
 
       if (likeStatus !== LikeStatusEnum.None) {
@@ -171,8 +220,12 @@ const postStaticMethods: PostStaticMethod = {
 };
 PostSchema.statics = postStaticMethods;
 
-const postInstanceMethod: PostInstanceMethodType = {
+const postInstanceMethod: PostInstanceMethodsType = {
   changeData: Post.prototype.changeData,
+  deactivate: Post.prototype.deactivate,
+  activate: Post.prototype.activate,
+  deactivateLike: Post.prototype.deactivateLike,
+  activateLike: Post.prototype.activateLike,
   like: Post.prototype.like,
 };
 PostSchema.methods = postInstanceMethod;

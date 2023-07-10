@@ -17,8 +17,7 @@ export class LocalAuthStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(loginOrEmail: string, password) {
-    return true;
+  async validate(loginOrEmail: string, password: string) {
     const userResult = await this.CommandBus.execute(
       new ValidateUserCommand(loginOrEmail, password),
     );

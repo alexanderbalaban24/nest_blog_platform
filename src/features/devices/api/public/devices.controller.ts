@@ -8,19 +8,19 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { CurrentUserId } from '../../infrastructure/decorators/params/current-user-id.param.decorator';
-import { DevicesQueryRepository } from '../infrastructure/devices.query-repository';
-import { RefreshTokenPayload } from '../../infrastructure/decorators/params/refresh-token-payload.param.decorator';
-import { RefreshTokenPayloadType } from '../../infrastructure/decorators/params/types';
-import { JwtRefreshAuthGuard } from '../../auth/guards/jwt-refresh-auth.guard';
-import { DevicesService } from '../application/devices.service';
-import { ExistingDevicePipe } from '../../../infrastructure/pipes/ExistingDevice.pipe';
-import { ExceptionAndResponseHelper } from '../../../shared/helpers';
-import { ApproachType } from '../../../shared/enums';
-import { ViewDeviceModel } from './models/view/ViewDeviceModel';
-import { DeleteUserSessionCommand } from '../application/use-cases/delete-user-session-use-case';
+import { CurrentUserId } from '../../../infrastructure/decorators/params/current-user-id.param.decorator';
+import { DevicesQueryRepository } from '../../infrastructure/devices.query-repository';
+import { RefreshTokenPayload } from '../../../infrastructure/decorators/params/refresh-token-payload.param.decorator';
+import { RefreshTokenPayloadType } from '../../../infrastructure/decorators/params/types';
+import { JwtRefreshAuthGuard } from '../../../auth/guards/jwt-refresh-auth.guard';
+import { DevicesService } from '../../application/devices.service';
+import { ExistingDevicePipe } from '../../../../infrastructure/pipes/ExistingDevice.pipe';
+import { ExceptionAndResponseHelper } from '../../../../shared/helpers';
+import { ApproachType } from '../../../../shared/enums';
+import { ViewDeviceModel } from '../models/view/ViewDeviceModel';
+import { DeleteUserSessionCommand } from '../../application/use-cases/delete-user-session-use-case';
 import { CommandBus } from '@nestjs/cqrs';
-import { DeleteAllUsersSessionsCommand } from '../application/use-cases/delete-all-users-sessions-use-case';
+import { DeleteAllUserSessionsExcludeCurrentCommand } from '../../application/use-cases/delete-all-user-sessions-exclude-current-use-case';
 
 @Controller('security/devices')
 export class DevicesController extends ExceptionAndResponseHelper {
@@ -50,7 +50,7 @@ export class DevicesController extends ExceptionAndResponseHelper {
     @RefreshTokenPayload() refreshTokenPayload: RefreshTokenPayloadType,
   ): Promise<void> {
     const deletedResult = await this.CommandBus.execute(
-      new DeleteAllUsersSessionsCommand(
+      new DeleteAllUserSessionsExcludeCurrentCommand(
         currentUserId,
         refreshTokenPayload.deviceId,
       ),

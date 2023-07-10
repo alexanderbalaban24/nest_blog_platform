@@ -8,6 +8,7 @@ import { PostsRepository } from '../../infrastructure/posts.repository';
 
 export class CreatePostCommand {
   constructor(
+    public ownerId: string,
     public blogId: string,
     public title: string,
     public shortDescription: string,
@@ -33,6 +34,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
       return new ResultDTO(InternalCode.Internal_Server);
 
     const postInstance = await this.PostModel.makeInstance(
+      command.ownerId,
       command.title,
       command.shortDescription,
       command.content,
