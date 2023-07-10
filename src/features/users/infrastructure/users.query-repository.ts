@@ -35,6 +35,7 @@ export class UsersQueryRepository {
       login: user.login,
       email: user.email,
       createdAt: user.createdAt.toISOString(),
+      banInfo: user.banInfo,
     };
   }
 }

@@ -3,4 +3,9 @@ export type ViewUserModel = {
   login: string;
   email: string;
   createdAt: string;
+  banInfo: {
+    banDate: Date;
+    banReason: string;
+    isBanned: boolean;
+  };
 };
