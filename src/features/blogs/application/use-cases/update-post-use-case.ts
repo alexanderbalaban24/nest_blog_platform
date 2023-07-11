@@ -27,6 +27,7 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
       command.postId,
       command.userId,
     );
+    if (result.hasError()) return result as ResultDTO<null>;
 
     await result.payload.postInstance.changeData(
       command.title,

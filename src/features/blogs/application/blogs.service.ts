@@ -21,14 +21,13 @@ export class BlogsService {
     ResultDTO<{ postInstance: PostDocument; blogInstance: BlogDocument }>
   > {
     const blogResult = await this.BlogsRepository.findById(blogId);
+    const postResult = await this.PostsRepository.findById(postId);
+
     if (blogResult.hasError()) return blogResult as ResultDTO<null>;
+    if (postResult.hasError()) return postResult as ResultDTO<null>;
 
     if (blogResult.payload.blogOwnerInfo.userId !== userId)
       return new ResultDTO(InternalCode.Forbidden);
-
-    const postResult = await this.PostsRepository.findById(postId);
-    if (postResult.hasError()) return postResult as ResultDTO<null>;
-
     if (
       postResult.payload.blogId !== blogId ||
       userId !== postResult.payload.ownerId
