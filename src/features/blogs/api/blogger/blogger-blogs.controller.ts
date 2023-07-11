@@ -159,8 +159,8 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePost(
     @Body() inputData: CreatePostModel,
-    @Param(':blogId', ExistingBlogPipe) blogId: string,
-    @Param(':postId', ExistingPostPipe) postId: string,
+    @Param('blogId', ExistingBlogPipe) blogId: string,
+    @Param('postId', ExistingPostPipe) postId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<void> {
     const updateResult = await this.CommandBus.execute(
@@ -180,8 +180,8 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
   @Delete(':blogId/posts/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deletePost(
-    @Param(':blogId', ExistingBlogPipe) blogId: string,
-    @Param(':postId', ExistingPostPipe) postId: string,
+    @Param('blogId', ExistingBlogPipe) blogId: string,
+    @Param('postId', ExistingPostPipe) postId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<void> {
     const deletedResult = await this.CommandBus.execute(
