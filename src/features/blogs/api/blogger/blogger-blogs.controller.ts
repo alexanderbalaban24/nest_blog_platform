@@ -34,8 +34,8 @@ import { CreatePostCommand } from '../../../posts/application/use-cases/create-p
 import { JwtAccessAuthGuard } from '../../../auth/guards/jwt-access-auth.guard';
 import { ExistingPostPipe } from '../../../../infrastructure/pipes/ExistingPost.pipe';
 import { CreatePostModel } from '../../../posts/api/models/input/CreatePostModel';
-import { UpdatePostCommand } from '../../application/use-cases/update-post-use-case';
-import { DeletePostCommand } from '../../application/use-cases/delete-post-use-case';
+import { UpdatePostCommand } from '../../application/use-cases/update-post-in-blog-use-case';
+import { DeletePostCommand } from '../../application/use-cases/delete-post-in-blog-use-case';
 
 @UseGuards(JwtAccessAuthGuard)
 @Controller('blogger/blogs')

@@ -64,7 +64,7 @@ export class PostsController extends ExceptionAndResponseHelper {
     return this.sendExceptionOrResponse(postResult);
   }
 
-  @Post()
+  /*@Post()
   @UseGuards(BasicAuthGuard)
   async createPost(
     @Body() inputData: CreatePostModel,
@@ -87,7 +87,7 @@ export class PostsController extends ExceptionAndResponseHelper {
     );
 
     return this.sendExceptionOrResponse(postResult);
-  }
+  }*/
 
   @Get(':id')
   async getPost(
@@ -102,7 +102,7 @@ export class PostsController extends ExceptionAndResponseHelper {
     return this.sendExceptionOrResponse(postResult);
   }
 
-  @Put(':id')
+  /*  @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
   async updatePost(
@@ -120,7 +120,7 @@ export class PostsController extends ExceptionAndResponseHelper {
     );
 
     return this.sendExceptionOrResponse(updatedResult);
-  }
+  }*/
 
   @Delete(':id')
   @UseGuards(BasicAuthGuard)

@@ -12,7 +12,9 @@ export class DeletePostCommand {
 }
 
 @CommandHandler(DeletePostCommand)
-export class DeletePostUseCase implements ICommandHandler<DeletePostCommand> {
+export class DeletePostInBlogUseCase
+  implements ICommandHandler<DeletePostCommand>
+{
   constructor(private BlogsService: BlogsService) {}
 
   async execute(command: DeletePostCommand): Promise<ResultDTO<null>> {

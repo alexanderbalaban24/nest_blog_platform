@@ -15,7 +15,9 @@ export class UpdatePostCommand {
 }
 
 @CommandHandler(UpdatePostCommand)
-export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
+export class UpdatePostInBlogUseCase
+  implements ICommandHandler<UpdatePostCommand>
+{
   constructor(
     private BlogsService: BlogsService,
     private PostsRepository: PostsRepository,
