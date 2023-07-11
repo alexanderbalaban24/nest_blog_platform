@@ -4,7 +4,7 @@ import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class DeleteBlogCommand {
-  constructor(public blogId: string) {}
+  constructor(public userId: string, public blogId: string) {}
 }
 
 @CommandHandler(DeleteBlogCommand)
@@ -14,6 +14,9 @@ export class DeleteBlogUseCase implements ICommandHandler<DeleteBlogCommand> {
   async execute(command: DeleteBlogCommand): Promise<ResultDTO<null>> {
     const blogResult = await this.BlogsRepository.findById(command.blogId);
     if (blogResult.hasError()) return new ResultDTO(blogResult.code);
+
+    if (blogResult.payload.blogOwnerInfo.userId !== command.userId)
+      return new ResultDTO(InternalCode.Forbidden);
 
     await blogResult.payload.deleteOne();
 

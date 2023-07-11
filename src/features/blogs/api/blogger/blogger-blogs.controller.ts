@@ -87,9 +87,10 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(
     @Param('id', ExistingBlogPipe) blogId: string,
+    @CurrentUserId() currentUserId: string,
   ): Promise<void> {
     const deletedResult = await this.CommandBus.execute(
-      new DeleteBlogCommand(blogId),
+      new DeleteBlogCommand(currentUserId, blogId),
     );
 
     return this.sendExceptionOrResponse(deletedResult);
