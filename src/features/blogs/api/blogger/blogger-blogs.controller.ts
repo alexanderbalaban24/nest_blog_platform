@@ -158,8 +158,8 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
   @Put(':blogId/posts/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePost(
-    @Param(':blogId', ExistingBlogPipe) blogId: string,
-    @Param(':postId', ExistingPostPipe) postId: string,
+    @Param(':blogId') blogId: string,
+    @Param(':postId') postId: string,
     @Body() inputData: CreatePostModel,
     @CurrentUserId() currentUserId: string,
   ): Promise<void> {
