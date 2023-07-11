@@ -22,12 +22,12 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
   ) {}
 
   async execute(command: UpdatePostCommand): Promise<ResultDTO<null>> {
-    const result = await this.BlogsService.validatePostData(
+    /*const result = await this.BlogsService.validatePostData(
       command.blogId,
       command.postId,
       command.userId,
     );
-    if (result.hasError()) return result as ResultDTO<null>;
+    if (result.hasError()) return result as ResultDTO<null>;*/
 
     await result.payload.postInstance.changeData(
       command.title,

@@ -21,6 +21,7 @@ export class DeletePostUseCase implements ICommandHandler<DeletePostCommand> {
       command.postId,
       command.userId,
     );
+    if (result.hasError()) return result as ResultDTO<null>;
 
     await result.payload.postInstance.deleteOne();
 
