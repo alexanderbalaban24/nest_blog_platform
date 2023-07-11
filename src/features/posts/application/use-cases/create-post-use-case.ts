@@ -29,11 +29,13 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
   ): Promise<ResultDTO<{ postId: string }>> {
     const blogResult = await this.BlogsQueryRepository.findBlogById(
       command.blogId,
+      //TODO возможно говнокод, надо отрефакторить, быстрое решение
+      true,
     );
     if (blogResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
 
-    if (command.ownerId !== blogResult?.payload?.blogOwnerInfo?.userId)
+    if (command.ownerId !== blogResult.payload.blogOwnerInfo.userId)
       return new ResultDTO(InternalCode.Forbidden);
 
     const postInstance = await this.PostModel.makeInstance(

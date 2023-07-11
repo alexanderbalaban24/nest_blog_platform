@@ -40,11 +40,17 @@ export class BlogsQueryRepository {
     return new ResultDTO(InternalCode.Success, blogsData);
   }
 
-  async findBlogById(blogId: string): Promise<ResultDTO<ViewBlogModel>> {
+  async findBlogById(
+    blogId: string,
+    internalCall?: boolean,
+  ): Promise<ResultDTO<ViewBlogModel>> {
     const blog = await this.BlogModel.findById(blogId).lean();
     if (!blog) return new ResultDTO(InternalCode.NotFound);
 
-    return new ResultDTO(InternalCode.Success, this._mapBlogToView(blog));
+    return new ResultDTO(
+      InternalCode.Success,
+      this._mapBlogToView(blog, internalCall),
+    );
   }
 
   _mapBlogToView(blog: Blog, isSuperAdmin?: boolean): ViewBlogModel {
