@@ -158,9 +158,9 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
   @Put(':blogId/posts/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePost(
+    @Body() inputData: CreatePostModel,
     @Param(':blogId', ExistingBlogPipe) blogId: string,
     @Param(':postId', ExistingPostPipe) postId: string,
-    @Body() inputData: CreatePostModel,
     @CurrentUserId() currentUserId: string,
   ): Promise<void> {
     const updateResult = await this.CommandBus.execute(
