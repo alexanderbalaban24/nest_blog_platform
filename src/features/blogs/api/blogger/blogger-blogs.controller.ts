@@ -177,7 +177,7 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
     return this.sendExceptionOrResponse(updateResult);
   }
 
-  @Put(':blogId/posts/:postId')
+  @Delete(':blogId/posts/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deletePost(
     @Param(':blogId', ExistingBlogPipe) blogId: string,
