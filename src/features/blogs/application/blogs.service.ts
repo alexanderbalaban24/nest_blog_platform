@@ -29,7 +29,10 @@ export class BlogsService {
     const postResult = await this.PostsRepository.findById(postId);
     if (postResult.hasError()) return postResult as ResultDTO<null>;
 
-    if (postResult.payload.blogId !== blogId)
+    if (
+      postResult.payload.blogId !== blogId ||
+      userId !== postResult.payload.ownerId
+    )
       return new ResultDTO(InternalCode.Forbidden);
 
     return new ResultDTO(InternalCode.Success, {
