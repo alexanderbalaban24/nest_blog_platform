@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogDocument, BlogModelType } from '../domain/blogs.entity';
+import { Blog, BlogModelType } from '../domain/blogs.entity';
 import { ViewBlogModel } from '../api/models/view/ViewBlogModel';
 import { QueryParamsBlogModel } from '../api/models/input/QueryParamsBlogModel';
 import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
@@ -16,6 +16,7 @@ export class BlogsQueryRepository {
   ): Promise<ResultDTO<QueryBuildDTO<Blog, ViewBlogModel>>> {
     const queryObj = bloggerId
       ? {
+          //TODO пернести возможно в findWithQuery
           'blogOwnerInfo.userId': bloggerId,
         }
       : {};
