@@ -1,5 +1,3 @@
-import { HttpCode, HttpStatus } from '@nestjs/common';
-
 export enum LikeStatusEnum {
   None = 'None',
   Like = 'Like',

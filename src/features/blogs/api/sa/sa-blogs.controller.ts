@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -20,6 +21,8 @@ import { ExistingBlogPipe } from '../../../../infrastructure/pipes/ExistingBlog.
 import { ExistingUserPipe } from '../../../../infrastructure/pipes/ExistingUser.pipe';
 import { BindUserCommand } from '../../application/use-cases/bind-user-use-case';
 import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
+import { BanBlogModel } from '../models/input/BanBlogModel';
+import { BanUnbanBlogCommand } from '../../application/use-cases/ban-unban-blog-use-case';
 
 @UseGuards(BasicAuthGuard)
 @Controller('sa/blogs')
@@ -54,5 +57,18 @@ export class SaBlogsController extends ExceptionAndResponseHelper {
     );
 
     return this.sendExceptionOrResponse(bindResult);
+  }
+
+  @Put(':blogId/ban')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async banBlog(
+    @Param('blogId', ExistingBlogPipe) blogId: string,
+    @Body('isBanned') inputData: BanBlogModel,
+  ): Promise<void> {
+    const banResult = await this.CommandBus.execute(
+      new BanUnbanBlogCommand(blogId, inputData.isBanned),
+    );
+
+    return this.sendExceptionOrResponse(banResult);
   }
 }

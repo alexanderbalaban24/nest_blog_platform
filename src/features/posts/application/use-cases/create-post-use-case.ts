@@ -27,6 +27,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
   async execute(
     command: CreatePostCommand,
   ): Promise<ResultDTO<{ postId: string }>> {
+    //TODO делать запрос через команд репозиторий
     const blogResult = await this.BlogsQueryRepository.findBlogById(
       command.blogId,
       //TODO возможно говнокод, надо отрефакторить, быстрое решение

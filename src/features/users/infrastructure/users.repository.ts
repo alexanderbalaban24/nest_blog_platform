@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument, UserModelType } from '../domain/users.entity';
 import { ResultDTO } from '../../../shared/dto';
 import { InternalCode } from '../../../shared/enums';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class UsersRepository {
@@ -13,6 +14,43 @@ export class UsersRepository {
     if (!userInstance) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(InternalCode.Success, userInstance);
+  }
+
+  async checkUserAccessForBlog(
+    userId: string,
+    blogId: string,
+  ): Promise<ResultDTO<boolean>> {
+    const ban = await this.UserModel.aggregate([
+      {
+        $match: { _id: new Types.ObjectId(userId) },
+      },
+      {
+        $project: {
+          _id: 0,
+          isBanned: {
+            $let: {
+              vars: {
+                userBanInfo: {
+                  $arrayElemAt: [
+                    {
+                      $filter: {
+                        input: '$bannedBlogsInfo',
+                        as: 'ban',
+                        cond: { $eq: ['$$ban.blogId', blogId] },
+                      },
+                    },
+                    0,
+                  ],
+                },
+              },
+              in: { $ifNull: ['$$userBanInfo.isBanned', false] },
+            },
+          },
+        },
+      },
+    ]);
+
+    return new ResultDTO(InternalCode.Success, ban[0].isBanned);
   }
 
   async create(

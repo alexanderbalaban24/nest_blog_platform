@@ -19,6 +19,8 @@ type BlogStaticMethod = {
 type BlogInstanceMethodsType = {
   changeData(name: string, description: string, websiteUrl: string): void;
   bindUser(userId: string, userLogin: string): void;
+  deactivate: () => void;
+  activate: () => void;
 };
 
 export type BlogModelType = Model<
@@ -58,6 +60,9 @@ export class Blog {
   @Prop({ type: BlogOwnerInfo, required: true })
   blogOwnerInfo: BlogOwnerInfo;
 
+  @Prop({ default: false })
+  isDeactivate: boolean;
+
   static makeInstance(
     name: string,
     description: string,
@@ -72,6 +77,14 @@ export class Blog {
       websiteUrl,
       blogOwnerInfo: { userId, userLogin },
     });
+  }
+
+  deactivate() {
+    this.isDeactivate = true;
+  }
+
+  activate() {
+    this.isDeactivate = false;
   }
 
   changeData(name: string, description: string, websiteUrl: string) {
@@ -95,6 +108,8 @@ BlogSchema.statics = blogStaticMethods;
 const blogInstancesMethod: BlogInstanceMethodsType = {
   changeData: Blog.prototype.changeData,
   bindUser: Blog.prototype.bindUser,
+  activate: Blog.prototype.activate,
+  deactivate: Blog.prototype.deactivate,
 };
 BlogSchema.methods = blogInstancesMethod;
 

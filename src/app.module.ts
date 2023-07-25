@@ -97,6 +97,7 @@ import { PublicBlogsController } from './features/blogs/api/public/public-blogs.
 import { BanUnbanUseCase } from './features/users/application/use-cases/ban-unban-use-case';
 import { UpdatePostInBlogUseCase } from './features/blogs/application/use-cases/update-post-in-blog-use-case';
 import { DeletePostInBlogUseCase } from './features/blogs/application/use-cases/delete-post-in-blog-use-case';
+import { BloggerUsersController } from './features/users/api/blogger/blogger-users.controller';
 
 const useCases = [
   CreateBlogUseCase,
@@ -182,6 +183,7 @@ const useCases = [
     PublicBlogsController,
     PostsController,
     SaUsersController,
+    BloggerUsersController,
     AuthController,
     DevicesController,
     CommentsController,

@@ -22,6 +22,11 @@ type UserInstanceMethodsType = {
   updatePasswordHash: (newPassHash: string) => void;
   updateConfirmationOrRecoveryData: (field: string) => string;
   banUser: (isBanned: boolean, banReason: string) => void;
+  banForSpecificBlog: (
+    blogId: string,
+    isBanned: boolean,
+    banReason: string,
+  ) => void;
 };
 
 export type UserModelType = Model<
@@ -61,6 +66,18 @@ export class BanUserInfo {
   banReason: string;
 }
 
+@Schema({ _id: false, versionKey: false })
+export class BannedBlogsInfo {
+  @Prop({ default: false })
+  isBanned: boolean;
+  @Prop({ default: null })
+  banDate: Date;
+  @Prop({ required: true })
+  blogId: string;
+  @Prop({ default: null })
+  banReason: string;
+}
+
 // TODO в схему сразу ниже можно записать timestamp
 @Schema()
 export class User {
@@ -86,6 +103,9 @@ export class User {
 
   @Prop({ type: BanUserInfo, default: new BanUserInfo() })
   banInfo: BanUserInfo;
+
+  @Prop([BannedBlogsInfo])
+  bannedBlogsInfo: BannedBlogsInfo[];
 
   static makeInstance(
     login: string,
@@ -122,7 +142,7 @@ export class User {
     this.passwordRecovery.isConfirmed = true;
   }
 
-  banUser(isBanned: boolean, banReason: string) {
+  ban(isBanned: boolean, banReason: string) {
     this.banInfo.isBanned = isBanned;
     if (isBanned) {
       this.banInfo.banReason = banReason;
@@ -131,6 +151,20 @@ export class User {
       this.banInfo.banReason = null;
       this.banInfo.banDate = null;
     }
+  }
+
+  banForSpecificBlog(
+    blogId: string,
+    isBanned: boolean,
+    banReason: string,
+  ): void {
+    const bannedDate: BannedBlogsInfo = {
+      isBanned,
+      banDate: new Date(),
+      blogId,
+      banReason,
+    };
+    this.bannedBlogsInfo.push(bannedDate);
   }
 }
 
@@ -146,7 +180,8 @@ const userInstanceMethod: UserInstanceMethodsType = {
   updateConfirmationOrRecoveryData:
     User.prototype.updateConfirmationOrRecoveryData,
   updatePasswordHash: User.prototype.updatePasswordHash,
-  banUser: User.prototype.banUser,
+  banUser: User.prototype.ban,
+  banForSpecificBlog: User.prototype.banForSpecificBlog,
 };
 UserSchema.methods = userInstanceMethod;
 

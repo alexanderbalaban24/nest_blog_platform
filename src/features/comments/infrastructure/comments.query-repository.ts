@@ -43,6 +43,88 @@ export class CommentsQueryRepository {
     );
   }
 
+  async getCommentsForAllPostsForAllUserBlogs(
+    userId: string,
+  ): Promise<ResultDTO<QueryBuildDTO<any, any>>> {
+    const comments = this.CommentModel.aggregate([
+      {
+        $addFields: {
+          postId: { $toObjectId: '$postId' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'posts',
+          localField: 'postId',
+          foreignField: '_id',
+          as: 'post',
+        },
+      },
+      {
+        $unwind: '$post',
+      },
+      { $addFields: { blogId: { $toObjectId: '$post.blogId' } } },
+      {
+        $lookup: {
+          from: 'blogs',
+          localField: 'blogId',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $match: {
+                'blogOwnerInfo.userId': userId,
+                isDeactivate: false,
+              },
+            },
+          ],
+          as: 'blog',
+        },
+      },
+      {
+        $unwind: '$blog',
+      },
+      {
+        $project: {
+          _id: 0,
+          id: '$_id',
+          content: 1,
+          commentatorInfo: '$commentatorInfo',
+          createdAt: 1,
+          'likesInfo.likesCount': '$likesCount',
+          'likesInfo.dislikesCount': '$dislikesCount',
+          'likesInfo.myStatus': {
+            $let: {
+              vars: {
+                userLike: {
+                  $arrayElemAt: [
+                    {
+                      $filter: {
+                        input: '$usersLikes',
+                        as: 'like',
+                        cond: { $eq: ['$$like.userId', userId] },
+                      },
+                    },
+                    0,
+                  ],
+                },
+              },
+              in: { $ifNull: ['$$userLike.likeStatus', 'None'] },
+            },
+          },
+          'postInfo.id': '$post._id',
+          'postInfo.title': '$post.title',
+          'postInfo.blogId': '$post.blogId',
+          'postInfo.blogName': '$post.blogName',
+        },
+      },
+    ]);
+
+    const result = await this._queryBuilder({}, comments);
+    result.convert();
+
+    return new ResultDTO(InternalCode.Success, result);
+  }
+
   _mapCommentToView(comment: Comment, userId?: string): ViewCommentModel {
     const userLikeData = comment.usersLikes.find(
       (item) => item.userId === userId,
@@ -61,5 +143,29 @@ export class CommentsQueryRepository {
         myStatus: userLikeData?.likeStatus ?? LikeStatusEnum.None,
       },
     };
+  }
+
+  async _queryBuilder(queryData, entity) {
+    const sortBy = queryData.sortBy ?? 'createdAt';
+    const sortDirection = queryData.sortDirection ?? 'desc';
+    const pageNumber = queryData.pageNumber ? +queryData.pageNumber : 1;
+    const pageSize = queryData.pageSize ? +queryData.pageSize : 10;
+    const skip = pageSize * (pageNumber - 1);
+
+    entity
+      .sort({ [sortBy]: sortDirection })
+      .skip(skip)
+      .limit(pageSize);
+    const items = await entity;
+
+    const pagesCount = Math.ceil(items.length / pageSize);
+
+    return new QueryBuildDTO<any, any>(
+      pagesCount,
+      pageNumber,
+      pageSize,
+      items.length,
+      items,
+    );
   }
 }

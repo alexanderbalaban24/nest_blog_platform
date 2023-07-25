@@ -37,7 +37,7 @@ export class BanUnbanUseCase implements ICommandHandler<BanUnbanCommand> {
     if (!userResult) return new ResultDTO(InternalCode.Internal_Server);
 
     // Mark banned user
-    userResult.payload.banUser(command.isBanned, command.banReason);
+    userResult.payload.ban(command.isBanned, command.banReason);
     await this.UsersRepository.save(userResult.payload);
 
     // Deactivate posts of banned user

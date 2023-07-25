@@ -31,11 +31,12 @@ import { CreateBlogCommand } from '../../application/use-cases/create-blog-use-c
 import { DeleteBlogCommand } from '../../application/use-cases/delete-blog-use-case';
 import { UpdateBlogCommand } from '../../application/use-cases/update-blog-use-case';
 import { CreatePostCommand } from '../../../posts/application/use-cases/create-post-use-case';
-import { JwtAccessAuthGuard } from '../../../auth/guards/jwt-access-auth.guard';
 import { ExistingPostPipe } from '../../../../infrastructure/pipes/ExistingPost.pipe';
 import { CreatePostModel } from '../../../posts/api/models/input/CreatePostModel';
 import { UpdatePostCommand } from '../../application/use-cases/update-post-in-blog-use-case';
 import { DeletePostCommand } from '../../application/use-cases/delete-post-in-blog-use-case';
+import { CommentsQueryRepository } from '../../../comments/infrastructure/comments.query-repository';
+import { JwtAccessAuthGuard } from '../../../auth/guards/jwt-access-auth.guard';
 
 @UseGuards(JwtAccessAuthGuard)
 @Controller('blogger/blogs')
@@ -44,6 +45,7 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
     private CommandBus: CommandBus,
     private BlogsQueryRepository: BlogsQueryRepository,
     private PostsQueryRepository: PostsQueryRepository,
+    private CommentsQueryRepository: CommentsQueryRepository,
   ) {
     super(ApproachType.http);
   }
@@ -189,5 +191,17 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
     );
 
     return this.sendExceptionOrResponse(deletedResult);
+  }
+
+  @Get('comments')
+  async getCommentsForAllPostsForAllUserBlogs(
+    @CurrentUserId() currentUserId: string,
+  ) {
+    const blogsResult =
+      await this.CommentsQueryRepository.getCommentsForAllPostsForAllUserBlogs(
+        currentUserId,
+      );
+
+    return this.sendExceptionOrResponse(blogsResult);
   }
 }

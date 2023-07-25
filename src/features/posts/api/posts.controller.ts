@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -13,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { QueryParamsPostModel } from './models/input/QueryParamsPostModel';
 import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
-import { CreatePostModel } from './models/input/CreatePostModel';
 import { PostsService } from '../application/posts.service';
 import { CreateCommentModel } from './models/input/CreateCommentModel';
 import { CommentsService } from '../../comments/application/comments.service';
@@ -23,7 +21,6 @@ import { CommentsQueryRepository } from '../../comments/infrastructure/comments.
 import { QueryParamsCommentModel } from '../../comments/api/models/input/QueryParamsCommentModel';
 import { ExistingPostPipe } from '../../../infrastructure/pipes/ExistingPost.pipe';
 import { LikeStatusModel } from './models/input/LikeStatusModel';
-import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
 import { ExceptionAndResponseHelper } from '../../../shared/helpers';
 import { ApproachType } from '../../../shared/enums';
 import { QueryBuildDTO } from '../../../shared/dto';
@@ -32,9 +29,6 @@ import { ViewPostModel } from './models/view/ViewPostModel';
 import { ViewCommentModel } from '../../comments/api/models/view/ViewCommentModel';
 import { Comment } from '../../comments/domain/comments.entity';
 import { CommandBus } from '@nestjs/cqrs';
-import { CreatePostCommand } from '../application/use-cases/create-post-use-case';
-import { UpdatePostCommand } from '../application/use-cases/update-post-use-case';
-import { DeletePostCommand } from '../application/use-cases/delete-post-use-case';
 import { LikeStatusPostCommand } from '../application/use-cases/like-status-post-use-case';
 import { CreateCommentCommand } from '../../comments/application/use-cases/create-comment-use-case';
 
@@ -64,31 +58,6 @@ export class PostsController extends ExceptionAndResponseHelper {
     return this.sendExceptionOrResponse(postResult);
   }
 
-  /*@Post()
-  @UseGuards(BasicAuthGuard)
-  async createPost(
-    @Body() inputData: CreatePostModel,
-    @CurrentUserId() currentUserId: string,
-  ): Promise<ViewPostModel> {
-    const createdPostResult = await this.CommandBus.execute(
-      new CreatePostCommand(
-        currentUserId,
-        inputData.blogId,
-        inputData.title,
-        inputData.shortDescription,
-        inputData.content,
-      ),
-    );
-    this.sendExceptionOrResponse(createdPostResult);
-
-    const postResult = await this.PostsQueryRepository.findPostById(
-      createdPostResult.payload.postId,
-      currentUserId,
-    );
-
-    return this.sendExceptionOrResponse(postResult);
-  }*/
-
   @Get(':id')
   async getPost(
     @Param('id', ExistingPostPipe) postId: string,
@@ -100,39 +69,6 @@ export class PostsController extends ExceptionAndResponseHelper {
     );
 
     return this.sendExceptionOrResponse(postResult);
-  }
-
-  /*  @Put(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(BasicAuthGuard)
-  async updatePost(
-    @Param('id', ExistingPostPipe) postId: string,
-    @Body() inputData: CreatePostModel,
-  ): Promise<void> {
-    const updatedResult = await this.CommandBus.execute(
-      new UpdatePostCommand(
-        postId,
-        inputData.blogId,
-        inputData.title,
-        inputData.shortDescription,
-        inputData.content,
-      ),
-    );
-
-    return this.sendExceptionOrResponse(updatedResult);
-  }*/
-
-  @Delete(':id')
-  @UseGuards(BasicAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(
-    @Param('id', ExistingPostPipe) postId: string,
-  ): Promise<void> {
-    const deletedResult = await this.CommandBus.execute(
-      new DeletePostCommand(postId),
-    );
-
-    return this.sendExceptionOrResponse(deletedResult);
   }
 
   @Post(':id/comments')

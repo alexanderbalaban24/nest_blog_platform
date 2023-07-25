@@ -6,6 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentModelType } from '../../domain/comments.entity';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { UsersRepository } from '../../../users/infrastructure/users.repository';
 
 export class CreateCommentCommand {
   constructor(
@@ -24,6 +25,7 @@ export class CreateCommentUseCase
     private CommentRepository: CommentsRepository,
     private PostsQueryRepository: PostsQueryRepository,
     private UsersQueryRepository: UsersQueryRepository,
+    private UsersRepository: UsersRepository,
   ) {}
 
   async execute(
@@ -40,6 +42,12 @@ export class CreateCommentUseCase
     );
     if (userResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
+
+    const checkAccess = await this.UsersRepository.checkUserAccessForBlog(
+      command.userId,
+      postResult.payload.blogId,
+    );
+    if (checkAccess.payload) return new ResultDTO(InternalCode.Forbidden);
 
     const newCommentInstance = await this.CommentModel.makeInstance(
       postResult.payload.id,

@@ -13,7 +13,6 @@ export class ExistBlogValidator implements ValidatorConstraintInterface {
   constructor(private BlogsRepository: BlogsRepository) {}
 
   async validate(id: string): Promise<boolean> {
-    debugger;
     try {
       const blogResult = await this.BlogsRepository.findById(id);
       return !blogResult.hasError();

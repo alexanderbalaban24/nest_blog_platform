@@ -17,6 +17,10 @@ export class QueryBuildDTO<T, C> {
   map(cb: (val: T) => C): void {
     this.items = this.#itemsDB.map((el) => cb(el));
   }
+
+  convert() {
+    this.items = this.#itemsDB as unknown as C[];
+  }
 }
 
 export class ResultDTO<T> {
