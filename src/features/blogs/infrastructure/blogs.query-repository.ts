@@ -5,6 +5,7 @@ import { ViewBlogModel } from '../api/models/view/ViewBlogModel';
 import { QueryParamsBlogModel } from '../api/models/input/QueryParamsBlogModel';
 import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
 import { InternalCode } from '../../../shared/enums';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -46,7 +47,10 @@ export class BlogsQueryRepository {
     blogId: string,
     internalCall?: boolean,
   ): Promise<ResultDTO<ViewBlogModel>> {
-    const blog = await this.BlogModel.findById(blogId).lean();
+    const blog = await this.BlogModel.findOne({
+      _id: new Types.ObjectId(blogId),
+      isDeactivate: { $ne: true },
+    }).lean();
     if (!blog) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(
