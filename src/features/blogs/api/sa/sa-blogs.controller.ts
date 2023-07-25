@@ -63,7 +63,7 @@ export class SaBlogsController extends ExceptionAndResponseHelper {
   @HttpCode(HttpStatus.NO_CONTENT)
   async banBlog(
     @Param('blogId', ExistingBlogPipe) blogId: string,
-    @Body('isBanned') inputData: BanBlogModel,
+    @Body() inputData: BanBlogModel,
   ): Promise<void> {
     const banResult = await this.CommandBus.execute(
       new BanUnbanBlogCommand(blogId, inputData.isBanned),

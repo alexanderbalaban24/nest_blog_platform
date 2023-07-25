@@ -86,10 +86,10 @@ export class SaUsersController extends ExceptionAndResponseHelper {
   @HttpCode(HttpStatus.NO_CONTENT)
   async banUser(
     @Param('id', ExistingUserPipe) userId: string,
-    @Body() inputModel: UserBanModel,
+    @Body() inputData: UserBanModel,
   ) {
     const result = await this.CommandBus.execute(
-      new BanUnbanCommand(userId, inputModel.isBanned, inputModel.banReason),
+      new BanUnbanCommand(userId, inputData.isBanned, inputData.banReason),
     );
 
     return this.sendExceptionOrResponse(result);
