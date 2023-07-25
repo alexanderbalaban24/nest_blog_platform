@@ -98,6 +98,8 @@ import { BanUnbanUseCase } from './features/users/application/use-cases/ban-unba
 import { UpdatePostInBlogUseCase } from './features/blogs/application/use-cases/update-post-in-blog-use-case';
 import { DeletePostInBlogUseCase } from './features/blogs/application/use-cases/delete-post-in-blog-use-case';
 import { BloggerUsersController } from './features/users/api/blogger/blogger-users.controller';
+import { BanUnbanBlogUseCase } from './features/blogs/application/use-cases/ban-unban-blog-use-case';
+import { BanUnbanForSpecificBlogUseCase } from './features/users/application/use-cases/ban-unban-for-specific-blog-use-case';
 
 const useCases = [
   CreateBlogUseCase,
@@ -135,6 +137,8 @@ const useCases = [
   BanUnbanUseCase,
   UpdatePostInBlogUseCase,
   DeletePostInBlogUseCase,
+  BanUnbanBlogUseCase,
+  BanUnbanForSpecificBlogUseCase,
 ];
 
 @Module({
