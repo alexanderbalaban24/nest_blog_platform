@@ -18,9 +18,9 @@ export class BlogsQueryRepository {
       ? {
           //TODO пернести возможно в findWithQuery
           'blogOwnerInfo.userId': bloggerId,
-          $ne: { isDeactivate: false },
+          isDeactivate: { $ne: true },
         }
-      : { $ne: { isDeactivate: false } };
+      : { isDeactivate: { $ne: true } };
     const blogsData = await this.BlogModel.find(queryObj).findWithQuery<
       Blog,
       ViewBlogModel
