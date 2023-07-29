@@ -68,7 +68,7 @@ export class Blog {
   @Prop({ type: BlogOwnerInfo, required: true })
   blogOwnerInfo: BlogOwnerInfo;
 
-  @Prop({ default: { isBanned: false, banDate: Date.now } })
+  @Prop({ default: { isBanned: false, banDate: new Date() } })
   banInfo: banInfo;
 
   static makeInstance(
