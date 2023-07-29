@@ -26,7 +26,7 @@ export class UsersQueryRepository {
     const usersData = await this.UserModel.find({
       'bannedBlogsInfo.blogId': blogId,
     }).findWithQuery(query);
-    usersData.map(this._mapUserToView);
+    usersData.map((user: UserDocument) => user.banInfo);
 
     return new ResultDTO(InternalCode.Success, usersData);
   }
