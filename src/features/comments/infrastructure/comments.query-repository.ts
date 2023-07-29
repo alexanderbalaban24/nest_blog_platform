@@ -73,7 +73,7 @@ export class CommentsQueryRepository {
             {
               $match: {
                 'blogOwnerInfo.userId': userId,
-                isDeactivate: false,
+                'banInfo.isBanned': false,
               },
             },
           ],
