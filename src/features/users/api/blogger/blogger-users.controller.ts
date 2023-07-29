@@ -14,12 +14,14 @@ import { BanUnbanForSpecificBlogCommand } from '../../application/use-cases/ban-
 import { ExistingUserPipe } from '../../../../infrastructure/pipes/ExistingUser.pipe';
 import { UserBanForSpecificBlogModel } from '../models/input/UserBanForSpecificBlogModel';
 import { ExceptionAndResponseHelper } from '../../../../shared/helpers';
-import { ApproachType } from '../../../../shared/enums';
+import { ApproachType, InternalCode } from '../../../../shared/enums';
 import { ExistingBlogPipe } from '../../../../infrastructure/pipes/ExistingBlog.pipe';
 import { QueryParamsUserModel } from '../models/input/QueryParamsUserModel';
 import { UsersQueryRepository } from '../../infrastructure/users.query-repository';
 import { CurrentUserId } from '../../../infrastructure/decorators/params/current-user-id.param.decorator';
 import { JwtAccessAuthGuard } from '../../../auth/guards/jwt-access-auth.guard';
+import { BlogsQueryRepository } from '../../../blogs/infrastructure/blogs.query-repository';
+import { ResultDTO } from '../../../../shared/dto';
 
 @UseGuards(JwtAccessAuthGuard)
 @Controller('blogger/users')
@@ -27,6 +29,7 @@ export class BloggerUsersController extends ExceptionAndResponseHelper {
   constructor(
     private CommandBus: CommandBus,
     private UsersQueryRepository: UsersQueryRepository,
+    private BlogsQueryRepository: BlogsQueryRepository,
   ) {
     super(ApproachType.http);
   }
@@ -35,7 +38,19 @@ export class BloggerUsersController extends ExceptionAndResponseHelper {
   async getAllBannedUsersForSpecificBlog(
     @Param('id', ExistingBlogPipe) blogId: string,
     @Query() queryData: QueryParamsUserModel,
+    @CurrentUserId() currentUserId: string,
   ) {
+    const blogsResult = await this.BlogsQueryRepository.findBlogById(blogId);
+    if (blogsResult.hasError())
+      return this.sendExceptionOrResponse(
+        new ResultDTO(InternalCode.Internal_Server),
+      );
+
+    if (blogsResult.payload.blogOwnerInfo.userId !== currentUserId)
+      return this.sendExceptionOrResponse(
+        new ResultDTO(InternalCode.Forbidden),
+      );
+
     const usersResult = await this.UsersQueryRepository.findBannedUsersForBlog(
       queryData,
       blogId,
