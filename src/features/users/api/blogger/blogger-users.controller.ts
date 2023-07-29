@@ -27,7 +27,7 @@ export class BloggerUsersController extends ExceptionAndResponseHelper {
     super(ApproachType.http);
   }
 
-  @Get('blopg/:id')
+  @Get('blog/:id')
   async getAllBannedUsersForSpecificBlog(
     @Param('id', ExistingBlogPipe) blogId: string,
     @Query() queryData: QueryParamsUserModel,
