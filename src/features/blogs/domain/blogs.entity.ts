@@ -34,7 +34,7 @@ export type BlogModelType = Model<
 class banInfo {
   @Prop({ required: true })
   isBanned: boolean;
-  @Prop({ type: Date || null, required: true })
+  @Prop({ type: Date || null, default: null })
   banDate: Date;
 }
 
