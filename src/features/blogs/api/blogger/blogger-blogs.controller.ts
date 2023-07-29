@@ -202,7 +202,7 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
     const blogsResult =
       await this.CommentsQueryRepository.getCommentsForAllPostsForAllUserBlogs(
         queryData,
-        '64c540fd53fcda0ea0b1027d',
+        currentUserId,
       );
 
     return this.sendExceptionOrResponse(blogsResult);
