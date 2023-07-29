@@ -22,6 +22,15 @@ export class UsersQueryRepository {
     return new ResultDTO(InternalCode.Success, usersData);
   }
 
+  async findBannedUsersForBlog(query: QueryParamsUserModel, blogId: string) {
+    const usersData = await this.UserModel.find({
+      'bannedBlogsInfo.blogId': blogId,
+    }).findWithQuery(query);
+    usersData.map(this._mapUserToView);
+
+    return new ResultDTO(InternalCode.Success, usersData);
+  }
+
   async findUserById(userId: string): Promise<ResultDTO<ViewUserModel>> {
     const user = await this.UserModel.findById(userId).lean();
     if (!user) return new ResultDTO(InternalCode.NotFound);

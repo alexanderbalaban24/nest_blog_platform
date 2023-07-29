@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
   Put,
+  Query,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { BanUnbanForSpecificBlogCommand } from '../../application/use-cases/ban-unban-for-specific-blog-use-case';
@@ -12,11 +14,30 @@ import { ExistingUserPipe } from '../../../../infrastructure/pipes/ExistingUser.
 import { UserBanForSpecificBlogModel } from '../models/input/UserBanForSpecificBlogModel';
 import { ExceptionAndResponseHelper } from '../../../../shared/helpers';
 import { ApproachType } from '../../../../shared/enums';
+import { ExistingBlogPipe } from '../../../../infrastructure/pipes/ExistingBlog.pipe';
+import { QueryParamsUserModel } from '../models/input/QueryParamsUserModel';
+import { UsersQueryRepository } from '../../infrastructure/users.query-repository';
 
 @Controller('blogger/users')
 export class BloggerUsersController extends ExceptionAndResponseHelper {
-  constructor(private CommandBus: CommandBus) {
+  constructor(
+    private CommandBus: CommandBus,
+    private UsersQueryRepository: UsersQueryRepository,
+  ) {
     super(ApproachType.http);
+  }
+
+  @Get('blopg/:id')
+  async getAllBannedUsersForSpecificBlog(
+    @Param('id', ExistingBlogPipe) blogId: string,
+    @Query() queryData: QueryParamsUserModel,
+  ) {
+    const usersResult = await this.UsersQueryRepository.findBannedUsersForBlog(
+      queryData,
+      blogId,
+    );
+
+    return this.sendExceptionOrResponse(usersResult);
   }
 
   @Put(':id/ban')
