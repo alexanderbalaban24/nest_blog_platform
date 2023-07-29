@@ -19,9 +19,9 @@ export class BlogsQueryRepository {
       ? {
           //TODO пернести возможно в findWithQuery
           'blogOwnerInfo.userId': bloggerId,
-          isDeactivate: { $ne: true },
+          'banInfo.isBanned': { $ne: true },
         }
-      : { isDeactivate: { $ne: true } };
+      : { 'banInfo.isBanned': { $ne: true } };
     const blogsData = await this.BlogModel.find(queryObj).findWithQuery<
       Blog,
       ViewBlogModel
@@ -70,7 +70,11 @@ export class BlogsQueryRepository {
     };
 
     if (isSuperAdmin) {
-      return { ...result, blogOwnerInfo: blog.blogOwnerInfo };
+      return {
+        ...result,
+        blogOwnerInfo: blog.blogOwnerInfo,
+        banInfo: blog.banInfo,
+      };
     }
 
     return result;

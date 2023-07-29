@@ -31,6 +31,14 @@ export type BlogModelType = Model<
   BlogStaticMethod;
 
 @Schema({ _id: false, versionKey: false })
+class banInfo {
+  @Prop({ required: true })
+  isBanned: boolean;
+  @Prop({ required: true })
+  banDate: Date;
+}
+
+@Schema({ _id: false, versionKey: false })
 class BlogOwnerInfo {
   @Prop({ required: true })
   userId: string;
@@ -38,7 +46,7 @@ class BlogOwnerInfo {
   userLogin: string;
 }
 
-@Schema()
+@Schema({ timestamps: { updatedAt: true } })
 export class Blog {
   _id: Types.ObjectId;
 
@@ -60,8 +68,8 @@ export class Blog {
   @Prop({ type: BlogOwnerInfo, required: true })
   blogOwnerInfo: BlogOwnerInfo;
 
-  @Prop({ default: false })
-  isDeactivate: boolean;
+  @Prop({ default: { isBanned: false, banDate: Date.now } })
+  banInfo: banInfo;
 
   static makeInstance(
     name: string,
@@ -80,11 +88,13 @@ export class Blog {
   }
 
   deactivate() {
-    this.isDeactivate = true;
+    this.banInfo.isBanned = true;
+    this.banInfo.banDate = new Date();
   }
 
   activate() {
-    this.isDeactivate = false;
+    this.banInfo.isBanned = false;
+    this.banInfo.banDate = new Date();
   }
 
   changeData(name: string, description: string, websiteUrl: string) {

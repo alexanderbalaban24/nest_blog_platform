@@ -24,7 +24,7 @@ import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
 import { BanBlogModel } from '../models/input/BanBlogModel';
 import { BanUnbanBlogCommand } from '../../application/use-cases/ban-unban-blog-use-case';
 
-@UseGuards(BasicAuthGuard)
+//@UseGuards(BasicAuthGuard)
 @Controller('sa/blogs')
 export class SaBlogsController extends ExceptionAndResponseHelper {
   constructor(
