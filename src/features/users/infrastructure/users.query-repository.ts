@@ -29,7 +29,7 @@ export class UsersQueryRepository {
     usersData.map((user: UserDocument) => ({
       id: user._id.toString(),
       login: user.login,
-      banInfo: user.banInfo,
+      banInfo: user.bannedBlogsInfo,
     }));
 
     return new ResultDTO(InternalCode.Success, usersData);
