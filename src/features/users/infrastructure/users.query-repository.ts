@@ -25,6 +25,7 @@ export class UsersQueryRepository {
   async findBannedUsersForBlog(query: QueryParamsUserModel, blogId: string) {
     const usersData = await this.UserModel.find({
       'bannedBlogsInfo.blogId': blogId,
+      'bannedBlogsInfo.isBanned': true,
     }).findWithQuery(query);
     usersData.map((user: UserDocument) => {
       const banInfo = user.bannedBlogsInfo.find(
