@@ -39,7 +39,7 @@ import { CommentsQueryRepository } from '../../../comments/infrastructure/commen
 import { JwtAccessAuthGuard } from '../../../auth/guards/jwt-access-auth.guard';
 import { QueryParamsCommentModel } from '../../../comments/api/models/input/QueryParamsCommentModel';
 
-//@UseGuards(JwtAccessAuthGuard)
+@UseGuards(JwtAccessAuthGuard)
 @Controller('blogger/blogs')
 export class BloggerBlogsController extends ExceptionAndResponseHelper {
   constructor(

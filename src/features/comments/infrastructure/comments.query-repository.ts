@@ -153,14 +153,22 @@ export class CommentsQueryRepository {
     const pageSize = queryData.pageSize ? +queryData.pageSize : 10;
     const skip = pageSize * (pageNumber - 1);
 
+    const forCount = await entity;
+
     entity
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(pageSize);
+    const pagesCount = Math.ceil(forCount.length / pageSize);
+
     const items = await entity;
 
-    const pagesCount = Math.ceil(items.length / pageSize);
-
-    return new QueryBuildDTO<any, any>(2, pageNumber, pageSize, 12, items);
+    return new QueryBuildDTO<any, any>(
+      pagesCount,
+      pageNumber,
+      pageSize,
+      forCount.length,
+      items,
+    );
   }
 }
