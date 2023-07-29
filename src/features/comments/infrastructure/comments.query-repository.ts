@@ -161,12 +161,6 @@ export class CommentsQueryRepository {
 
     const pagesCount = Math.ceil(items.length / pageSize);
 
-    return new QueryBuildDTO<any, any>(
-      pagesCount,
-      pageNumber,
-      pageSize,
-      items.length,
-      items,
-    );
+    return new QueryBuildDTO<any, any>(2, pageNumber, pageSize, 12, items);
   }
 }

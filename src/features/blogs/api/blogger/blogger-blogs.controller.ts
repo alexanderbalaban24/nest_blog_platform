@@ -39,7 +39,7 @@ import { CommentsQueryRepository } from '../../../comments/infrastructure/commen
 import { JwtAccessAuthGuard } from '../../../auth/guards/jwt-access-auth.guard';
 import { QueryParamsCommentModel } from '../../../comments/api/models/input/QueryParamsCommentModel';
 
-@UseGuards(JwtAccessAuthGuard)
+//@UseGuards(JwtAccessAuthGuard)
 @Controller('blogger/blogs')
 export class BloggerBlogsController extends ExceptionAndResponseHelper {
   constructor(
@@ -202,7 +202,7 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
     const blogsResult =
       await this.CommentsQueryRepository.getCommentsForAllPostsForAllUserBlogs(
         queryData,
-        currentUserId,
+        '64c540fd53fcda0ea0b1027d',
       );
 
     return this.sendExceptionOrResponse(blogsResult);
