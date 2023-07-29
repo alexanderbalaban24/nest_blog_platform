@@ -37,6 +37,7 @@ import { UpdatePostCommand } from '../../application/use-cases/update-post-in-bl
 import { DeletePostCommand } from '../../application/use-cases/delete-post-in-blog-use-case';
 import { CommentsQueryRepository } from '../../../comments/infrastructure/comments.query-repository';
 import { JwtAccessAuthGuard } from '../../../auth/guards/jwt-access-auth.guard';
+import { QueryParamsCommentModel } from '../../../comments/api/models/input/QueryParamsCommentModel';
 
 @UseGuards(JwtAccessAuthGuard)
 @Controller('blogger/blogs')
@@ -195,10 +196,12 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
 
   @Get('comments')
   async getCommentsForAllPostsForAllUserBlogs(
+    @Query() queryData: QueryParamsCommentModel,
     @CurrentUserId() currentUserId: string,
   ) {
     const blogsResult =
       await this.CommentsQueryRepository.getCommentsForAllPostsForAllUserBlogs(
+        queryData,
         currentUserId,
       );
 

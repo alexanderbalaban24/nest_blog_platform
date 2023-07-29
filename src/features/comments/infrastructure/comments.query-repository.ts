@@ -44,6 +44,7 @@ export class CommentsQueryRepository {
   }
 
   async getCommentsForAllPostsForAllUserBlogs(
+    query: QueryParamsCommentModel,
     userId: string,
   ): Promise<ResultDTO<QueryBuildDTO<any, any>>> {
     const comments = this.CommentModel.aggregate([
@@ -119,7 +120,7 @@ export class CommentsQueryRepository {
       },
     ]);
 
-    const result = await this._queryBuilder({}, comments);
+    const result = await this._queryBuilder(query, comments);
     result.convert();
 
     return new ResultDTO(InternalCode.Success, result);
