@@ -40,7 +40,10 @@ export class BloggerUsersController extends ExceptionAndResponseHelper {
     @Query() queryData: QueryParamsUserModel,
     @CurrentUserId() currentUserId: string,
   ) {
-    const blogsResult = await this.BlogsQueryRepository.findBlogById(blogId);
+    const blogsResult = await this.BlogsQueryRepository.findBlogById(
+      blogId,
+      true,
+    );
     if (blogsResult.hasError())
       return this.sendExceptionOrResponse(
         new ResultDTO(InternalCode.Internal_Server),
