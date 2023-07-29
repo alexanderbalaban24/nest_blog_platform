@@ -7,6 +7,7 @@ import {
   Param,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { BanUnbanForSpecificBlogCommand } from '../../application/use-cases/ban-unban-for-specific-blog-use-case';
@@ -17,7 +18,10 @@ import { ApproachType } from '../../../../shared/enums';
 import { ExistingBlogPipe } from '../../../../infrastructure/pipes/ExistingBlog.pipe';
 import { QueryParamsUserModel } from '../models/input/QueryParamsUserModel';
 import { UsersQueryRepository } from '../../infrastructure/users.query-repository';
+import { CurrentUserId } from '../../../infrastructure/decorators/params/current-user-id.param.decorator';
+import { JwtAccessAuthGuard } from '../../../auth/guards/jwt-access-auth.guard';
 
+@UseGuards(JwtAccessAuthGuard)
 @Controller('blogger/users')
 export class BloggerUsersController extends ExceptionAndResponseHelper {
   constructor(
@@ -45,6 +49,7 @@ export class BloggerUsersController extends ExceptionAndResponseHelper {
   async banUserForSpecificBlog(
     @Param('id', ExistingUserPipe) userId: string,
     @Body() inputData: UserBanForSpecificBlogModel,
+    @CurrentUserId() currentUserId: string,
   ): Promise<void> {
     const bannedUserResult = await this.CommandBus.execute(
       new BanUnbanForSpecificBlogCommand(
@@ -52,6 +57,7 @@ export class BloggerUsersController extends ExceptionAndResponseHelper {
         inputData.isBanned,
         inputData.banReason,
         inputData.blogId,
+        currentUserId,
       ),
     );
 
