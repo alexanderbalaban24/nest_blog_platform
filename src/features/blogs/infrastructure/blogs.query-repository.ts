@@ -39,7 +39,7 @@ export class BlogsQueryRepository {
       ViewBlogModel
     >(query);
     blogsData.map((blog) => this._mapBlogToView(blog, true));
-    if (!blogsData) return new ResultDTO(InternalCode.NotFound);
+    //if (!blogsData) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(InternalCode.Success, blogsData);
   }
@@ -52,7 +52,7 @@ export class BlogsQueryRepository {
       _id: new Types.ObjectId(blogId),
       'banInfo.isBanned': { $ne: true },
     }).lean();
-    //if (!blog) return new ResultDTO(InternalCode.NotFound);
+    if (!blog) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(
       InternalCode.Success,
