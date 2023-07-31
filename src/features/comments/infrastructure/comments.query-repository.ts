@@ -153,6 +153,7 @@ export class CommentsQueryRepository {
     const pageSize = queryData.pageSize ? +queryData.pageSize : 10;
     const skip = pageSize * (pageNumber - 1);
 
+    //TODO надо изменить подход, а то получается двойной запрос, у Глеба там пример есть, как погинацию вынести в агреггацию
     const forCount = await entity;
 
     entity
