@@ -4,7 +4,7 @@ export type ViewUserModel = {
   email: string;
   createdAt: string;
   banInfo: {
-    banDate: Date;
+    banDate: string;
     banReason: string;
     isBanned: boolean;
   };

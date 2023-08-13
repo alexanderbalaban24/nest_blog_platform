@@ -17,13 +17,22 @@ export class DevicesQueryRepository {
   async findDeviceByUserId(
     userId: string,
   ): Promise<ResultDTO<ViewDeviceModel[]>> {
-    const sessions = await this.DeviceModel.find({ userId }).lean();
+    const sessionsRaw = await this.dataSource.query(
+      `
+    SELECT *
+    FROM "users_devices" as ud
+    WHERE ud."userId" = $1
+    `,
+      [userId],
+    );
 
-    const sessionsData = sessions.map((session) => ({
+    if (!sessionsRaw.length) return new ResultDTO(InternalCode.NotFound);
+
+    const sessionsData = sessionsRaw.map((session) => ({
       ip: session.ip,
       title: session.deviceName,
-      lastActiveDate: session.issuedAt.toISOString(),
-      deviceId: session._id.toString(),
+      lastActiveDate: new Date(session.issuedAt).toISOString(),
+      deviceId: session.id,
     }));
 
     return new ResultDTO(InternalCode.Success, sessionsData);

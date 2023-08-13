@@ -69,10 +69,14 @@ export class DevicesRepository {
     userId: string,
     excludeId: string,
   ): Promise<ResultDTO<null>> {
-    await this.DeviceModel.deleteMany({
-      userId,
-      _id: { $ne: new Types.ObjectId(excludeId) },
-    });
+    await this.dataSource.query(
+      `
+    DELETE FROM "users_devices" as ud
+    WHERE ud."userId" = $1 AND
+    ud."id" != $2
+    `,
+      [userId, excludeId],
+    );
 
     return new ResultDTO(InternalCode.Success);
   }
@@ -90,10 +94,17 @@ export class DevicesRepository {
   }
 
   async findById(deviceId: string): Promise<ResultDTO<DeviceDocument>> {
-    const deviceInstance = await this.DeviceModel.findById(deviceId);
-    if (!deviceInstance) return new ResultDTO(InternalCode.NotFound);
+    const deviceRaw = await this.dataSource.query(
+      `
+    SELECT *
+    FROM "users_devices" AS ud
+    WHERE ud."id" = $1
+    `,
+      [deviceId],
+    );
+    if (!deviceRaw.length) return new ResultDTO(InternalCode.NotFound);
 
-    return new ResultDTO(InternalCode.Success, deviceInstance);
+    return new ResultDTO(InternalCode.Success, deviceRaw[0]);
   }
 
   async create(

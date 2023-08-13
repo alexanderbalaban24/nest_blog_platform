@@ -36,11 +36,11 @@ export class UsersRepository {
     RETURNING "userId"
     )
     INSERT INTO "users_ban" as ub
-    ("userId", "banReason", "isBanned")
-    VALUES((SELECT "userId" from "user_confirm_temp"), $6, $7)
+    ("userId", "isBanned")
+    VALUES((SELECT "userId" from "user_confirm_temp"), $6)
     RETURNING "userId"
     `,
-      [login, email, passwordHash, expirationDate, isConfirmed, '', false],
+      [login, email, passwordHash, expirationDate, isConfirmed, false],
     );
     return new ResultDTO(InternalCode.Success, res[0]);
   }
@@ -97,14 +97,19 @@ export class UsersRepository {
     return new ResultDTO(InternalCode.Success, users[0]);
   }
 
-  async banUser(userId: string, isBanned: boolean, banReason: string) {
+  async banUser(
+    userId: string,
+    isBanned: boolean,
+    banReason: string,
+    banDate: Date,
+  ) {
     await this.dataSource.query(
       `
      UPDATE "users_ban" as ub
      SET "isBanned" = $2, "banReason" = $3, "banDate" = $4
      WHERE ub."userId" = $1
       `,
-      [userId, isBanned, banReason, new Date()],
+      [userId, isBanned, banReason, banDate],
     );
   }
 

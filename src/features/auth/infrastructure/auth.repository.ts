@@ -43,8 +43,12 @@ export class AuthRepository {
   async findByCredentials(loginOrEmail: string): Promise<ResultDTO<any>> {
     const users = await this.dataSource.query(
       `
-    SELECT *
+    SELECT u.*, ub."isBanned", uec."isConfirmed"
     FROM "users" as u
+    LEFT JOIN "users_ban" as ub
+    ON ub."userId" = u."id"
+    LEFT JOIN "users_email_confirmation" as uec
+    ON uec."userId" = u."id"
     WHERE u."login" = $1
     OR u."email" = $1
     `,

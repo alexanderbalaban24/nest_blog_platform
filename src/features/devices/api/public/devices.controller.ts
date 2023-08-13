@@ -13,7 +13,6 @@ import { DevicesQueryRepository } from '../../infrastructure/devices.query-repos
 import { RefreshTokenPayload } from '../../../infrastructure/decorators/params/refresh-token-payload.param.decorator';
 import { RefreshTokenPayloadType } from '../../../infrastructure/decorators/params/types';
 import { JwtRefreshAuthGuard } from '../../../auth/guards/jwt-refresh-auth.guard';
-import { DevicesService } from '../../application/devices.service';
 import { ExistingDevicePipe } from '../../../../infrastructure/pipes/ExistingDevice.pipe';
 import { ExceptionAndResponseHelper } from '../../../../shared/helpers';
 import { ApproachType } from '../../../../shared/enums';

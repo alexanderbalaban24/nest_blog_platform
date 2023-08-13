@@ -39,17 +39,18 @@ export class UsersQueryRepository {
     FROM "users" as u
     LEFT JOIN "users_ban" as ub
     ON ub."userId" = u."id"
-    WHERE ub."isBanned" = (
-    SELECT CASE 
+    WHERE ub."isBanned" = CASE 
+    WHEN $1 = '${BanStatus.Banned}' THEN true
     WHEN $1 = '${BanStatus.NotBanned}' THEN false
-    WHEN $1 = '${BanStatus.Banned}' THEN true 
-    ELSE ub."isBanned" END
-    ) AND
-    CASE WHEN $2 = '' THEN true ELSE u."login" ILIKE $2 END AND
-    CASE WHEN $3 = '' THEN true ELSE u."email" ILIKE $3 END
-    ORDER BY "${sortBy}" ${sortDirection}),
+    ELSE ub."isBanned" END AND
+    (CASE WHEN $2 = '' THEN true ELSE u."login" ILIKE $2 END OR
+    CASE WHEN $3 = '' THEN true ELSE u."email" ILIKE $3 END)
+    ),
     temp_data1 as (
-    SELECT * FROM "temp_data"
+    SELECT * FROM "temp_data" as td
+    ORDER BY "${sortBy}" ${
+        sortBy !== 'createdAt' ? 'COLLATE "C" ' : ''
+      } ${sortDirection}
     LIMIT ${pageSize} OFFSET ${offset}
     )
     SELECT (
@@ -75,9 +76,9 @@ export class UsersQueryRepository {
       pageNumber,
       pageSize,
       totalCount,
-      usersRow[0].json_data,
+      usersRow[0].json_data ?? [],
     );
-
+    //console.log('RRRRRRRRRRRRRRRRRRRRRRRRRRRRR', usersRow[0].json_data);
     data.map((user) => this._mapUserToView(user));
     return new ResultDTO(InternalCode.Success, data);
   }
@@ -97,7 +98,9 @@ export class UsersQueryRepository {
         login: user.login,
         banInfo: {
           isBanned: banInfo.isBanned,
-          banDate: banInfo.banDate,
+          banDate: banInfo.banDate
+            ? new Date(banInfo.banDate).toISOString()
+            : null,
           banReason: banInfo.banReason,
         },
       };
@@ -123,17 +126,7 @@ export class UsersQueryRepository {
     WHERE u."id" = $1
     `,
       [userId],
-    ); /*const users = await this.dataSource.query(
-      `
-    SELECT u.*, ub."isBanned", ub."banDate", ub."banReason"
-    FROM "users" as u
-    LEFT JOIN "users_ban" as ub
-    ON ub."userId" = u."id"
-    WHERE u."id" = $1
-    `,
-      [userId],
-    );*/
-    console.log(users[0].json_agg);
+    );
     if (!users[0].json_agg.length) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(
@@ -144,13 +137,15 @@ export class UsersQueryRepository {
 
   _mapUserToView(user): ViewUserModel {
     return {
-      id: user.id,
+      id: user.id.toString(),
       login: user.login,
       email: user.email,
-      createdAt: user.createdAt,
+      createdAt: new Date(user.createdAt).toISOString(),
       banInfo: {
         isBanned: user.banInfo.isBanned,
-        banDate: user.banInfo.banDate,
+        banDate: user.banInfo.banDate
+          ? new Date(user.banInfo.banDate).toISOString()
+          : user.banInfo.banDate,
         banReason: user.banInfo.banReason,
       },
     };

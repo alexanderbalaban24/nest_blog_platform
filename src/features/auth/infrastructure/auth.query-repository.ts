@@ -35,7 +35,7 @@ export class AuthQueryRepository {
   async findMe(
     userId: string,
   ): Promise<ResultDTO<{ email: string; login: string; userId: string }>> {
-    const users = await this.dataSource.query(
+    const usersRaw = await this.dataSource.query(
       `
     SELECT u."email", u."login", u."id" as "userId"
     FROM "users" as u
@@ -43,9 +43,15 @@ export class AuthQueryRepository {
     `,
       [userId],
     );
-    if (!users.length) return new ResultDTO(InternalCode.Unauthorized);
+    if (!usersRaw.length) return new ResultDTO(InternalCode.Unauthorized);
 
-    return new ResultDTO(InternalCode.Success, users[0]);
+    const data = {
+      userId: usersRaw[0].userId.toString(),
+      email: usersRaw[0].email,
+      login: usersRaw[0].login,
+    };
+
+    return new ResultDTO(InternalCode.Success, data);
   }
 
   async findConfirmationOrRecoveryDataByCode(

@@ -14,6 +14,6 @@ export class ExistingDevicePipe implements PipeTransform {
     const deviceResult = await this.DevicesRepository.findById(value);
     if (deviceResult.hasError()) throw new NotFoundException();
     console.log(deviceResult);
-    return deviceResult.payload._id.toString();
+    return deviceResult.payload.id;
   }
 }

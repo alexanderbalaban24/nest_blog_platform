@@ -31,11 +31,14 @@ export class BanUnbanUseCase implements ICommandHandler<BanUnbanCommand> {
         return new ResultDTO(InternalCode.Internal_Server);
     }
 
+    const banReason = command.isBanned ? command.banReason : null;
+    const banDate = command.isBanned ? new Date() : null;
     // Mark banned user
     await this.UsersRepository.banUser(
       command.userId,
       command.isBanned,
-      command.banReason,
+      banReason,
+      banDate,
     );
 
     /*// Deactivate posts of banned user
