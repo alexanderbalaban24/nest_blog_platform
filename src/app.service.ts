@@ -25,6 +25,7 @@ export class AppService {
       await this.dataSource.query(`DELETE FROM "users_email_confirmation"`);
       await this.dataSource.query(`DELETE FROM "users_password_recovery"`);
       await this.dataSource.query(`DELETE FROM "users_devices"`);
+      await this.dataSource.query(`DELETE FROM "users"`);
 
       return deletedResult.every((item) => item.deletedCount === 1);
     } catch (e) {
