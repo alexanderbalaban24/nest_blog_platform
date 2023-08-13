@@ -24,13 +24,11 @@ export class CreateDeviceUseCase
   async execute(
     command: CreateDeviceCommand,
   ): Promise<ResultDTO<{ deviceId: string }>> {
-    const deviceInstance = await this.DeviceModel.makeInstance(
+    return this.DeviceRepository.createDevice(
       command.userId,
       command.ip,
       command.deviceName,
-      this.DeviceModel,
+      new Date(),
     );
-
-    return this.DeviceRepository.create(deviceInstance);
   }
 }

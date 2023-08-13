@@ -17,10 +17,6 @@ export class DeleteUserUseCase implements ICommandHandler<DeleteUserCommand> {
   ) {}
 
   async execute(command: DeleteUserCommand): Promise<ResultDTO<null>> {
-    const userResult = await this.UsersRepository.findById(command.userId);
-    if (userResult.hasError()) return new ResultDTO(InternalCode.NotFound);
-
-    await userResult.payload.deleteOne();
-    return new ResultDTO(InternalCode.Success);
+    return this.UsersRepository.deleteById(command.userId);
   }
 }

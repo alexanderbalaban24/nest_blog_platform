@@ -1,9 +1,8 @@
 import { ResultDTO } from '../../../../shared/dto';
 import { genSalt, hash } from 'bcrypt';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserModelType } from '../../domain/users.entity';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import add from 'date-fns/add';
 
 export class CreateUserCommand {
   constructor(
@@ -16,10 +15,7 @@ export class CreateUserCommand {
 
 @CommandHandler(CreateUserCommand)
 export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
-  constructor(
-    @InjectModel(User.name) private UserModel: UserModelType,
-    private UsersRepository: UsersRepository,
-  ) {}
+  constructor(private UsersRepository: UsersRepository) {}
 
   //TODO количество раундов должно сидеть в env
   async execute(
@@ -27,14 +23,14 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
   ): Promise<ResultDTO<{ userId: string }>> {
     const passwordSalt = await genSalt(10);
     const passwordHash = await hash(command.password, passwordSalt);
+    const expirationDate = add(new Date(), { hours: 3 });
 
-    const newUserInstance = this.UserModel.makeInstance(
+    return this.UsersRepository.createUser(
       command.login,
       command.email,
       passwordHash,
       command.isConfirmed,
-      this.UserModel,
+      expirationDate,
     );
-    return this.UsersRepository.create(newUserInstance);
   }
 }

@@ -14,11 +14,6 @@ export class DeleteUserSessionUseCase
   constructor(private DeviceRepository: DevicesRepository) {}
 
   async execute(command: DeleteUserSessionCommand): Promise<ResultDTO<null>> {
-    const deviceResult = await this.DeviceRepository.findById(command.deviceId);
-    if (deviceResult.hasError()) return deviceResult as ResultDTO<null>;
-
-    await deviceResult.payload.deleteOne();
-
-    return new ResultDTO(InternalCode.Success);
+    return this.DeviceRepository.deleteById(command.deviceId);
   }
 }

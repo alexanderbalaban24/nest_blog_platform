@@ -4,9 +4,10 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AuthQueryRepository } from '../../../auth/infrastructure/auth.query-repository';
 import { isAfter } from 'date-fns';
+import { AuthAction } from '../../../../shared/enums';
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -15,17 +16,28 @@ export class ConfirmationCodeValidator implements ValidatorConstraintInterface {
 
   async validate(code: string): Promise<boolean> {
     try {
-      const findResult =
-        await this.authQueryRepository.findConfirmationOrRecoveryDataById(code);
-      if (findResult.hasError()) return false;
+      const findConfirmResult =
+        await this.authQueryRepository.findConfirmationOrRecoveryDataByCode(
+          code,
+          AuthAction.Confirmation,
+        );
+      const findRecoveryResult =
+        await this.authQueryRepository.findConfirmationOrRecoveryDataByCode(
+          code,
+          AuthAction.Recovery,
+        );
+
+      if (findConfirmResult.hasError() && findRecoveryResult.hasError())
+        return false;
 
       if (
-        findResult.payload.isConfirmed ||
-        isAfter(new Date(), findResult.payload.expirationDate)
+        findConfirmResult.payload?.isConfirmed ||
+        findRecoveryResult.payload?.isConfirmed ||
+        (isAfter(new Date(), findConfirmResult.payload?.expirationDate) &&
+          isAfter(new Date(), findRecoveryResult.payload?.expirationDate))
       ) {
         return false;
       }
-
       return true;
     } catch (e) {
       return false;

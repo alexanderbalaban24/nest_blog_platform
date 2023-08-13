@@ -1,5 +1,7 @@
+import { BanStatus } from '../../../../../shared/enums';
+
 export class QueryParamsUserModel {
-  banStatus: 'all' | 'banned' | 'notBanned';
+  banStatus: BanStatus;
   sortBy?: string;
   sortDirection?: 'desc' | 'asc';
   pageNumber?: string;

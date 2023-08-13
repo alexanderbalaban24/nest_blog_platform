@@ -100,6 +100,7 @@ import { DeletePostInBlogUseCase } from './features/blogs/application/use-cases/
 import { BloggerUsersController } from './features/users/api/blogger/blogger-users.controller';
 import { BanUnbanBlogUseCase } from './features/blogs/application/use-cases/ban-unban-blog-use-case';
 import { BanUnbanForSpecificBlogUseCase } from './features/users/application/use-cases/ban-unban-for-specific-blog-use-case';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 const useCases = [
   CreateBlogUseCase,
@@ -145,6 +146,17 @@ const useCases = [
   imports: [
     CqrsModule,
     configModule,
+    TypeOrmModule.forRoot({
+      //TODO перенести всю инфу в env
+      type: 'postgres',
+      host: 'dumbo.db.elephantsql.com',
+      port: 5432,
+      username: 'eoyeenox',
+      password: 'nraqwyB6soTBZ_ITAJP0NuNZMnuUjiJE',
+      database: 'eoyeenox',
+      autoLoadEntities: false,
+      synchronize: false,
+    }),
     MongooseModule.forRoot(process.env.MONGO_URL, {
       dbName: 'blog-platform_nest',
     }),

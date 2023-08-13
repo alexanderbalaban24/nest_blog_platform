@@ -1,8 +1,9 @@
 import { ResultDTO } from '../../../../shared/dto';
-import { EmailEvents } from '../../../../shared/enums';
+import { AuthAction, EmailEvents } from '../../../../shared/enums';
 import { AuthRepository } from '../../infrastructure/auth.repository';
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DoOperationCommand } from '../../../email/application/use-cases/do-operation-use-case';
+import { v4 as uuidv4 } from 'uuid';
 
 export class ResendingEmailRegistrationCommand {
   constructor(public email: string) {}
@@ -20,21 +21,24 @@ export class ResendingEmailRegistrationUseCase
   async execute(
     command: ResendingEmailRegistrationCommand,
   ): Promise<ResultDTO<null>> {
-    const userResult = await this.AuthRepository.findByCredentials(
-      command.email,
-    );
-    if (userResult.hasError()) return userResult as ResultDTO<null>;
+    const newCode = uuidv4();
+    const newExpirationDate = new Date();
 
-    const confirmationCode =
-      userResult.payload.updateConfirmationOrRecoveryData('emailConfirmation');
-    const savedResult = await this.AuthRepository.save(userResult.payload);
-    if (savedResult.hasError()) return savedResult;
+    const updatedResult =
+      await this.AuthRepository.updateConfirmationOrRecoveryData(
+        command.email,
+        newCode,
+        newExpirationDate,
+        AuthAction.Confirmation,
+      );
+
+    if (updatedResult.hasError()) return updatedResult as ResultDTO<null>;
 
     return await this.CommandBus.execute(
       new DoOperationCommand(
         EmailEvents.Registration,
         command.email,
-        confirmationCode,
+        updatedResult.payload.confirmationCode,
       ),
     );
   }

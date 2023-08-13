@@ -91,7 +91,6 @@ export class ExceptionAndResponseHelper {
       const ExceptionClass = this[this.typeExceptionMethod](dto.code);
       throw new ExceptionClass();
     }
-
     return dto.payload;
   }
 

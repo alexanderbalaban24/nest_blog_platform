@@ -1,15 +1,15 @@
-import {
-  EmailConfirmation,
-  PasswordRecovery,
-  User,
-  UserModelType,
-} from '../../users/domain/users.entity';
+import { User, UserModelType } from '../../users/domain/users.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { ResultDTO } from '../../../shared/dto';
-import { InternalCode } from '../../../shared/enums';
+import { AuthAction, InternalCode } from '../../../shared/enums';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 export class AuthQueryRepository {
-  constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
+  constructor(
+    @InjectModel(User.name) private UserModel: UserModelType,
+    @InjectDataSource() private dataSource: DataSource,
+  ) {}
 
   async findUserWithConfirmationDataById(userId: string): Promise<
     ResultDTO<{
@@ -18,59 +18,57 @@ export class AuthQueryRepository {
       isConfirmed: boolean;
     }>
   > {
-    const user = await this.UserModel.findById(userId).lean();
-    if (!user) return new ResultDTO(InternalCode.NotFound);
+    const users = await this.dataSource.query(
+      `
+    SELECT uec."confirmationCode", uec."expirationDate", uec."isConfirmed"
+    FROM "users_email_confirmation" as uec
+    WHERE uec."userId" = $1
+    `,
+      [userId],
+    );
 
-    const result = {
-      confirmationCode: user.emailConfirmation.confirmationCode,
-      expirationDate: user.emailConfirmation.expirationDate,
-      isConfirmed: user.emailConfirmation.isConfirmed,
-    };
+    if (!users.length) return new ResultDTO(InternalCode.NotFound);
 
-    return new ResultDTO(InternalCode.Success, result);
+    return new ResultDTO(InternalCode.Success, users[0]);
   }
 
   async findMe(
     userId: string,
   ): Promise<ResultDTO<{ email: string; login: string; userId: string }>> {
-    const user = await this.UserModel.findById(userId).lean();
-    if (!user) return new ResultDTO(InternalCode.Unauthorized);
+    const users = await this.dataSource.query(
+      `
+    SELECT u."email", u."login", u."id" as "userId"
+    FROM "users" as u
+    WHERE u."id" = $1
+    `,
+      [userId],
+    );
+    if (!users.length) return new ResultDTO(InternalCode.Unauthorized);
 
-    const userData = {
-      email: user.email,
-      login: user.login,
-      userId: user._id.toString(),
-    };
-
-    return new ResultDTO(InternalCode.Success, userData);
+    return new ResultDTO(InternalCode.Success, users[0]);
   }
 
-  async findUserByConfirmationCode(
+  async findConfirmationOrRecoveryDataByCode(
     code: string,
-  ): Promise<ResultDTO<{ userId: string }>> {
-    const user = await this.UserModel.findOne().or([
-      { 'emailConfirmation.confirmationCode': code },
-      { 'passwordRecovery.confirmationCode': code },
-    ]);
-    if (!user) return new ResultDTO(InternalCode.NotFound);
+    action: AuthAction,
+  ): Promise<
+    ResultDTO<{
+      confirmationCode: string;
+      expirationDate: Date;
+      isConfirmed: boolean;
+    }>
+  > {
+    const users = await this.dataSource.query(
+      `
+    SELECT uc."confirmationCode", uc."expirationDate", uc."isConfirmed"
+    FROM ${action} as uc
+    WHERE uc."confirmationCode" = $1
+    `,
+      [code],
+    );
 
-    return new ResultDTO(InternalCode.Success, { userId: user._id.toString() });
-  }
+    if (!users.length) return new ResultDTO(InternalCode.Internal_Server);
 
-  async findConfirmationOrRecoveryDataById(
-    code: string,
-  ): Promise<ResultDTO<EmailConfirmation | PasswordRecovery>> {
-    const user = await this.UserModel.findOne().or([
-      { 'emailConfirmation.confirmationCode': code },
-      { 'passwordRecovery.confirmationCode': code },
-    ]);
-    if (!user) return new ResultDTO(InternalCode.NotFound);
-
-    const confirmOrRecovery =
-      user.emailConfirmation.confirmationCode === code
-        ? user.emailConfirmation
-        : user.passwordRecovery;
-
-    return new ResultDTO(InternalCode.Success, confirmOrRecovery);
+    return new ResultDTO(InternalCode.Success, users[0]);
   }
 }

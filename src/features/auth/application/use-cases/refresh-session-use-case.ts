@@ -3,8 +3,6 @@ import { TokenPair } from '../../../../shared/types';
 import { InternalCode } from '../../../../shared/enums';
 import { DevicesQueryRepository } from '../../../devices/infrastructure/devices.query-repository';
 import { JwtService } from '@nestjs/jwt';
-import { AuthRepository } from '../../infrastructure/auth.repository';
-import { AuthQueryRepository } from '../../infrastructure/auth.query-repository';
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateSessionTimeCommand } from '../../../devices/application/use-cases/update-session-time-use-case';
 

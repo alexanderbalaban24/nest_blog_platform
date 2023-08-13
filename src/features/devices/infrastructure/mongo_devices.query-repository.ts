@@ -4,15 +4,10 @@ import { Device, DeviceModelType } from '../domain/devices.entity';
 import { ResultDTO } from '../../../shared/dto';
 import { ViewDeviceModel } from '../api/models/view/ViewDeviceModel';
 import { InternalCode } from '../../../shared/enums';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
 
 @Injectable()
 export class DevicesQueryRepository {
-  constructor(
-    @InjectModel(Device.name) private DeviceModel: DeviceModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectModel(Device.name) private DeviceModel: DeviceModelType) {}
 
   async findDeviceByUserId(
     userId: string,
@@ -38,16 +33,17 @@ export class DevicesQueryRepository {
       issuedAt: Date;
     }>
   > {
-    const devices = await this.dataSource.query(
-      `
-    SELECT *
-    FROM "users_devices" as ud
-    WHERE ud."id" = $1
-    `,
-      [deviceId],
-    );
-    if (!devices.length) return new ResultDTO(InternalCode.NotFound);
+    const device = await this.DeviceModel.findById(deviceId);
+    if (!device) return new ResultDTO(InternalCode.NotFound);
 
-    return new ResultDTO(InternalCode.Success, devices[0]);
+    const deviceData = {
+      id: device._id.toString(),
+      userId: device.userId,
+      deviceName: device.deviceName,
+      ip: device.ip,
+      issuedAt: device.issuedAt,
+    };
+
+    return new ResultDTO(InternalCode.Success, deviceData);
   }
 }

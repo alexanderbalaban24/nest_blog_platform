@@ -19,8 +19,6 @@ export class BanUnbanUseCase implements ICommandHandler<BanUnbanCommand> {
   constructor(
     private DevicesRepository: DevicesRepository,
     private UsersRepository: UsersRepository,
-    private PostsRepository: PostsRepository,
-    private CommentsRepository: CommentsRepository,
   ) {}
 
   async execute(command: BanUnbanCommand): Promise<ResultDTO<null>> {
@@ -33,14 +31,14 @@ export class BanUnbanUseCase implements ICommandHandler<BanUnbanCommand> {
         return new ResultDTO(InternalCode.Internal_Server);
     }
 
-    const userResult = await this.UsersRepository.findById(command.userId);
-    if (!userResult) return new ResultDTO(InternalCode.Internal_Server);
-
     // Mark banned user
-    userResult.payload.ban(command.isBanned, command.banReason);
-    await this.UsersRepository.save(userResult.payload);
+    await this.UsersRepository.banUser(
+      command.userId,
+      command.isBanned,
+      command.banReason,
+    );
 
-    // Deactivate posts of banned user
+    /*// Deactivate posts of banned user
     let postsResult = await this.PostsRepository.findByUserId(command.userId);
     if (postsResult.payload.length) {
       const postPromises = postsResult.payload.map((postInstance) => {
@@ -103,7 +101,7 @@ export class BanUnbanUseCase implements ICommandHandler<BanUnbanCommand> {
 
       await Promise.all(commentPromises);
     }
-
+*/
     return new ResultDTO(InternalCode.Success);
   }
 }

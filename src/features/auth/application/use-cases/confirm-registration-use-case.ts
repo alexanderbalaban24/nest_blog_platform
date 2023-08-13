@@ -1,7 +1,7 @@
 import { ResultDTO } from '../../../../shared/dto';
 import { AuthRepository } from '../../infrastructure/auth.repository';
-import { AuthQueryRepository } from '../../infrastructure/auth.query-repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { AuthAction } from '../../../../shared/enums';
 
 export class ConfirmRegistrationCommand {
   constructor(public code: string) {}
@@ -11,24 +11,15 @@ export class ConfirmRegistrationCommand {
 export class ConfirmRegistrationUseCase
   implements ICommandHandler<ConfirmRegistrationCommand>
 {
-  constructor(
-    private AuthRepository: AuthRepository,
-    private AuthQueryRepository: AuthQueryRepository,
-  ) {}
+  constructor(private AuthRepository: AuthRepository) {}
 
   async execute(command: ConfirmRegistrationCommand): Promise<ResultDTO<null>> {
-    const userIdResult =
-      await this.AuthQueryRepository.findUserByConfirmationCode(command.code);
-    if (userIdResult.hasError()) return userIdResult as ResultDTO<null>;
-
-    const userInstanceResult = await this.AuthRepository.findById(
-      userIdResult.payload.userId,
+    const userResult = await this.AuthRepository.findByConfirmationCode(
+      command.code,
+      AuthAction.Confirmation,
     );
-    if (userInstanceResult.hasError())
-      return userInstanceResult as ResultDTO<null>;
+    if (userResult.hasError()) return userResult as ResultDTO<null>;
 
-    userInstanceResult.payload.confirmAccount();
-
-    return this.AuthRepository.save(userInstanceResult.payload);
+    return this.AuthRepository.confirmEmail(userResult.payload.userId);
   }
 }

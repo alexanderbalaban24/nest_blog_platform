@@ -38,7 +38,7 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
 
     const createdDeviceResult = await this.CommandBus.execute(
       new CreateDeviceCommand(
-        userResult.payload._id.toString(),
+        userResult.payload.id,
         command.ip,
         command.deviceName,
       ),

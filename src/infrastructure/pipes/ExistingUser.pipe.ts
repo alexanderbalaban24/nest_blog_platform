@@ -14,6 +14,6 @@ export class ExistingUserPipe implements PipeTransform {
     const userResult = await this.UserRepository.findById(value);
     if (userResult.hasError()) throw new NotFoundException();
 
-    return userResult.payload._id.toString();
+    return userResult.payload.id;
   }
 }

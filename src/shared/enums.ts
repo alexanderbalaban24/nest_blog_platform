@@ -10,6 +10,17 @@ export enum ReverseLike {
   None = 'None',
 }
 
+export enum BanStatus {
+  All = 'all',
+  Banned = 'banned',
+  NotBanned = 'notBanned',
+}
+
+export enum AuthAction {
+  Confirmation = 'users_email_confirmation',
+  Recovery = 'users_password_recovery',
+}
+
 export enum EmailEvents {
   Registration,
   Recover_password,
