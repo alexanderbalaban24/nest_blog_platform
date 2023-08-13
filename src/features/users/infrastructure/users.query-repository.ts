@@ -67,7 +67,7 @@ export class UsersQueryRepository {
     `,
       [banStatus, searchLoginTerm, searchEmailTerm],
     );
-    console.log(usersRow[0].json_data);
+
     const totalCount = +usersRow[0].totalCount;
     const pagesCount = Math.ceil(totalCount / pageSize);
     const data = new QueryBuildDTO<any, any>(
@@ -109,18 +109,37 @@ export class UsersQueryRepository {
   async findUserById(userId: string): Promise<ResultDTO<ViewUserModel>> {
     const users = await this.dataSource.query(
       `
-    SELECT u.*, ub."isBanned", ub."banDate", ub."banReason"  
+    SELECT json_agg(
+    json_build_object(
+    'id', u."id", 'login', u."login", 'email', u."email", 'createdAt', u."createdAt", 
+    'banInfo', json_build_object(
+    'isBanned', ub."isBanned", 'banDate', ub."banDate", 'banReason', ub."banReason"
+    )
+    )
+    )  
     FROM "users" as u
     LEFT JOIN "users_ban" as ub
     ON ub."userId" = u."id"
     WHERE u."id" = $1
     `,
       [userId],
+    ); /*const users = await this.dataSource.query(
+      `
+    SELECT u.*, ub."isBanned", ub."banDate", ub."banReason"
+    FROM "users" as u
+    LEFT JOIN "users_ban" as ub
+    ON ub."userId" = u."id"
+    WHERE u."id" = $1
+    `,
+      [userId],
+    );*/
+    console.log(users[0].json_agg);
+    if (!users[0].json_agg.length) return new ResultDTO(InternalCode.NotFound);
+
+    return new ResultDTO(
+      InternalCode.Success,
+      this._mapUserToView(users[0].json_agg[0]),
     );
-
-    if (!users.length) return new ResultDTO(InternalCode.NotFound);
-
-    return new ResultDTO(InternalCode.Success, this._mapUserToView(users[0]));
   }
 
   _mapUserToView(user): ViewUserModel {
