@@ -80,7 +80,7 @@ export class PostsQueryRepository {
   ): Promise<ResultDTO<ViewPostModel>> {
     const postsRaw = await this.dataSource.query(
       `
-    SELECT *, b."name" AS "blogName"
+    SELECT p.*, b."name" AS "blogName"
     FROM "posts" AS p
     LEFT JOIN "blogs" AS b
     ON p."blogId" = b."id"

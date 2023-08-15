@@ -124,7 +124,7 @@ export class UsersRepository {
     if (isBanned) {
       await this.dataSource.query(
         `
-    INSERT INTO "users_ban_for_blog" as ub
+    INSERT INTO "users_ban_for_blog" AS ub
     ("userId", "banReason", "blogId")
     VALUES($1, $2, $3)
     `,
@@ -133,9 +133,9 @@ export class UsersRepository {
     } else {
       await this.dataSource.query(
         `
-      DELETE FROM "users_ban_for_blog" as ub
-      WHERE ab."userId" = $1 AND
-      ab."blogId" = $2
+      DELETE FROM "users_ban_for_blog" AS ub
+      WHERE ub."userId" = $1 AND
+      ub."blogId" = $2
       `,
         [userId, blogId],
       );
