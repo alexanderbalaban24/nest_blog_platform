@@ -48,14 +48,14 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
 
     const accessToken = await this.JwtService.signAsync(
       { userId: userResult.payload.id },
-      { expiresIn: '1000m' },
+      { expiresIn: '10m' },
     );
     const refreshToken = await this.JwtService.signAsync(
       {
         userId: userResult.payload.id,
         deviceId: createdDeviceResult.payload.deviceId,
       },
-      { expiresIn: '2000m' },
+      { expiresIn: '20m' },
     );
 
     return new ResultDTO(InternalCode.Success, { accessToken, refreshToken });
