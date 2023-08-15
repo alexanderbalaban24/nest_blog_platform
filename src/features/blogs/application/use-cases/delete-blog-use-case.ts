@@ -15,11 +15,9 @@ export class DeleteBlogUseCase implements ICommandHandler<DeleteBlogCommand> {
     const blogResult = await this.BlogsRepository.findById(command.blogId);
     if (blogResult.hasError()) return new ResultDTO(blogResult.code);
 
-    if (blogResult.payload.blogOwnerInfo.userId !== command.userId)
+    if (blogResult.payload.userId !== command.userId)
       return new ResultDTO(InternalCode.Forbidden);
 
-    await blogResult.payload.deleteOne();
-
-    return new ResultDTO(InternalCode.Success);
+    return this.BlogsRepository.deleteById(command.blogId);
   }
 }

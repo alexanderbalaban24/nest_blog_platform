@@ -32,15 +32,11 @@ export class CreateBlogUseCase implements ICommandHandler<CreateBlogCommand> {
     if (userResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
 
-    const newBlogInstance = this.BlogModel.makeInstance(
+    return this.BlogsRepository.createBlog(
       command.name,
       command.description,
       command.websiteUrl,
       command.userId,
-      userResult.payload.login,
-      this.BlogModel,
     );
-
-    return this.BlogsRepository.create(newBlogInstance);
   }
 }

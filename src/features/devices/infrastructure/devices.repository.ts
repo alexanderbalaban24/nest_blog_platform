@@ -5,7 +5,6 @@ import {
   DeviceModelType,
 } from '../domain/devices.entity';
 import { InjectModel } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
 import { ResultDTO } from '../../../shared/dto';
 import { InternalCode } from '../../../shared/enums';
 import { InjectDataSource } from '@nestjs/typeorm';

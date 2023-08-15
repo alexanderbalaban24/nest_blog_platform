@@ -31,14 +31,11 @@ export class UpdatePostInBlogUseCase
     );
     if (result.hasError()) return result as ResultDTO<null>;
 
-    await result.payload.postInstance.changeData(
+    return this.PostsRepository.updateById(
       command.title,
       command.shortDescription,
       command.content,
-      command.blogId,
-      result.payload.blogInstance.name,
+      command.postId,
     );
-
-    return this.PostsRepository.save(result.payload.postInstance);
   }
 }

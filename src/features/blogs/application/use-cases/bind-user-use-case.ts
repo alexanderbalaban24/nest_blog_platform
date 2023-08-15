@@ -10,22 +10,9 @@ export class BindUserCommand {
 
 @CommandHandler(BindUserCommand)
 export class BindUserUseCase implements ICommandHandler<BindUserCommand> {
-  constructor(
-    private BlogsRepository: BlogsRepository,
-    private UsersRepository: UsersRepository,
-  ) {}
+  constructor(private BlogsRepository: BlogsRepository) {}
 
   async execute(command: BindUserCommand): Promise<ResultDTO<null>> {
-    const userResult = await this.UsersRepository.findById(command.userId);
-    if (userResult.hasError())
-      return new ResultDTO(InternalCode.Internal_Server);
-
-    const blogResult = await this.BlogsRepository.findById(command.blogId);
-    if (blogResult.hasError())
-      return new ResultDTO(InternalCode.Internal_Server);
-
-    blogResult.payload.bindUser(command.userId, userResult.payload.login);
-
-    return this.BlogsRepository.save(blogResult.payload);
+    return this.BlogsRepository.bindBlog(command.blogId, command.userId);
   }
 }

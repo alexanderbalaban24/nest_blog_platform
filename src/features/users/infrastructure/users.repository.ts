@@ -24,7 +24,7 @@ export class UsersRepository {
     const res = await this.dataSource.query<{ userId: string }[]>(
       `
       WITH "user_temp" AS (
-    INSERT INTO "users" as u
+    INSERT INTO "users" AS u
     ("login", "email", "passwordHash")
     VALUES($1, $2, $3)
     RETURNING "id" AS "userId"
@@ -35,7 +35,7 @@ export class UsersRepository {
     VALUES((SELECT "userId" from "user_temp"), $4, $5)
     RETURNING "userId"
     )
-    INSERT INTO "users_ban" as ub
+    INSERT INTO "users_ban" AS ub
     ("userId", "isBanned")
     VALUES((SELECT "userId" from "user_confirm_temp"), $6)
     RETURNING "userId"

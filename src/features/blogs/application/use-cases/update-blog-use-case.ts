@@ -21,15 +21,14 @@ export class UpdateBlogUseCase implements ICommandHandler<UpdateBlogCommand> {
     const blogResult = await this.BlogsRepository.findById(command.blogId);
     if (blogResult.hasError()) return new ResultDTO(blogResult.code);
 
-    if (blogResult.payload.blogOwnerInfo.userId !== command.userId)
+    if (blogResult.payload.userId !== command.userId)
       return new ResultDTO(InternalCode.Forbidden);
 
-    await blogResult.payload.changeData(
+    return this.BlogsRepository.updateById(
+      command.blogId,
       command.name,
       command.description,
       command.websiteUrl,
     );
-
-    return this.BlogsRepository.save(blogResult.payload);
   }
 }

@@ -14,6 +14,6 @@ export class ExistingPostPipe implements PipeTransform {
     const postResult = await this.PostRepository.findById(value);
     if (postResult.hasError()) throw new NotFoundException();
 
-    return postResult.payload._id.toString();
+    return postResult.payload.id.toString();
   }
 }

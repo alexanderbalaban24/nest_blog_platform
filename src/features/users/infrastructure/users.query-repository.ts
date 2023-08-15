@@ -26,12 +26,8 @@ export class UsersQueryRepository {
     const pageNumber = query.pageNumber ? +query.pageNumber : 1;
     const pageSize = query.pageSize ? +query.pageSize : 10;
     const offset = pageSize * (pageNumber - 1);
-    const searchLoginTerm = query.searchLoginTerm
-      ? `%${query.searchLoginTerm}%`
-      : '';
-    const searchEmailTerm = query.searchEmailTerm
-      ? `%${query.searchEmailTerm}%`
-      : '';
+    const searchLoginTerm = `%${query.searchLoginTerm ?? ''}%`;
+    const searchEmailTerm = `%${query.searchEmailTerm ?? ''}%`;
 
     const usersRow = await this.dataSource.query(
       `
@@ -43,8 +39,8 @@ export class UsersQueryRepository {
     WHEN $1 = '${BanStatus.Banned}' THEN true
     WHEN $1 = '${BanStatus.NotBanned}' THEN false
     ELSE ub."isBanned" END AND
-    (CASE WHEN $2 = '' THEN true ELSE u."login" ILIKE $2 END OR
-    CASE WHEN $3 = '' THEN true ELSE u."email" ILIKE $3 END)
+    (CASE WHEN u."login" ILIKE $2 THEN true 
+    ELSE u."email" ILIKE $3 END)
     ),
     temp_data1 as (
     SELECT * FROM "temp_data" as td
@@ -54,7 +50,7 @@ export class UsersQueryRepository {
     LIMIT ${pageSize} OFFSET ${offset}
     )
     SELECT (
-    SELECT count(*)
+    SELECT COUNT(*)
     FROM temp_data
     ) as "totalCount",
     (SELECT json_agg(
@@ -64,7 +60,7 @@ export class UsersQueryRepository {
     'isBanned', td."isBanned", 'banDate', td."banDate", 'banReason', td."banReason"
     )
     )
-    ) FROM temp_data1 as td) as json_data
+    ) FROM temp_data1 as td) as "json_data"
     `,
       [banStatus, searchLoginTerm, searchEmailTerm],
     );

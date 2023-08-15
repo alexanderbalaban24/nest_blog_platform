@@ -18,16 +18,15 @@ export class BanUnbanBlogUseCase
   ) {}
 
   async execute(command: BanUnbanBlogCommand): Promise<ResultDTO<null>> {
-    const blogResult = await this.BlogsRepository.findById(command.blogId);
-    if (blogResult.hasError())
-      return new ResultDTO(InternalCode.Internal_Server);
-    if (command.isBanned === false) {
-      blogResult.payload.activate();
-    } else {
-      blogResult.payload.deactivate();
-    }
+    const banDate = command.isBanned ? new Date() : null;
 
-    const postsResult = await this.PostsRepository.findByBlogId(command.blogId);
+    return this.BlogsRepository.banBlog(
+      command.blogId,
+      command.isBanned,
+      banDate,
+    );
+
+    /*const postsResult = await this.PostsRepository.findByBlogId(command.blogId);
     if (postsResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
     const postPromises = postsResult.payload.map((postInstance) => {
@@ -40,6 +39,6 @@ export class BanUnbanBlogUseCase
     });
     await Promise.all(postPromises);
 
-    return this.BlogsRepository.save(blogResult.payload);
+    return this.BlogsRepository.save(blogResult.payload);*/
   }
 }

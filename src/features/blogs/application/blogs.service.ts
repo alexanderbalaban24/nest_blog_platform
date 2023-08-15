@@ -17,26 +17,21 @@ export class BlogsService {
     blogId: string,
     postId: string,
     userId: string,
-  ): Promise<
-    ResultDTO<{ postInstance: PostDocument; blogInstance: BlogDocument }>
-  > {
+  ): Promise<ResultDTO<null>> {
     const blogResult = await this.BlogsRepository.findById(blogId);
     const postResult = await this.PostsRepository.findById(postId);
 
     if (blogResult.hasError()) return blogResult as ResultDTO<null>;
     if (postResult.hasError()) return postResult as ResultDTO<null>;
 
-    if (blogResult.payload.blogOwnerInfo.userId !== userId)
+    if (blogResult.payload.userId !== userId)
       return new ResultDTO(InternalCode.Forbidden);
     if (
-      postResult.payload.blogId !== blogId ||
-      userId !== postResult.payload.ownerId
+      postResult.payload.blogId.toString() !== blogId ||
+      userId !== postResult.payload.userId
     )
       return new ResultDTO(InternalCode.Forbidden);
 
-    return new ResultDTO(InternalCode.Success, {
-      postInstance: postResult.payload,
-      blogInstance: blogResult.payload,
-    });
+    return new ResultDTO(InternalCode.Success);
   }
 }

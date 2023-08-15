@@ -5,6 +5,7 @@ import { BlogsQueryRepository } from '../../../blogs/infrastructure/blogs.query-
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostModelType } from '../../domain/posts.entity';
 import { PostsRepository } from '../../infrastructure/posts.repository';
+import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository';
 
 export class CreatePostCommand {
   constructor(
@@ -21,34 +22,26 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
   constructor(
     @InjectModel(Post.name) private PostModel: PostModelType,
     private PostsRepository: PostsRepository,
-    private BlogsQueryRepository: BlogsQueryRepository,
+    private BlogsRepository: BlogsRepository,
   ) {}
 
   async execute(
     command: CreatePostCommand,
   ): Promise<ResultDTO<{ postId: string }>> {
     //TODO делать запрос через команд репозиторий
-    const blogResult = await this.BlogsQueryRepository.findBlogById(
-      command.blogId,
-      //TODO возможно говнокод, надо отрефакторить, быстрое решение
-      true,
-    );
+    const blogResult = await this.BlogsRepository.findById(command.blogId);
     if (blogResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
 
-    if (command.ownerId !== blogResult.payload.blogOwnerInfo.userId)
+    if (command.ownerId !== blogResult.payload.userId)
       return new ResultDTO(InternalCode.Forbidden);
 
-    const postInstance = await this.PostModel.makeInstance(
+    return this.PostsRepository.createPost(
       command.ownerId,
       command.title,
       command.shortDescription,
       command.content,
       command.blogId,
-      blogResult.payload.name,
-      this.PostModel,
     );
-
-    return this.PostsRepository.create(postInstance);
   }
 }
