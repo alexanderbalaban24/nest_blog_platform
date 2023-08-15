@@ -11,9 +11,12 @@ export class ExistingBlogPipe implements PipeTransform {
   constructor(private BlogRepository: BlogsRepository) {}
 
   async transform(value: string, metadata: ArgumentMetadata) {
-    const userResult = await this.BlogRepository.findById(value);
-    if (userResult.hasError()) throw new NotFoundException();
-
-    return userResult.payload.id.toString();
+    try {
+      const userResult = await this.BlogRepository.findById(value);
+      if (userResult.hasError()) throw new NotFoundException();
+      return userResult.payload.id;
+    } catch (e) {
+      throw new NotFoundException();
+    }
   }
 }
