@@ -27,7 +27,7 @@ export class BlogsService {
     if (blogResult.payload.userId !== userId)
       return new ResultDTO(InternalCode.Forbidden);
     if (
-      postResult.payload.blogId.toString() !== blogId ||
+      postResult.payload.blogId !== blogId ||
       userId !== postResult.payload.userId
     )
       return new ResultDTO(InternalCode.Forbidden);
