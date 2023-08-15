@@ -85,7 +85,7 @@ export class BlogsQueryRepository {
     const blogsRaw = await this.dataSource.query(
       `
     WITH "temp_data1" AS (
-    SELECT b.*, bb."isBanned", bb."banDate", u."id" as "userId", u."login" as "userLogin" 
+    SELECT b.*, bb."isBanned", bb."banDate", u."id" AS "userId", u."login" AS "userLogin" 
     FROM "blogs" AS b
     LEFT JOIN "blogs_ban" AS bb
     ON bb."blogId" = b."id"
@@ -141,18 +141,37 @@ export class BlogsQueryRepository {
   ): Promise<ResultDTO<ViewBlogModel>> {
     const blogsRaw = await this.dataSource.query(
       `
-    SELECT * 
-    FROM "blogs" as b
+   WITH "temp_data1" AS (
+    SELECT b.*, bb."isBanned", bb."banDate", u."id" AS "userId", u."login" AS "userLogin" 
+    FROM "blogs" AS b
+    LEFT JOIN "blogs_ban" AS bb
+    ON bb."blogId" = b."id"
+    LEFT JOIN "users" AS u
+    ON u."id" = b."ownerId"
     WHERE b."id" = $1
+    )
+    SELECT (SELECT json_agg(
+    json_build_object(
+    'id', td."id", 'name', td."name", 'description', td."description", 'websiteUrl', td."websiteUrl", 'createdAt', td."createdAt", 'isMembership', td."isMembership", 'blogOwnerInfo',
+    json_build_object(
+    'userId', td."userId", 'userLogin', td."userLogin"
+    ), 'banInfo',
+    json_build_object(
+    'isBanned', td."isBanned",
+    'banDate', td."banDate"
+    )
+    )
+    ) FROM "temp_data1" AS td
+    ) AS "data"
     `,
       [blogId],
     );
-
+    console.log(blogsRaw[0].data);
     if (!blogsRaw.length) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(
       InternalCode.Success,
-      this._mapBlogToView(blogsRaw[0], internalCall),
+      this._mapBlogToView(blogsRaw[0].data[0], internalCall),
     );
   }
 

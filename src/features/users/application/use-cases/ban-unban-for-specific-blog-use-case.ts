@@ -34,15 +34,14 @@ export class BanUnbanForSpecificBlogUseCase
     if (blogResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
 
-    if (blogResult.payload.blogOwnerInfo.userId !== command.currentUserId)
+    if (blogResult.payload.userId !== command.currentUserId)
       return new ResultDTO(InternalCode.Forbidden);
 
-    userResult.payload.banForSpecificBlog(
+    return this.UsersRepository.banUserForSpecificBlog(
+      command.userId,
       command.blogId,
       command.isBanned,
       command.banReason,
     );
-
-    return this.UsersRepository.save(userResult.payload);
   }
 }

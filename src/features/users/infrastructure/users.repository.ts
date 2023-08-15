@@ -102,7 +102,7 @@ export class UsersRepository {
     isBanned: boolean,
     banReason: string,
     banDate: Date,
-  ) {
+  ): Promise<ResultDTO<null>> {
     await this.dataSource.query(
       `
      UPDATE "users_ban" as ub
@@ -111,6 +111,37 @@ export class UsersRepository {
       `,
       [userId, isBanned, banReason, banDate],
     );
+
+    return new ResultDTO(InternalCode.Success);
+  }
+
+  async banUserForSpecificBlog(
+    userId: string,
+    blogId: string,
+    isBanned: boolean,
+    banReason: string,
+  ): Promise<ResultDTO<null>> {
+    if (isBanned) {
+      await this.dataSource.query(
+        `
+    INSERT INTO "users_ban_for_blog" as ub
+    ("userId", "banReason", "blogId")
+    VALUES($1, $2, $3)
+    `,
+        [userId, banReason, blogId],
+      );
+    } else {
+      await this.dataSource.query(
+        `
+      DELETE FROM "users_ban_for_blog" as ub
+      WHERE ab."userId" = $1 AND
+      ab."blogId" = $2
+      `,
+        [userId, blogId],
+      );
+    }
+
+    return new ResultDTO(InternalCode.Success);
   }
 
   async checkUserAccessForBlog(

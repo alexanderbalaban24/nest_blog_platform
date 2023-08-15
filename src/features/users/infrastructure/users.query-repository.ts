@@ -17,8 +17,6 @@ export class UsersQueryRepository {
 
   async findUsers(
     query: QueryParamsUserModel,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
   ): Promise<ResultDTO<QueryBuildDTO<User, ViewUserModel>>> {
     const banStatus = query.banStatus ?? BanStatus.All;
     const sortBy = query.sortBy ?? 'createdAt';
@@ -80,29 +78,73 @@ export class UsersQueryRepository {
   }
 
   async findBannedUsersForBlog(query: QueryParamsUserModel, blogId: string) {
-    const usersData = await this.UserModel.find({
-      'bannedBlogsInfo.blogId': blogId,
-      'bannedBlogsInfo.isBanned': { $ne: false },
-    }).findWithQuery(query);
-    usersData.map((user: UserDocument) => {
-      const banInfo = user.bannedBlogsInfo.find(
-        (banData) => banData.blogId === blogId,
-      );
+    const banStatus = query.banStatus ?? BanStatus.All;
+    const sortBy = query.sortBy ?? 'createdAt';
+    const sortDirection = query.sortDirection ?? 'desc';
+    const pageNumber = query.pageNumber ? +query.pageNumber : 1;
+    const pageSize = query.pageSize ? +query.pageSize : 10;
+    const offset = pageSize * (pageNumber - 1);
+    const searchLoginTerm = `%${query.searchLoginTerm ?? ''}%`;
+    const searchEmailTerm = `%${query.searchEmailTerm ?? ''}%`;
 
-      return {
-        id: user._id.toString(),
-        login: user.login,
-        banInfo: {
-          isBanned: banInfo.isBanned,
-          banDate: banInfo.banDate
-            ? new Date(banInfo.banDate).toISOString()
-            : null,
-          banReason: banInfo.banReason,
-        },
-      };
-    });
+    const usersRaw = await this.dataSource.query(
+      `
+    WITH "temp_data1" AS (
+    SELECT u."id", u."login", ub."isBanned", ub."banDate", ub."banReason", u."createdAt"
+    FROM "users_ban_for_blog" AS ub
+    LEFT JOIN "users" AS u
+    ON u."id" = ub."userId"
+    WHERE ub."blogId" = $4 AND
+    ub."isBanned" = CASE 
+    WHEN $1 = '${BanStatus.Banned}' THEN true
+    WHEN $1 = '${BanStatus.NotBanned}' THEN false
+    ELSE ub."isBanned" END AND
+    (CASE WHEN u."login" ILIKE $2 THEN true 
+    ELSE u."email" ILIKE $3 END)
+    ),
+    "temp_data2" as (
+    SELECT * FROM "temp_data1" as td
+    ORDER BY "${sortBy}" ${
+        sortBy !== 'createdAt' ? 'COLLATE "C" ' : ''
+      } ${sortDirection}
+    LIMIT ${pageSize} OFFSET ${offset}
+    )
+    SELECT (
+    SELECT COUNT(*)
+    FROM "temp_data1"
+    ) as "totalCount",
+    (SELECT json_agg(
+    json_build_object(
+    'id', td."id", 'login', td."login", 
+    'banInfo', json_build_object(
+    'isBanned', td."isBanned", 'banDate', td."banDate", 'banReason', td."banReason"
+    )
+    )
+    ) FROM "temp_data2" as td) as "data"
+    `,
+      [banStatus, searchLoginTerm, searchEmailTerm, blogId],
+    );
 
-    return new ResultDTO(InternalCode.Success, usersData);
+    const totalCount = +usersRaw[0].totalCount;
+    const pagesCount = Math.ceil(totalCount / pageSize);
+    const data = new QueryBuildDTO<any, any>(
+      pagesCount,
+      pageNumber,
+      pageSize,
+      totalCount,
+      usersRaw[0].data ?? [],
+    );
+
+    data.map((user) => ({
+      id: user.id.toString(),
+      login: user.login,
+      banInfo: {
+        isBanned: user.banInfo.isBanned,
+        banDate: new Date(user.banInfo.banDate).toISOString(),
+        banReason: user.banInfo.banReason,
+      },
+    }));
+    return new ResultDTO(InternalCode.Success, data);
   }
 
   async findUserById(userId: string): Promise<ResultDTO<ViewUserModel>> {
