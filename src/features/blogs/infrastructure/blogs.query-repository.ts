@@ -40,7 +40,7 @@ export class BlogsQueryRepository {
     b."name" ILIKE $2
     ),
     "temp_data2" AS (
-    SELECT * FROM "temp_data1" as td
+    SELECT * FROM "temp_data1" AS td
     ORDER BY "${sortBy}" ${
         sortBy !== 'createdAt' ? 'COLLATE "C" ' : ''
       } ${sortDirection}
