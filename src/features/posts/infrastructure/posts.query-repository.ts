@@ -39,7 +39,7 @@ export class PostsQueryRepository {
     WHEN $1 = 'undefined' THEN p."blogId" ELSE $1::integer END
     ),
     "temp_data2" AS (
-    SELECT * FROM "temp_data1" as td
+    SELECT * FROM "temp_data1" AS td
     ORDER BY "${sortBy}" ${
         sortBy !== 'createdAt' ? 'COLLATE "C" ' : ''
       } ${sortDirection}
