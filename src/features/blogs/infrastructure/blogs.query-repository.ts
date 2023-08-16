@@ -30,9 +30,12 @@ export class BlogsQueryRepository {
     const blogsRaw = await this.dataSource.query(
       `
     WITH "temp_data1" AS (
-    SELECT * 
+    SELECT b.*, bb."isBanned" 
     FROM "blogs" AS b
-    WHERE b."ownerId" = (CASE 
+    LEFT JOIN "blogs_ban" AS bb
+    ON bb."blogId" = b."id"
+    WHERE bb."isBanned" = false AND
+    b."ownerId" = (CASE 
     WHEN $1 = 'undefined' THEN b."ownerId" ELSE $1::integer END) AND
     b."name" ILIKE $2
     ),
@@ -148,7 +151,8 @@ export class BlogsQueryRepository {
     ON bb."blogId" = b."id"
     LEFT JOIN "users" AS u
     ON u."id" = b."ownerId"
-    WHERE b."id" = $1
+    WHERE b."id" = $1 AND
+    bb."isBanned" = false
     )
     SELECT (SELECT json_agg(
     json_build_object(
@@ -166,8 +170,8 @@ export class BlogsQueryRepository {
     `,
       [blogId],
     );
-    console.log(blogsRaw[0].data);
-    if (!blogsRaw.length) return new ResultDTO(InternalCode.NotFound);
+
+    if (!blogsRaw[0].data) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(
       InternalCode.Success,
