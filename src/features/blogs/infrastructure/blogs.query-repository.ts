@@ -192,8 +192,14 @@ export class BlogsQueryRepository {
     if (isSuperAdmin) {
       return {
         ...result,
-        blogOwnerInfo: blog.blogOwnerInfo,
-        banInfo: blog.banInfo,
+        blogOwnerInfo: {
+          userId: blog.blogOwnerInfo.toString(),
+          userLogin: blog.blogOwnerInfo.userLogin,
+        },
+        banInfo: {
+          isBanned: blog.banInfo.isBanned,
+          banDate: new Date(blog.banInfo.banDate).toISOString(),
+        },
       };
     }
 

@@ -80,11 +80,14 @@ export class PostsQueryRepository {
   ): Promise<ResultDTO<ViewPostModel>> {
     const postsRaw = await this.dataSource.query(
       `
-    SELECT p.*, b."name" AS "blogName"
+    SELECT p.*, b."name" AS "blogName", bb."isBanned"
     FROM "posts" AS p
     LEFT JOIN "blogs" AS b
     ON p."blogId" = b."id"
-    WHERE p."id" = $1
+    LEFT JOIN "blogs_ban" AS bb
+    ON bb."blogId" = p."blogId"
+    WHERE p."id" = $1 AND
+    bb."isBanned" != true
     `,
       [postId],
     );

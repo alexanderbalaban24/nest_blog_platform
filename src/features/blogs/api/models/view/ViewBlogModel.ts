@@ -11,6 +11,6 @@ export type ViewBlogModel = {
   };
   banInfo?: {
     isBanned: boolean;
-    banDate: Date;
+    banDate: string;
   };
 };
