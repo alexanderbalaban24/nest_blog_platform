@@ -39,7 +39,6 @@ export class BlogsQueryRepository {
       ViewBlogModel
     >(query);
     blogsData.map((blog) => this._mapBlogToView(blog, true));
-    //if (!blogsData) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(InternalCode.Success, blogsData);
   }
