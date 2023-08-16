@@ -17,7 +17,6 @@ export class BlogsQueryRepository {
   ): Promise<ResultDTO<QueryBuildDTO<Blog, ViewBlogModel>>> {
     const queryObj = bloggerId
       ? {
-          //TODO пернести возможно в findWithQuery
           'blogOwnerInfo.userId': bloggerId,
           'banInfo.isBanned': { $ne: true },
         }
