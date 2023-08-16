@@ -193,7 +193,7 @@ export class BlogsQueryRepository {
       return {
         ...result,
         blogOwnerInfo: {
-          userId: blog.blogOwnerInfo.toString(),
+          userId: blog.blogOwnerInfo.userId.toString(),
           userLogin: blog.blogOwnerInfo.userLogin,
         },
         banInfo: {
