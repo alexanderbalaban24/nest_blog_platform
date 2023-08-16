@@ -198,7 +198,9 @@ export class BlogsQueryRepository {
         },
         banInfo: {
           isBanned: blog.banInfo.isBanned,
-          banDate: new Date(blog.banInfo.banDate).toISOString(),
+          banDate:
+            blog.banInfo.banDate ??
+            new Date(blog.banInfo.banDate).toISOString(),
         },
       };
     }
