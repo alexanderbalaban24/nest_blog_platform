@@ -50,7 +50,7 @@ export class BloggerUsersController extends ExceptionAndResponseHelper {
       );
 
     //console.log(blogsResult.payload.blogOwnerInfo.userId, currentUserId);
-    if (blogsResult.payload.blogOwnerInfo.userId !== currentUserId)
+    if (blogsResult.payload.blogOwnerInfo.userId !== currentUserId.toString())
       return this.sendExceptionOrResponse(
         new ResultDTO(InternalCode.Forbidden),
       );
