@@ -1,7 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument, PostModelType } from '../domain/posts.entity';
 import { ResultDTO } from '../../../shared/dto';
-import { InternalCode } from '../../../shared/enums';
+import { InternalCode, LikeStatusEnum } from '../../../shared/enums';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
@@ -70,6 +70,32 @@ export class PostsRepository {
     WHERE p."id" = $1
     `,
       [postId],
+    );
+
+    return new ResultDTO(InternalCode.Success);
+  }
+
+  async likeById(
+    postId: string,
+    userId: string,
+    likeStatus: LikeStatusEnum,
+    addedAt: Date,
+  ): Promise<ResultDTO<null>> {
+    await this.dataSource.query(
+      `
+    WITH "temp_data" AS (
+    SELECT pl."id" AS "postId"
+    FROM "posts_likes" AS pl
+    WHERE pl."postId" = $1 AND
+    pl."userId" = $2
+    )
+    INSERT INTO "posts_likes" AS pl
+    ("postId", "userId", "addedAt", "status", "id")
+    VALUES($1, $2, $4, (SELECT lse."id" FROM "like_status_enum" AS lse WHERE lse."status" = $3), COALESCE((SELECT td."postId" FROM "temp_data" AS td), uuid_generate_v1()))
+    ON CONFLICT ("id") DO UPDATE
+    SET "status" = (SELECT lse."id" FROM "like_status_enum" AS lse WHERE lse."status" = $3)
+    `,
+      [postId, userId, likeStatus, addedAt],
     );
 
     return new ResultDTO(InternalCode.Success);

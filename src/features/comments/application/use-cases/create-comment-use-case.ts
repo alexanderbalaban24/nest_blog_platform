@@ -34,29 +34,24 @@ export class CreateCommentUseCase
     const postResult = await this.PostsQueryRepository.findPostById(
       command.postId,
     );
-    if (postResult.hasError())
-      return new ResultDTO(InternalCode.Internal_Server);
+    if (postResult.hasError()) return new ResultDTO(InternalCode.NotFound);
 
     const userResult = await this.UsersQueryRepository.findUserById(
       command.userId,
     );
     if (userResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
-
+    console.log(command.userId, postResult.payload.blogId);
     const checkAccess = await this.UsersRepository.checkUserAccessForBlog(
       command.userId,
       postResult.payload.blogId,
     );
-    if (checkAccess.payload) return new ResultDTO(InternalCode.Forbidden);
+    if (!checkAccess.payload) return new ResultDTO(InternalCode.Forbidden);
 
-    const newCommentInstance = await this.CommentModel.makeInstance(
+    return this.CommentRepository.createComment(
       postResult.payload.id,
       command.content,
       userResult.payload.id,
-      userResult.payload.login,
-      this.CommentModel,
     );
-
-    return this.CommentRepository.create(newCommentInstance);
   }
 }

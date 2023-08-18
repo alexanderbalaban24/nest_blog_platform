@@ -5,7 +5,6 @@ import { ViewBlogModel } from '../api/models/view/ViewBlogModel';
 import { QueryParamsBlogModel } from '../api/models/input/QueryParamsBlogModel';
 import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
 import { InternalCode } from '../../../shared/enums';
-import { Types } from 'mongoose';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 

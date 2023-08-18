@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument, UserModelType } from '../domain/users.entity';
+import { User, UserModelType } from '../domain/users.entity';
 import { ViewUserModel } from '../api/models/view/ViewUserModel';
 import { QueryParamsUserModel } from '../api/models/input/QueryParamsUserModel';
 import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
@@ -72,7 +72,7 @@ export class UsersQueryRepository {
       totalCount,
       usersRow[0].json_data ?? [],
     );
-    //console.log('RRRRRRRRRRRRRRRRRRRRRRRRRRRRR', usersRow[0].json_data);
+
     data.map((user) => this._mapUserToView(user));
     return new ResultDTO(InternalCode.Success, data);
   }
@@ -102,7 +102,7 @@ export class UsersQueryRepository {
     (CASE WHEN u."login" ILIKE $2 THEN true 
     ELSE u."email" ILIKE $3 END)
     ),
-    "temp_data2" as (
+    "temp_data2" AS (
     SELECT * FROM "temp_data1" as td
     ORDER BY "${sortBy}" ${
         sortBy !== 'createdAt' ? 'COLLATE "C" ' : ''
@@ -112,7 +112,7 @@ export class UsersQueryRepository {
     SELECT (
     SELECT COUNT(*)
     FROM "temp_data1"
-    ) as "totalCount",
+    ) AS "totalCount",
     (SELECT json_agg(
     json_build_object(
     'id', td."id", 'login', td."login", 
@@ -120,7 +120,7 @@ export class UsersQueryRepository {
     'isBanned', td."isBanned", 'banDate', td."banDate", 'banReason', td."banReason"
     )
     )
-    ) FROM "temp_data2" as td) as "data"
+    ) FROM "temp_data2" AS td) AS "data"
     `,
       [banStatus, searchLoginTerm, searchEmailTerm, blogId],
     );

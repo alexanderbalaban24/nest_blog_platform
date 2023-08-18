@@ -22,18 +22,11 @@ export class LikeStatusPostUseCase
   ) {}
 
   async execute(command: LikeStatusPostCommand): Promise<ResultDTO<null>> {
-    const postResult = await this.PostsRepository.findById(command.postId);
-    if (postResult.hasError()) return postResult as ResultDTO<null>;
-
-    const userResult = await this.UsersRepository.findById(command.userId);
-    if (userResult.hasError()) return userResult as ResultDTO<null>;
-
-    postResult.payload.like(
+    return this.PostsRepository.likeById(
+      command.postId,
       command.userId,
-      userResult.payload.login,
       command.likeStatus,
+      new Date(),
     );
-
-    return this.PostsRepository.save(postResult.payload);
   }
 }

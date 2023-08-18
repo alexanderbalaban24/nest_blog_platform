@@ -23,11 +23,12 @@ export class UpdateCommentUseCase
     );
     if (commentResult.hasError()) return commentResult as ResultDTO<null>;
 
-    if (commentResult.payload.commentatorInfo.userId !== command.currentUserId)
+    if (commentResult.payload.userId !== command.currentUserId)
       return new ResultDTO(InternalCode.Forbidden);
 
-    commentResult.payload.updateData(command.content, command.currentUserId);
-
-    return this.CommentRepository.save(commentResult.payload);
+    return this.CommentRepository.updateById(
+      command.commentId,
+      command.content,
+    );
   }
 }

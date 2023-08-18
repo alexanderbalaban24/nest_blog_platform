@@ -80,7 +80,41 @@ export class PostsQueryRepository {
   ): Promise<ResultDTO<ViewPostModel>> {
     const postsRaw = await this.dataSource.query(
       `
-    SELECT p.*, b."name" AS "blogName", bb."isBanned"
+    SELECT p.*, b."name" AS "blogName", bb."isBanned",
+     (SELECT CAST(COUNT(*) AS INTEGER)
+     FROM "posts_likes" AS pl
+     LEFT JOIN "like_status_enum" AS lse
+     ON lse."id" = pl."status"
+     WHERE lse."status" = '${LikeStatusEnum.Like}'
+     ) AS "likesCount",
+     (SELECT CAST(COUNT(*) AS INTEGER)
+     FROM "posts_likes" AS pl
+     LEFT JOIN "like_status_enum" AS lse
+     ON lse."id" = pl."status"
+     WHERE lse."status" = '${LikeStatusEnum.Dislike}'
+     ) AS "dislikesCount",
+     (SELECT lse."status"
+     FROM "posts_likes" AS pl
+     LEFT JOIN "like_status_enum" AS lse
+     ON lse."id" = pl."status"
+     WHERE lse."status" != '${LikeStatusEnum.None}' AND
+     pl."userId" = $2
+     ) AS "myStatus",
+     (SELECT array_agg(
+     json_build_object(
+     'addedAt', pl."addedAt",
+     'userId', CAST(pl."userId" AS TEXT),
+     'login', u."login"
+     )
+     )
+     FROM (SELECT * 
+     FROM "posts_likes" AS pl
+     ORDER BY pl."addedAt" ASC
+     LIMIT 3
+     ) AS pl
+     LEFT JOIN "users" AS u
+     ON u."id" = pl."userId"
+     ) AS "newestLikes"
     FROM "posts" AS p
     LEFT JOIN "blogs" AS b
     ON p."blogId" = b."id"
@@ -89,7 +123,7 @@ export class PostsQueryRepository {
     WHERE p."id" = $1 AND
     bb."isBanned" != true
     `,
-      [postId],
+      [postId, userId],
     );
 
     if (!postsRaw.length) return new ResultDTO(InternalCode.NotFound);
@@ -110,10 +144,10 @@ export class PostsQueryRepository {
       blogName: post.blogName,
       createdAt: new Date(post.createdAt).toISOString(),
       extendedLikesInfo: {
-        likesCount: 0,
-        dislikesCount: 0,
-        myStatus: LikeStatusEnum.None,
-        newestLikes: [],
+        likesCount: post.likesCount,
+        dislikesCount: post.dislikesCount,
+        myStatus: post.myStatus ?? LikeStatusEnum.None,
+        newestLikes: post.newestLikes ?? [],
       },
     };
   }

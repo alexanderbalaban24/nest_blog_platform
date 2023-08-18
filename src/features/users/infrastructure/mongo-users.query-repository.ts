@@ -6,6 +6,44 @@ import { QueryParamsUserModel } from '../api/models/input/QueryParamsUserModel';
 import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
 import { InternalCode } from '../../../shared/enums';
 
+/*
+{
+      "id": "string",
+      "content": "string",
+      "commentatorInfo": {
+        "userId": "string",
+        "userLogin": "string"
+      },
+      "createdAt": "2023-08-17T22:28:06.819Z",
+      "likesInfo": {
+        "likesCount": 0,
+        "dislikesCount": 0,
+        "myStatus": "None"
+      },
+      "postInfo": {
+        "id": "string",
+        "title": "string",
+        "blogId": "string",
+        "blogName": "string"
+      }
+    }
+
+    {
+        "id": 4,
+        "content": "My First comment test",
+        "userId": 1135,
+        "userLogin": "Alex",
+        "createdAt": "2023-08-17T14:36:10.951Z",
+        "postId": 131,
+        "title": "Test CP",
+        "blogId": 682,
+        "blogName": "Tim",
+        "likesCount": 2,
+        "dislikesCount": 0,
+        "myStatus": "Like"
+    }
+*/
+
 @Injectable()
 export class UsersQueryRepository {
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}

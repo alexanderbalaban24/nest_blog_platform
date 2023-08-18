@@ -5,7 +5,6 @@ import { ResultDTO } from '../../../shared/dto';
 import { InternalCode } from '../../../shared/enums';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument, UserModelType } from '../domain/users.entity';
-import { Types } from 'mongoose';
 
 @Injectable()
 export class UsersRepository {
@@ -148,37 +147,19 @@ export class UsersRepository {
     userId: string,
     blogId: string,
   ): Promise<ResultDTO<boolean>> {
-    const ban = await this.UserModel.aggregate([
-      {
-        $match: { _id: new Types.ObjectId(userId) },
-      },
-      {
-        $project: {
-          _id: 0,
-          isBanned: {
-            $let: {
-              vars: {
-                userBanInfo: {
-                  $arrayElemAt: [
-                    {
-                      $filter: {
-                        input: '$bannedBlogsInfo',
-                        as: 'ban',
-                        cond: { $eq: ['$$ban.blogId', blogId] },
-                      },
-                    },
-                    0,
-                  ],
-                },
-              },
-              in: { $ifNull: ['$$userBanInfo.isBanned', false] },
-            },
-          },
-        },
-      },
-    ]);
-
-    return new ResultDTO(InternalCode.Success, ban[0].isBanned);
+    const banRaw = await this.dataSource.query(
+      `
+    SELECT ub."isBanned" 
+    FROM "users_ban_for_blog" AS ub
+    WHERE ub."blogId" = $1 AND
+    ub."userId" = $2
+    `,
+      [blogId, userId],
+    );
+    console.log(banRaw);
+    const access = !banRaw.length || !banRaw[0].isBanned;
+    console.log(access);
+    return new ResultDTO(InternalCode.Success, access);
   }
 
   async create(

@@ -19,10 +19,9 @@ export class DeleteCommentUseCase
     );
     if (commentResult.hasError()) return commentResult as ResultDTO<null>;
 
-    if (commentResult.payload.commentatorInfo.userId !== command.currentUserId)
+    if (commentResult.payload.userId !== command.currentUserId)
       return new ResultDTO(InternalCode.Forbidden);
-    await commentResult.payload.deleteOne();
 
-    return new ResultDTO(InternalCode.Success);
+    return this.CommentRepository.deleteById(command.commentId);
   }
 }
