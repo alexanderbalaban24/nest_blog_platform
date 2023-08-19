@@ -118,7 +118,7 @@ export class PostsQueryRepository {
      ON u."id" = pl."userId"
      LEFT JOIN "like_status_enum" AS lse
      ON lse."id" = pl."status"
-     WHERE lse."status" != '${LikeStatusEnum.Like}'
+     WHERE lse."status" = '${LikeStatusEnum.Like}'
      ) AS "newestLikes"
     FROM "posts" AS p
     LEFT JOIN "blogs" AS b
