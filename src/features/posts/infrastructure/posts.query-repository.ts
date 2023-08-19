@@ -111,6 +111,7 @@ export class PostsQueryRepository {
      )
      FROM (SELECT * 
      FROM "posts_likes" AS pl
+     WHERE pl."postId" = $1
      ORDER BY pl."addedAt" DESC
      LIMIT 3
      ) AS pl
