@@ -98,7 +98,7 @@ export class PostsQueryRepository {
      LEFT JOIN "like_status_enum" AS lse
      ON lse."id" = pl."status"
      WHERE lse."status" != '${LikeStatusEnum.None}' AND
-     pl."userId" = $2
+     pl."userId" = $2 AND pl."postId" = $1
      ) AS "myStatus",
      (SELECT array_agg(
      json_build_object(

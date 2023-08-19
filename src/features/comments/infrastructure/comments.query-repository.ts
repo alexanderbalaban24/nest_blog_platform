@@ -59,7 +59,7 @@ export class CommentsQueryRepository {
      ON lse."id" = pcl."status"
      WHERE pcl."commentId" = $1 AND
      lse."status" != '${LikeStatusEnum.None}' AND
-     pcl."userId" = $2
+     pcl."userId" = $2 AND pcl."commentId" = $1
      ) AS "myStatus"
     FROM "posts_comments" AS pc
     LEFT JOIN "users" AS u
