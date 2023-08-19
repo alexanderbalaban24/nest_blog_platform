@@ -140,7 +140,7 @@ export class CommentsQueryRepository {
     json_build_object(
     'id', td."id", 'content', td."content", 'createdAt', td."createdAt", 'commentatorInfo',
     json_build_object(
-    'userId', td."userId", 'userLogin', td."userLogin"
+    'userId', CAST(td."userId" AS TEXT), 'userLogin', td."userLogin"
     ), 'likesInfo',
     json_build_object(
     'likesCount', td."likesCount",
