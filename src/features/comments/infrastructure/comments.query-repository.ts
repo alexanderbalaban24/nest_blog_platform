@@ -38,7 +38,7 @@ export class CommentsQueryRepository {
   ): Promise<ResultDTO<any>> {
     const commentRaw = await this.dataSource.query(
       `
-    SELECT pc."id", pc."content", u."id" AS "userId", u."login" AS "userLogin", pc."createdAt", 
+    SELECT pc."id", pc."content", CAST(u."id" AS TEXT) AS "userId", u."login" AS "userLogin", pc."createdAt", 
      (SELECT CAST(COUNT(*) AS INTEGER)
      FROM "posts_comments_likes" AS pcl
      LEFT JOIN "like_status_enum" AS lse
