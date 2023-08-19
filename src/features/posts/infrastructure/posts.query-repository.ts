@@ -111,7 +111,7 @@ export class PostsQueryRepository {
      )
      FROM (SELECT * 
      FROM "posts_likes" AS pl
-     ORDER BY pl."addedAt" ASC
+     ORDER BY pl."addedAt" DESC
      LIMIT 3
      ) AS pl
      LEFT JOIN "users" AS u
