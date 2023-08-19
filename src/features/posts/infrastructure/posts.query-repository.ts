@@ -108,7 +108,7 @@ export class PostsQueryRepository {
      )
      )
      FROM (SELECT * 
-     FROM "posts_likes" AS pl
+     FROM "posts_likes" as pl
      ORDER BY pl."addedAt" ASC
      LIMIT 3
      ) AS pl
