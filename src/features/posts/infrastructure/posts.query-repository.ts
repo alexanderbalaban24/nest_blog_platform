@@ -88,7 +88,7 @@ export class PostsQueryRepository {
      WHERE lse."status" = '${LikeStatusEnum.Like}'
      ) AS "likesCount",
      (SELECT CAST(COUNT(*) AS INTEGER)
-     FROM "posts_likes" AS pl
+     FROM "posts_likes" as pl
      LEFT JOIN "like_status_enum" AS lse
      ON lse."id" = pl."status"
      WHERE lse."status" = '${LikeStatusEnum.Dislike}'
