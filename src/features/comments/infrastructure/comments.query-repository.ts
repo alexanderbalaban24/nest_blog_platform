@@ -59,7 +59,7 @@ export class CommentsQueryRepository {
     ON bb."blogId" = p."blogId"
     LEFT JOIN "blogs" AS b
     ON b."id" = p."blogId"
-    WHERE pc."postId" = $1 AND 
+    WHERE pc."postId" = $2 AND 
     (bb."isBanned" != true OR bb."isBanned" IS NULL)
     ),
     "temp_data2" as (
@@ -88,7 +88,7 @@ export class CommentsQueryRepository {
     ) FROM "temp_data2" AS td
     ) AS "data"
     `,
-      [userId],
+      [userId, postId],
     );
 
     const totalCount = +commentsRaw[0].totalCount;

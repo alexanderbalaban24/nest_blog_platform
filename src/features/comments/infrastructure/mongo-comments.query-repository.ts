@@ -137,6 +137,8 @@ export class CommentsQueryRepository {
         userId: comment.commentatorInfo.userId,
         userLogin: comment.commentatorInfo.userLogin,
       },
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       createdAt: comment.createdAt,
       likesInfo: {
         likesCount: comment.likesCount,
