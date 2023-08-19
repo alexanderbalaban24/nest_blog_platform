@@ -59,7 +59,8 @@ export class CommentsQueryRepository {
     ON bb."blogId" = p."blogId"
     LEFT JOIN "blogs" AS b
     ON b."id" = p."blogId"
-    WHERE bb."isBanned" != true OR bb."isBanned" IS NULL
+    WHERE pc."postId" = $1 AND 
+    (bb."isBanned" != true OR bb."isBanned" IS NULL)
     ),
     "temp_data2" as (
     SELECT * FROM "temp_data1" as td
@@ -277,7 +278,7 @@ export class CommentsQueryRepository {
         userId: comment?.userId ?? comment?.commentatorInfo?.userId,
         userLogin: comment?.userLogin ?? comment?.commentatorInfo?.userLogin,
       },
-      createdAt: comment.createdAt,
+      createdAt: new Date(comment.createdAt).toISOString(),
       likesInfo: {
         likesCount: comment?.likesCount ?? comment?.likesInfo?.likesCount,
         dislikesCount:

@@ -7,7 +7,7 @@ export type ViewCommentModel = {
     userId: string;
     userLogin: string;
   };
-  createdAt: Date;
+  createdAt: string;
   likesInfo: {
     likesCount: number;
     dislikesCount: number;
