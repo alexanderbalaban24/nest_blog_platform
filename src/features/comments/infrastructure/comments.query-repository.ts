@@ -279,12 +279,12 @@ export class CommentsQueryRepository {
       },
       createdAt: comment.createdAt,
       likesInfo: {
-        likesCount: comment?.likesCount ?? comment?.likesInfo.likesCount,
+        likesCount: comment?.likesCount ?? comment?.likesInfo?.likesCount,
         dislikesCount:
-          comment?.dislikesCount ?? comment?.likesInfo.dislikesCount,
+          comment?.dislikesCount ?? comment?.likesInfo?.dislikesCount,
         myStatus:
-          comment.myStatus ??
-          comment?.likesInfo.myStatus ??
+          comment?.myStatus ??
+          comment?.likesInfo?.myStatus ??
           LikeStatusEnum.None,
       },
     };
