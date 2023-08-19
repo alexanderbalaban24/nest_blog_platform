@@ -120,8 +120,8 @@ export class PostsQueryRepository {
     ON p."blogId" = b."id"
     LEFT JOIN "blogs_ban" AS bb
     ON bb."blogId" = p."blogId"
-    WHERE p."id" = $1 AND
-    bb."isBanned" != true
+    WHERE (bb."isBanned" != true OR bb."isBanned" IS NULL) AND p."id" = $1
+    
     `,
       [postId, userId],
     );
