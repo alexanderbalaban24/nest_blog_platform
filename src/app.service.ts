@@ -22,6 +22,9 @@ export class AppService {
       await this.dataSource.query(`DELETE FROM "users_devices"`);
       await this.dataSource.query(`DELETE FROM "blogs_ban"`);
       await this.dataSource.query(`DELETE FROM "users_ban_for_blog"`);
+      await this.dataSource.query(`DELETE FROM "posts_comments_likes"`);
+      await this.dataSource.query(`DELETE FROM "posts_comments"`);
+      await this.dataSource.query(`DELETE FROM "posts_likes"`);
       await this.dataSource.query(`DELETE FROM "posts"`);
       await this.dataSource.query(`DELETE FROM "blogs"`);
       await this.dataSource.query(`DELETE FROM "users"`);
