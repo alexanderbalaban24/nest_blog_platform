@@ -33,15 +33,19 @@ export class CommentsQueryRepository {
      FROM "posts_comments_likes" AS pcl
      LEFT JOIN "like_status_enum" AS lse
      ON lse."id" = pcl."status"
+     LEFT JOIN "users_ban" AS ub
+     ON ub."userId" = pcl."userId"
      WHERE lse."status" = '${LikeStatusEnum.Like}'
-     AND pcl."commentId" = pc."id"
+     AND pcl."commentId" = pc."id" AND ub."isBanned" != true
      ) AS "likesCount",
      (SELECT CAST(COUNT(*) AS INTEGER)
      FROM "posts_comments_likes" AS pcl
      LEFT JOIN "like_status_enum" AS lse
      ON lse."id" = pcl."status"
+     LEFT JOIN "users_ban" AS ub
+     ON ub."userId" = pcl."userId"
      WHERE lse."status" = '${LikeStatusEnum.Dislike}'
-     AND pcl."commentId" = pc."id"
+     AND pcl."commentId" = pc."id" AND ub."isBanned" != true
      ) AS "dislikesCount",
      (SELECT lse."status"
      FROM "posts_comments_likes" AS pcl
@@ -58,9 +62,11 @@ export class CommentsQueryRepository {
     LEFT JOIN "blogs_ban" AS bb
     ON bb."blogId" = p."blogId"
     LEFT JOIN "blogs" AS b
+    LEFT JOIN "users_ban" AS ub
+    ON ub."userId" = pc."commentatorId"
     ON b."id" = p."blogId"
     WHERE pc."postId" = $2 AND 
-    (bb."isBanned" != true OR bb."isBanned" IS NULL)
+    (bb."isBanned" != true OR bb."isBanned" IS NULL) AND ub."isBanned" != true
     ),
     "temp_data2" as (
     SELECT * FROM "temp_data1" as td
@@ -117,15 +123,19 @@ export class CommentsQueryRepository {
      FROM "posts_comments_likes" AS pcl
      LEFT JOIN "like_status_enum" AS lse
      ON lse."id" = pcl."status"
+     LEFT JOIN "users_ban" AS ub
+     ON ub."userId" = pcl."userId"
      WHERE pcl."commentId" = $1 AND
-     lse."status" = '${LikeStatusEnum.Like}'
+     lse."status" = '${LikeStatusEnum.Like}' AND ub."isBanned" != true
      ) AS "likesCount",
      (SELECT CAST(COUNT(*) AS INTEGER)
      FROM "posts_comments_likes" AS pcl
      LEFT JOIN "like_status_enum" AS lse
      ON lse."id" = pcl."status"
+     LEFT JOIN "users_ban" AS ub
+     ON ub."userId" = pcl."userId"
      WHERE pcl."commentId" = $1 AND
-     lse."status" = '${LikeStatusEnum.Dislike}'
+     lse."status" = '${LikeStatusEnum.Dislike}' AND ub."isBanned" != true
      ) AS "dislikesCount",
      (SELECT lse."status"
      FROM "posts_comments_likes" AS pcl
@@ -173,14 +183,18 @@ export class CommentsQueryRepository {
      FROM "posts_comments_likes" AS pcl
      LEFT JOIN "like_status_enum" AS lse
      ON lse."id" = pcl."status"
-     WHERE lse."status" = '${LikeStatusEnum.Like}'
+     LEFT JOIN "users_ban" AS ub
+     ON ub."userId" = pcl."userId"
+     WHERE lse."status" = '${LikeStatusEnum.Like}' AND ub."isBanned" != true
      AND pcl."commentId" = pc."id"
      ) AS "likesCount",
      (SELECT CAST(COUNT(*) AS INTEGER)
      FROM "posts_comments_likes" AS pcl
      LEFT JOIN "like_status_enum" AS lse
      ON lse."id" = pcl."status"
-     WHERE lse."status" = '${LikeStatusEnum.Dislike}'
+     LEFT JOIN "users_ban" AS ub
+     ON ub."userId" = pcl."userId"
+     WHERE lse."status" = '${LikeStatusEnum.Dislike}' AND ub."isBanned" != true
      AND pcl."commentId" = pc."id"
      ) AS "dislikesCount",
      (SELECT lse."status"
