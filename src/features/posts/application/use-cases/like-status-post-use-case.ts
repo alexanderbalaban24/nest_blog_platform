@@ -2,7 +2,6 @@ import { LikeStatusEnum } from '../../../../shared/enums';
 import { ResultDTO } from '../../../../shared/dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsRepository } from '../../infrastructure/posts.repository';
-import { UsersRepository } from '../../../users/infrastructure/users.repository';
 
 export class LikeStatusPostCommand {
   constructor(
@@ -16,10 +15,7 @@ export class LikeStatusPostCommand {
 export class LikeStatusPostUseCase
   implements ICommandHandler<LikeStatusPostCommand>
 {
-  constructor(
-    private PostsRepository: PostsRepository,
-    private UsersRepository: UsersRepository,
-  ) {}
+  constructor(private PostsRepository: PostsRepository) {}
 
   async execute(command: LikeStatusPostCommand): Promise<ResultDTO<null>> {
     return this.PostsRepository.likeById(

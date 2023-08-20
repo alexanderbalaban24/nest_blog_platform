@@ -1,27 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostModelType } from '../domain/posts.entity';
 import { ViewPostModel } from '../api/models/view/ViewPostModel';
 import { QueryParamsPostModel } from '../api/models/input/QueryParamsPostModel';
 import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
 import { InternalCode, LikeStatusEnum } from '../../../shared/enums';
-import { UserLikeType } from '../../../shared/types';
-import { Types } from 'mongoose';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 @Injectable()
 export class PostsQueryRepository {
-  constructor(
-    @InjectModel(Post.name) private PostModel: PostModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async findPosts(
     query: QueryParamsPostModel,
     blogId?: string,
     userId?: string,
-  ): Promise<ResultDTO<QueryBuildDTO<Post, ViewPostModel>>> {
+  ): Promise<ResultDTO<QueryBuildDTO<any, ViewPostModel>>> {
     const sortBy = query.sortBy ?? 'createdAt';
     const sortDirection = query.sortDirection ?? 'desc';
     const pageNumber = query.pageNumber ? +query.pageNumber : 1;

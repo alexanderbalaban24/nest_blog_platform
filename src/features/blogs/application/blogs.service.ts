@@ -2,9 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BlogsRepository } from '../infrastructure/blogs.repository';
 import { PostsRepository } from '../../posts/infrastructure/posts.repository';
 import { ResultDTO } from '../../../shared/dto';
-import { PostDocument } from '../../posts/domain/posts.entity';
 import { InternalCode } from '../../../shared/enums';
-import { BlogDocument } from '../domain/blogs.entity';
 
 @Injectable()
 export class BlogsService {

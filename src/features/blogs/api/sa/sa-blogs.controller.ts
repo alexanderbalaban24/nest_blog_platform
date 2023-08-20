@@ -15,7 +15,6 @@ import { ExceptionAndResponseHelper } from '../../../../shared/helpers';
 import { ApproachType } from '../../../../shared/enums';
 import { QueryBuildDTO } from '../../../../shared/dto';
 import { ViewBlogModel } from '../models/view/ViewBlogModel';
-import { Blog } from '../../domain/blogs.entity';
 import { CommandBus } from '@nestjs/cqrs';
 import { ExistingBlogPipe } from '../../../../infrastructure/pipes/ExistingBlog.pipe';
 import { ExistingUserPipe } from '../../../../infrastructure/pipes/ExistingUser.pipe';
@@ -38,7 +37,7 @@ export class SaBlogsController extends ExceptionAndResponseHelper {
   async getAllBlogs(
     @Query() queryData: QueryParamsBlogModel,
     //TODO разбить модельку наверное, так как ViewBlogModel, в двух контроллерах отличаются
-  ): Promise<QueryBuildDTO<Blog, ViewBlogModel>> {
+  ): Promise<QueryBuildDTO<any, ViewBlogModel>> {
     const blogResult = await this.BlogsQueryRepository.findBlogsForSA(
       queryData,
     );

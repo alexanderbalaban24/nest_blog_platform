@@ -1,6 +1,5 @@
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { Types } from 'mongoose';
 
 export class CreatePostWithoutIdModel {
   @IsString()

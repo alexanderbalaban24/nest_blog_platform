@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogModelType } from '../domain/blogs.entity';
 import { ViewBlogModel } from '../api/models/view/ViewBlogModel';
 import { QueryParamsBlogModel } from '../api/models/input/QueryParamsBlogModel';
 import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
@@ -10,15 +8,12 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class BlogsQueryRepository {
-  constructor(
-    @InjectModel(Blog.name) private BlogModel: BlogModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async findBlogs(
     query: QueryParamsBlogModel,
     bloggerId?: string,
-  ): Promise<ResultDTO<QueryBuildDTO<Blog, ViewBlogModel>>> {
+  ): Promise<ResultDTO<QueryBuildDTO<any, ViewBlogModel>>> {
     const sortBy = query.sortBy ?? 'createdAt';
     const sortDirection = query.sortDirection ?? 'desc';
     const pageNumber = query.pageNumber ? +query.pageNumber : 1;
@@ -76,7 +71,7 @@ export class BlogsQueryRepository {
 
   async findBlogsForSA(
     query: QueryParamsBlogModel,
-  ): Promise<ResultDTO<QueryBuildDTO<Blog, ViewBlogModel>>> {
+  ): Promise<ResultDTO<QueryBuildDTO<any, ViewBlogModel>>> {
     const sortBy = query.sortBy ?? 'createdAt';
     const sortDirection = query.sortDirection ?? 'desc';
     const pageNumber = query.pageNumber ? +query.pageNumber : 1;

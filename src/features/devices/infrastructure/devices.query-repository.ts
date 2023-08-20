@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Device, DeviceModelType } from '../domain/devices.entity';
 import { ResultDTO } from '../../../shared/dto';
 import { ViewDeviceModel } from '../api/models/view/ViewDeviceModel';
 import { InternalCode } from '../../../shared/enums';
@@ -9,10 +7,7 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class DevicesQueryRepository {
-  constructor(
-    @InjectModel(Device.name) private DeviceModel: DeviceModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async findDeviceByUserId(
     userId: string,

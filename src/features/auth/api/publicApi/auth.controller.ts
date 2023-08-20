@@ -25,7 +25,6 @@ import { AuthQueryRepository } from '../../infrastructure/auth.query-repository'
 import { JwtRefreshAuthGuard } from '../../guards/jwt-refresh-auth.guard';
 import { RefreshTokenPayload } from '../../../infrastructure/decorators/params/refresh-token-payload.param.decorator';
 import { RefreshTokenPayloadType } from '../../../infrastructure/decorators/params/types';
-import { RateLimitGuard } from '../../../rateLimit/guards/rateLimit.guard';
 import { ExceptionAndResponseHelper } from '../../../../shared/helpers';
 import { ApproachType } from '../../../../shared/enums';
 import { CommandBus } from '@nestjs/cqrs';
@@ -50,7 +49,6 @@ export class AuthController extends ExceptionAndResponseHelper {
 
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(RateLimitGuard)
   async registration(@Body() inputModel: RegistrationUserModel): Promise<void> {
     const registrationResult = await this.CommandBus.execute(
       new RegistrationCommand(
@@ -65,7 +63,6 @@ export class AuthController extends ExceptionAndResponseHelper {
 
   @Post('registration-email-resending')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(RateLimitGuard)
   async resendRegistration(
     @Body() inputModel: ResendRegistrationModel,
   ): Promise<void> {
@@ -78,7 +75,6 @@ export class AuthController extends ExceptionAndResponseHelper {
 
   @Post('registration-confirmation')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(RateLimitGuard)
   async confirmRegistration(
     @Body() inputModel: ConfirmRegistrationModel,
   ): Promise<void> {
@@ -91,7 +87,6 @@ export class AuthController extends ExceptionAndResponseHelper {
 
   @Post('password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(RateLimitGuard)
   async passwordRecovery(
     @Body() inputMode: PasswordRecoveryModel,
   ): Promise<void> {
@@ -104,7 +99,6 @@ export class AuthController extends ExceptionAndResponseHelper {
 
   @Post('new-password')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(RateLimitGuard)
   async confirmRecoveryPassword(
     @Body() inputModel: UpdatePasswordModel,
   ): Promise<void> {
@@ -121,7 +115,6 @@ export class AuthController extends ExceptionAndResponseHelper {
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
-  @UseGuards(RateLimitGuard)
   async login(
     @Headers('user-agent') deviceName: string,
     @Body() inputModel: LoginModel,

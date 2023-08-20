@@ -2,18 +2,14 @@ import { configModule } from './config/configModule';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { MongooseModule } from '@nestjs/mongoose';
 import { SaBlogsController } from './features/blogs/api/sa/sa-blogs.controller';
-import { Blog, BlogSchema } from './features/blogs/domain/blogs.entity';
 import { BlogsService } from './features/blogs/application/blogs.service';
 import { BlogsQueryRepository } from './features/blogs/infrastructure/blogs.query-repository';
 import { BlogsRepository } from './features/blogs/infrastructure/blogs.repository';
-import { Post, PostSchema } from './features/posts/domain/posts.entity';
 import { PostsService } from './features/posts/application/posts.service';
 import { PostsQueryRepository } from './features/posts/infrastructure/posts.query-repository';
 import { PostsRepository } from './features/posts/infrastructure/posts.repository';
 import { PostsController } from './features/posts/api/posts.controller';
-import { User, UserSchema } from './features/users/domain/users.entity';
 import { SaUsersController } from './features/users/api/sa/sa-users.controller';
 import { UsersService } from './features/users/application/users.service';
 import { UsersQueryRepository } from './features/users/infrastructure/users.query-repository';
@@ -30,7 +26,6 @@ import { ConfirmEmailValidator } from './features/infrastructure/decorators/vali
 import { UniqueLoginAndEmailValidator } from './features/infrastructure/decorators/validators/uniqueLoginAndEmail.validator';
 import { JwtModule } from '@nestjs/jwt';
 import { DevicesController } from './features/devices/api/public/devices.controller';
-import { Device, DeviceSchema } from './features/devices/domain/devices.entity';
 import { DevicesService } from './features/devices/application/devices.service';
 import { DevicesRepository } from './features/devices/infrastructure/devices.repository';
 import { PassportModule } from '@nestjs/passport';
@@ -39,10 +34,6 @@ import { BasicAuthStrategy } from './features/auth/strategies/basic-auth.strateg
 import { ExistUserValidator } from './features/infrastructure/decorators/validators/existUser.validator';
 import { ExistingUserPipe } from './infrastructure/pipes/ExistingUser.pipe';
 import { JwtAccessAuthStrategy } from './features/auth/strategies/jwt-access-auth.strategy';
-import {
-  Comment,
-  CommentSchema,
-} from './features/comments/domain/comments.entity';
 import { CommentsService } from './features/comments/application/comments.service';
 import { CommentsQueryRepository } from './features/comments/infrastructure/comments.query-repository';
 import { CommentsRepository } from './features/comments/infrastructure/comments.repository';
@@ -54,12 +45,6 @@ import { ExistingBlogPipe } from './infrastructure/pipes/ExistingBlog.pipe';
 import { ExistBlogValidator } from './features/infrastructure/decorators/validators/existBlog.validator';
 import { JwtRefreshAuthStrategy } from './features/auth/strategies/jwt-refresh-auth.strategy';
 import { DevicesQueryRepository } from './features/devices/infrastructure/devices.query-repository';
-import {
-  RateLimit,
-  RateLimitSchema,
-} from './features/rateLimit/domain/rateLimit.entity';
-import { RateLimitService } from './features/rateLimit/application/rateLimit.service';
-import { RateLimitRepository } from './features/rateLimit/infrastructure/rateLimit.repository';
 import { GlobalConfigService } from './config/globalConfig.service';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CreateBlogUseCase } from './features/blogs/application/use-cases/create-blog-use-case';
@@ -89,8 +74,6 @@ import { DeleteUserSessionUseCase } from './features/devices/application/use-cas
 import { LogoutUseCase } from './features/auth/application/use-cases/logout-use-case';
 import { ValidateUserUseCase } from './features/auth/application/use-cases/validate-user-use-case';
 import { DeleteAllUserSessionsExcludeCurrentUseCase } from './features/devices/application/use-cases/delete-all-user-sessions-exclude-current-use-case';
-import { AddAttemptUseCase } from './features/rateLimit/application/use-cases/add-attempt-use-case';
-import { GetCountAttemptsUseCase } from './features/rateLimit/application/use-cases/get-count-attempts-use-case';
 import { BindUserUseCase } from './features/blogs/application/use-cases/bind-user-use-case';
 import { BloggerBlogsController } from './features/blogs/api/blogger/blogger-blogs.controller';
 import { PublicBlogsController } from './features/blogs/api/public/public-blogs.controller';
@@ -130,8 +113,6 @@ const useCases = [
   LogoutUseCase,
   ValidateUserUseCase,
   DeleteAllUserSessionsExcludeCurrentUseCase,
-  AddAttemptUseCase,
-  GetCountAttemptsUseCase,
   BindUserUseCase,
   UpdatePostUseCase,
   DeletePostUseCase,
@@ -157,35 +138,6 @@ const useCases = [
       autoLoadEntities: false,
       synchronize: false,
     }),
-    MongooseModule.forRoot(process.env.MONGO_URL, {
-      dbName: 'blog-platform_nest',
-    }),
-    MongooseModule.forFeature([
-      {
-        name: Blog.name,
-        schema: BlogSchema,
-      },
-      {
-        name: Post.name,
-        schema: PostSchema,
-      },
-      {
-        name: User.name,
-        schema: UserSchema,
-      },
-      {
-        name: Device.name,
-        schema: DeviceSchema,
-      },
-      {
-        name: Comment.name,
-        schema: CommentSchema,
-      },
-      {
-        name: RateLimit.name,
-        schema: RateLimitSchema,
-      },
-    ]),
     PassportModule,
     JwtModule.register({
       global: true,
@@ -214,13 +166,11 @@ const useCases = [
     BusinessService,
     DevicesService,
     CommentsService,
-    RateLimitService,
     GlobalConfigService,
     BlogsQueryRepository,
     PostsQueryRepository,
     UsersQueryRepository,
     AuthQueryRepository,
-    RateLimitRepository,
     CommentsQueryRepository,
     DevicesQueryRepository,
     BlogsRepository,

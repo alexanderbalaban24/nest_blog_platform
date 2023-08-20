@@ -1,6 +1,4 @@
-import { QueryBuildDTO } from './dto';
 import { LikeStatusEnum } from './enums';
-import { ObjectId, Types } from 'mongoose';
 
 export type QueryDataType = {
   banStatus?: 'all' | 'banned' | 'notBanned';
@@ -11,13 +9,6 @@ export type QueryDataType = {
   searchLoginTerm?: string;
   searchEmailTerm?: string;
   searchNameTerm?: string;
-};
-
-export type QueryCustomMethods = {
-  findWithQuery<T, C>(
-    queryData: QueryDataType,
-    id?: string,
-  ): Promise<QueryBuildDTO<T, C>>;
 };
 
 export type UserLikeType = {

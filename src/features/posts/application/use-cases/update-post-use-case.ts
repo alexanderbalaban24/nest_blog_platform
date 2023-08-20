@@ -8,6 +8,7 @@ export class UpdatePostCommand {
   constructor(
     public postId: string,
     public blogId: string,
+    public userId: string,
     public title: string,
     public shortDescription: string,
     public content: string,
@@ -29,16 +30,20 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
       return new ResultDTO(InternalCode.Internal_Server);
 
     const postResult = await this.PostsRepository.findById(command.postId);
-    if (postResult.hasError()) return postResult as ResultDTO<null>;
+    if (postResult.hasError())
+      return new ResultDTO(InternalCode.Internal_Server);
 
-    await postResult.payload.changeData(
+    if (
+      blogResult.payload.blogOwnerInfo.userId !== command.userId ||
+      postResult.payload.blogId !== blogResult.payload.id
+    )
+      return new ResultDTO(InternalCode.Forbidden);
+
+    return await this.PostsRepository.updateById(
       command.title,
       command.shortDescription,
       command.content,
-      command.blogId,
-      blogResult.payload.name,
+      command.postId,
     );
-
-    return await this.PostsRepository.save(postResult.payload);
   }
 }

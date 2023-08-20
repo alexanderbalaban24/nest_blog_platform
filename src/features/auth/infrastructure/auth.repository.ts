@@ -1,10 +1,4 @@
-import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
-import {
-  User,
-  UserDocument,
-  UserModelType,
-} from '../../users/domain/users.entity';
 import { ResultDTO } from '../../../shared/dto';
 import { AuthAction, InternalCode } from '../../../shared/enums';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -12,16 +6,7 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class AuthRepository {
-  constructor(
-    @InjectModel(User.name) private UserModel: UserModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
-
-  async findById(userId: string): Promise<ResultDTO<UserDocument>> {
-    const userInstance = await this.UserModel.findById(userId);
-
-    return new ResultDTO(InternalCode.Success, userInstance);
-  }
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async findByConfirmationCode(
     code: string,
@@ -133,13 +118,7 @@ export class AuthRepository {
       [code, newExpirationDate, email],
     );
     if (!users.length) return new ResultDTO(InternalCode.Internal_Server);
-    console.log(users);
+
     return new ResultDTO(InternalCode.Success, users[0][0]);
-  }
-
-  async save(user: UserDocument): Promise<ResultDTO<null>> {
-    await user.save();
-
-    return new ResultDTO(InternalCode.Success);
   }
 }

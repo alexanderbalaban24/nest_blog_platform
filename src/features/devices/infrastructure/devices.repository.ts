@@ -1,10 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import {
-  Device,
-  DeviceDocument,
-  DeviceModelType,
-} from '../domain/devices.entity';
-import { InjectModel } from '@nestjs/mongoose';
 import { ResultDTO } from '../../../shared/dto';
 import { InternalCode } from '../../../shared/enums';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -12,10 +6,7 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class DevicesRepository {
-  constructor(
-    @InjectModel(Device.name) private DeviceModel: DeviceModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async createDevice(
     userId: string,
@@ -92,7 +83,7 @@ export class DevicesRepository {
     return new ResultDTO(InternalCode.Success);
   }
 
-  async findById(deviceId: string): Promise<ResultDTO<DeviceDocument>> {
+  async findById(deviceId: string): Promise<ResultDTO<any>> {
     const deviceRaw = await this.dataSource.query(
       `
     SELECT *
@@ -104,21 +95,5 @@ export class DevicesRepository {
     if (!deviceRaw.length) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(InternalCode.Success, deviceRaw[0]);
-  }
-
-  async create(
-    deviceInstance: DeviceDocument,
-  ): Promise<ResultDTO<{ deviceId: string }>> {
-    const createdDevice = await deviceInstance.save();
-
-    return new ResultDTO(InternalCode.Success, {
-      deviceId: createdDevice._id.toString(),
-    });
-  }
-
-  async save(deviceInstance: DeviceDocument): Promise<ResultDTO<null>> {
-    await deviceInstance.save();
-
-    return new ResultDTO(InternalCode.Success);
   }
 }

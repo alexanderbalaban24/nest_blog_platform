@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserModelType } from '../domain/users.entity';
 import { ViewUserModel } from '../api/models/view/ViewUserModel';
 import { QueryParamsUserModel } from '../api/models/input/QueryParamsUserModel';
 import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
@@ -10,14 +8,11 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class UsersQueryRepository {
-  constructor(
-    @InjectModel(User.name) private UserModel: UserModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async findUsers(
     query: QueryParamsUserModel,
-  ): Promise<ResultDTO<QueryBuildDTO<User, ViewUserModel>>> {
+  ): Promise<ResultDTO<QueryBuildDTO<any, ViewUserModel>>> {
     const banStatus = query.banStatus ?? BanStatus.All;
     const sortBy = query.sortBy ?? 'createdAt';
     const sortDirection = query.sortDirection ?? 'desc';

@@ -1,9 +1,3 @@
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  Comment,
-  CommentDocument,
-  CommentModelType,
-} from '../domain/comments.entity';
 import { Injectable } from '@nestjs/common';
 import { ResultDTO } from '../../../shared/dto';
 import { InternalCode, LikeStatusEnum } from '../../../shared/enums';
@@ -12,10 +6,7 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class CommentsRepository {
-  constructor(
-    @InjectModel(Comment.name) private CommentModel: CommentModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async findById(commentId: string): Promise<ResultDTO<any>> {
     const commentRaw = await this.dataSource.query(
@@ -93,22 +84,6 @@ export class CommentsRepository {
     return new ResultDTO(InternalCode.Success);
   }
 
-  async findByUserId(userId: string): Promise<ResultDTO<CommentDocument[]>> {
-    const commentInstances = await this.CommentModel.find({
-      'commentatorInfo.userId': userId,
-    });
-
-    return new ResultDTO(InternalCode.Success, commentInstances);
-  }
-
-  async findByUserLike(userId: string): Promise<ResultDTO<CommentDocument[]>> {
-    const commentInstances = await this.CommentModel.find({
-      'usersLikes.userId': userId,
-    });
-
-    return new ResultDTO(InternalCode.Success, commentInstances);
-  }
-
   async createComment(
     postId: string,
     content: string,
@@ -125,21 +100,5 @@ export class CommentsRepository {
     );
 
     return new ResultDTO(InternalCode.Success, res[0]);
-  }
-
-  async create(
-    commentInstance: CommentDocument,
-  ): Promise<ResultDTO<{ commentId: string }>> {
-    const createdCommentInstance = await commentInstance.save();
-
-    return new ResultDTO(InternalCode.Success, {
-      commentId: createdCommentInstance._id.toString(),
-    });
-  }
-
-  async save(commentInstance: CommentDocument): Promise<ResultDTO<null>> {
-    await commentInstance.save();
-
-    return new ResultDTO(InternalCode.Success);
   }
 }

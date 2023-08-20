@@ -1,7 +1,6 @@
 import { ResultDTO } from '../../../../shared/dto';
 import { genSalt, hash } from 'bcrypt';
 import { AuthRepository } from '../../infrastructure/auth.repository';
-import { AuthQueryRepository } from '../../infrastructure/auth.query-repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { AuthAction } from '../../../../shared/enums';
 
@@ -13,10 +12,7 @@ export class ConfirmRecoveryPasswordCommand {
 export class ConfirmRecoveryPasswordUseCase
   implements ICommandHandler<ConfirmRecoveryPasswordCommand>
 {
-  constructor(
-    private AuthRepository: AuthRepository,
-    private AuthQueryRepository: AuthQueryRepository,
-  ) {}
+  constructor(private AuthRepository: AuthRepository) {}
 
   async execute(
     command: ConfirmRecoveryPasswordCommand,

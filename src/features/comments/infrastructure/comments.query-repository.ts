@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Comment, CommentModelType } from '../domain/comments.entity';
 import { InternalCode, LikeStatusEnum } from '../../../shared/enums';
 import { ViewCommentModel } from '../api/models/view/ViewCommentModel';
 import { QueryParamsCommentModel } from '../api/models/input/QueryParamsCommentModel';
@@ -10,10 +8,7 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class CommentsQueryRepository {
-  constructor(
-    @InjectModel(Comment.name) private commentModel: CommentModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async findComments(
     postId: string,
@@ -305,32 +300,5 @@ export class CommentsQueryRepository {
           LikeStatusEnum.None,
       },
     };
-  }
-
-  async _queryBuilder(queryData, entity) {
-    const sortBy = queryData.sortBy ?? 'createdAt';
-    const sortDirection = queryData.sortDirection ?? 'desc';
-    const pageNumber = queryData.pageNumber ? +queryData.pageNumber : 1;
-    const pageSize = queryData.pageSize ? +queryData.pageSize : 10;
-    const skip = pageSize * (pageNumber - 1);
-
-    //TODO надо изменить подход, а то получается двойной запрос, у Глеба там пример есть, как погинацию вынести в агреггацию
-    const forCount = await entity;
-
-    entity
-      .sort({ [sortBy]: sortDirection })
-      .skip(skip)
-      .limit(pageSize);
-    const pagesCount = Math.ceil(forCount.length / pageSize);
-
-    const items = await entity;
-
-    return new QueryBuildDTO<any, any>(
-      pagesCount,
-      pageNumber,
-      pageSize,
-      forCount.length,
-      items,
-    );
   }
 }

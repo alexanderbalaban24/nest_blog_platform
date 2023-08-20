@@ -1,5 +1,3 @@
-import { Blog, BlogDocument, BlogModelType } from '../domain/blogs.entity';
-import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
 import { ResultDTO } from '../../../shared/dto';
 import { InternalCode } from '../../../shared/enums';
@@ -8,10 +6,7 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class BlogsRepository {
-  constructor(
-    @InjectModel(Blog.name) private BlogModel: BlogModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async createBlog(
     name: string,
@@ -53,7 +48,7 @@ export class BlogsRepository {
     );
     if (!blogsRaw.length) return new ResultDTO(InternalCode.NotFound);
 
-    return new ResultDTO<BlogDocument>(InternalCode.Success, blogsRaw[0]);
+    return new ResultDTO(InternalCode.Success, blogsRaw[0]);
   }
 
   async updateById(
@@ -116,22 +111,6 @@ export class BlogsRepository {
     `,
       [userId, blogId],
     );
-
-    return new ResultDTO(InternalCode.Success);
-  }
-
-  async create(
-    blogInstance: BlogDocument,
-  ): Promise<ResultDTO<{ blogId: string }>> {
-    const createdBlogInstance = await blogInstance.save();
-
-    return new ResultDTO(InternalCode.Success, {
-      blogId: createdBlogInstance._id.toString(),
-    });
-  }
-
-  async save(blogInstance: BlogDocument): Promise<ResultDTO<null>> {
-    await blogInstance.save();
 
     return new ResultDTO(InternalCode.Success);
   }

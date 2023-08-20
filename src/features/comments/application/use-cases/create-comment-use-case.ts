@@ -2,8 +2,6 @@ import { ResultDTO } from '../../../../shared/dto';
 import { InternalCode } from '../../../../shared/enums';
 import { PostsQueryRepository } from '../../../posts/infrastructure/posts.query-repository';
 import { UsersQueryRepository } from '../../../users/infrastructure/users.query-repository';
-import { InjectModel } from '@nestjs/mongoose';
-import { Comment, CommentModelType } from '../../domain/comments.entity';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
@@ -21,7 +19,6 @@ export class CreateCommentUseCase
   implements ICommandHandler<CreateCommentCommand>
 {
   constructor(
-    @InjectModel(Comment.name) private CommentModel: CommentModelType,
     private CommentRepository: CommentsRepository,
     private PostsQueryRepository: PostsQueryRepository,
     private UsersQueryRepository: UsersQueryRepository,

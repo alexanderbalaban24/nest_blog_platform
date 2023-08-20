@@ -20,7 +20,6 @@ import { ExistingUserPipe } from '../../../../infrastructure/pipes/ExistingUser.
 import { ExceptionAndResponseHelper } from '../../../../shared/helpers';
 import { ApproachType } from '../../../../shared/enums';
 import { QueryBuildDTO } from '../../../../shared/dto';
-import { User } from '../../domain/users.entity';
 import { ViewUserModel } from '../models/view/ViewUserModel';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateUserCommand } from '../../application/use-cases/create-user-use-case';
@@ -42,7 +41,7 @@ export class SaUsersController extends ExceptionAndResponseHelper {
   @Get()
   async getAllUsers(
     @Query() queryData: QueryParamsUserModel,
-  ): Promise<QueryBuildDTO<User, ViewUserModel>> {
+  ): Promise<QueryBuildDTO<any, ViewUserModel>> {
     const usersResult = await this.UsersQueryRepository.findUsers(queryData);
 
     return this.sendExceptionOrResponse(usersResult);

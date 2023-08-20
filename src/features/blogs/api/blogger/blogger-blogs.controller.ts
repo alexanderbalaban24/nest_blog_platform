@@ -23,9 +23,7 @@ import { ExceptionAndResponseHelper } from '../../../../shared/helpers';
 import { ApproachType } from '../../../../shared/enums';
 import { ViewPostModel } from '../../../posts/api/models/view/ViewPostModel';
 import { QueryBuildDTO } from '../../../../shared/dto';
-import { Post as PostDB } from '../../../posts/domain/posts.entity';
 import { ViewBlogModel } from '../models/view/ViewBlogModel';
-import { Blog } from '../../domain/blogs.entity';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateBlogCommand } from '../../application/use-cases/create-blog-use-case';
 import { DeleteBlogCommand } from '../../application/use-cases/delete-blog-use-case';
@@ -55,7 +53,7 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
   async getAllBlogs(
     @Query() queryData: QueryParamsBlogModel,
     @CurrentUserId() currentUserId: string,
-  ): Promise<QueryBuildDTO<Blog, ViewBlogModel>> {
+  ): Promise<QueryBuildDTO<any, ViewBlogModel>> {
     const blogResult = await this.BlogsQueryRepository.findBlogs(
       queryData,
       currentUserId,
@@ -124,7 +122,7 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
     @Param('id', ExistingBlogPipe) blogId: string,
     @Query() queryData: QueryParamsPostModel,
     @CurrentUserId() currentUserId: string,
-  ): Promise<QueryBuildDTO<PostDB, ViewPostModel>> {
+  ): Promise<QueryBuildDTO<any, ViewPostModel>> {
     const postResult = await this.PostsQueryRepository.findPosts(
       queryData,
       blogId,

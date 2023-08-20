@@ -24,10 +24,8 @@ import { LikeStatusModel } from './models/input/LikeStatusModel';
 import { ExceptionAndResponseHelper } from '../../../shared/helpers';
 import { ApproachType } from '../../../shared/enums';
 import { QueryBuildDTO } from '../../../shared/dto';
-import { Post as PostDB } from '../domain/posts.entity';
 import { ViewPostModel } from './models/view/ViewPostModel';
 import { ViewCommentModel } from '../../comments/api/models/view/ViewCommentModel';
-import { Comment } from '../../comments/domain/comments.entity';
 import { CommandBus } from '@nestjs/cqrs';
 import { LikeStatusPostCommand } from '../application/use-cases/like-status-post-use-case';
 import { CreateCommentCommand } from '../../comments/application/use-cases/create-comment-use-case';
@@ -48,7 +46,7 @@ export class PostsController extends ExceptionAndResponseHelper {
   async getAllPosts(
     @Query() queryData: QueryParamsPostModel,
     @CurrentUserId() currentUserId: string,
-  ): Promise<QueryBuildDTO<PostDB, ViewPostModel>> {
+  ): Promise<QueryBuildDTO<any, ViewPostModel>> {
     const postResult = await this.PostsQueryRepository.findPosts(
       queryData,
       undefined,

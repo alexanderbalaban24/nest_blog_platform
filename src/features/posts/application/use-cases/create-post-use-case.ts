@@ -1,9 +1,6 @@
 import { ResultDTO } from '../../../../shared/dto';
 import { InternalCode } from '../../../../shared/enums';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogsQueryRepository } from '../../../blogs/infrastructure/blogs.query-repository';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostModelType } from '../../domain/posts.entity';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository';
 
@@ -20,7 +17,6 @@ export class CreatePostCommand {
 @CommandHandler(CreatePostCommand)
 export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
   constructor(
-    @InjectModel(Post.name) private PostModel: PostModelType,
     private PostsRepository: PostsRepository,
     private BlogsRepository: BlogsRepository,
   ) {}

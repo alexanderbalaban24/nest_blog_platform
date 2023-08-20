@@ -9,9 +9,7 @@ import { ExceptionAndResponseHelper } from '../../../../shared/helpers';
 import { ApproachType } from '../../../../shared/enums';
 import { ViewPostModel } from '../../../posts/api/models/view/ViewPostModel';
 import { QueryBuildDTO } from '../../../../shared/dto';
-import { Post as PostDB } from '../../../posts/domain/posts.entity';
 import { ViewBlogModel } from '../models/view/ViewBlogModel';
-import { Blog } from '../../domain/blogs.entity';
 
 @Controller('blogs')
 export class PublicBlogsController extends ExceptionAndResponseHelper {
@@ -25,7 +23,7 @@ export class PublicBlogsController extends ExceptionAndResponseHelper {
   @Get()
   async getAllBlogs(
     @Query() queryData: QueryParamsBlogModel,
-  ): Promise<QueryBuildDTO<Blog, ViewBlogModel>> {
+  ): Promise<QueryBuildDTO<any, ViewBlogModel>> {
     const blogResult = await this.BlogsQueryRepository.findBlogs(queryData);
 
     return this.sendExceptionOrResponse(blogResult);
@@ -45,7 +43,7 @@ export class PublicBlogsController extends ExceptionAndResponseHelper {
     @Param('id', ExistingBlogPipe) blogId: string,
     @Query() queryData: QueryParamsPostModel,
     @CurrentUserId() currentUserId: string,
-  ): Promise<QueryBuildDTO<PostDB, ViewPostModel>> {
+  ): Promise<QueryBuildDTO<any, ViewPostModel>> {
     const postResult = await this.PostsQueryRepository.findPosts(
       queryData,
       blogId,

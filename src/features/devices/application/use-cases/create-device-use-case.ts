@@ -1,7 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ResultDTO } from '../../../../shared/dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { Device, DeviceModelType } from '../../domain/devices.entity';
 import { DevicesRepository } from '../../infrastructure/devices.repository';
 
 export class CreateDeviceCommand {
@@ -16,10 +14,7 @@ export class CreateDeviceCommand {
 export class CreateDeviceUseCase
   implements ICommandHandler<CreateDeviceCommand>
 {
-  constructor(
-    @InjectModel(Device.name) private DeviceModel: DeviceModelType,
-    private DeviceRepository: DevicesRepository,
-  ) {}
+  constructor(private DeviceRepository: DevicesRepository) {}
 
   async execute(
     command: CreateDeviceCommand,

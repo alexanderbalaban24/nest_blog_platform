@@ -3,15 +3,10 @@ import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { ResultDTO } from '../../../shared/dto';
 import { InternalCode } from '../../../shared/enums';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument, UserModelType } from '../domain/users.entity';
 
 @Injectable()
 export class UsersRepository {
-  constructor(
-    @InjectDataSource() private dataSource: DataSource,
-    @InjectModel(User.name) private UserModel: UserModelType,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async createUser(
     login: string,
@@ -160,20 +155,5 @@ export class UsersRepository {
     const access = !banRaw.length || !banRaw[0].isBanned;
     console.log(access);
     return new ResultDTO(InternalCode.Success, access);
-  }
-
-  async create(
-    userInstance: UserDocument,
-  ): Promise<ResultDTO<{ userId: string }>> {
-    const createdInstance = await userInstance.save();
-    return new ResultDTO(InternalCode.Success, {
-      userId: createdInstance._id.toString(),
-    });
-  }
-
-  async save(userInstance: UserDocument): Promise<ResultDTO<null>> {
-    await userInstance.save();
-
-    return new ResultDTO(InternalCode.Success);
   }
 }

@@ -1,15 +1,10 @@
-import { User, UserModelType } from '../../users/domain/users.entity';
-import { InjectModel } from '@nestjs/mongoose';
 import { ResultDTO } from '../../../shared/dto';
 import { AuthAction, InternalCode } from '../../../shared/enums';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 export class AuthQueryRepository {
-  constructor(
-    @InjectModel(User.name) private UserModel: UserModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async findUserWithConfirmationDataById(userId: string): Promise<
     ResultDTO<{
