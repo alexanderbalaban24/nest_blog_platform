@@ -152,8 +152,10 @@ export class CommentsQueryRepository {
     ON p."id" = pc."postId"
     LEFT JOIN "blogs_ban" AS bb
     ON bb."blogId" = p."blogId"
+    LEFT JOIN "users_ban" AS ub
+     ON ub."userId" = pc."commentatorId"
     WHERE pc."id" = $1 AND
-    (bb."isBanned" != true OR bb."isBanned" IS NULL)
+    (bb."isBanned" != true OR bb."isBanned" IS NULL) AND u."isBanned" != true
     `,
       [commentId, userId],
     );
