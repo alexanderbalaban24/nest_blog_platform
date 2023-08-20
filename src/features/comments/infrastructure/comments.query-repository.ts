@@ -265,21 +265,21 @@ export class CommentsQueryRepository {
     data.map((comment) => ({
       id: comment.id.toString(),
       content: comment.content,
+      createdAt: new Date(comment.createdAt).toISOString(),
       commentatorInfo: {
         userId: comment.commentatorInfo.userId,
         userLogin: comment.commentatorInfo.userLogin,
       },
-      createdAt: new Date(comment.createdAt).toISOString(),
       likesInfo: {
         likesCount: comment.likesInfo.likesCount,
         dislikesCount: comment.likesInfo.dislikesCount,
         myStatus: comment.likesInfo.myStatus ?? LikeStatusEnum.None,
       },
       postInfo: {
-        id: comment.postInfo.postId,
-        title: comment.postInfo.title,
         blogId: comment.postInfo.blogId,
         blogName: comment.postInfo.blogName,
+        title: comment.postInfo.title,
+        id: comment.postInfo.postId,
       },
     }));
 
