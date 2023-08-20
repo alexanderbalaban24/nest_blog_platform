@@ -279,7 +279,7 @@ export class CommentsQueryRepository {
         blogId: comment.postInfo.blogId,
         blogName: comment.postInfo.blogName,
         title: comment.postInfo.title,
-        id: comment.postInfo.postId,
+        id: comment.postInfo.id,
       },
     }));
 
