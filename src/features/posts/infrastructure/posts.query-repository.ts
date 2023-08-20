@@ -120,62 +120,6 @@ export class PostsQueryRepository {
     data.map((user) => this._mapPostToView(user));
     return new ResultDTO(InternalCode.Success, data);
   }
-  /*async findPosts(
-    query: QueryParamsPostModel,
-    blogId?: string,
-    userId?: string,
-  ): Promise<ResultDTO<QueryBuildDTO<Post, ViewPostModel>>> {
-    const sortBy = query.sortBy ?? 'createdAt';
-    const sortDirection = query.sortDirection ?? 'desc';
-    const pageNumber = query.pageNumber ? +query.pageNumber : 1;
-    const pageSize = query.pageSize ? +query.pageSize : 10;
-    const offset = pageSize * (pageNumber - 1);
-
-    const postsRaw = await this.dataSource.query(
-      `
-    WITH "temp_data1" AS (
-    SELECT p."id", p."title", p."shortDescription", p."content", p."blogId", b."name" AS "blogName", p."createdAt"
-    FROM "posts" AS p
-    LEFT JOIN "blogs" AS b
-    ON b."id" = p."blogId"
-    WHERE p."blogId" = CASE
-    WHEN $1 = 'undefined' THEN p."blogId" ELSE $1::integer END
-    ),
-    "temp_data2" AS (
-    SELECT * FROM "temp_data1" AS td
-    ORDER BY "${sortBy}" ${
-        sortBy !== 'createdAt' ? 'COLLATE "C" ' : ''
-      } ${sortDirection}
-    LIMIT ${pageSize} OFFSET ${offset}
-    )
-    SELECT (
-    SELECT COUNT(*)
-    FROM temp_data1
-    ) AS "totalCount",
-    (SELECT json_agg(
-    json_build_object(
-    'id', td."id", 'title', td."title", 'shortDescription', td."shortDescription", 'content', td."content", 'blogId', td."blogId", 'blogName', td."blogName", 'createdAt', td."createdAt"
-    )
-    ) FROM "temp_data2" AS td
-
-    ) AS "data"
-    `,
-      [`${blogId}`],
-    );
-
-    const totalCount = +postsRaw[0].totalCount;
-    const pagesCount = Math.ceil(totalCount / pageSize);
-    const data = new QueryBuildDTO<any, any>(
-      pagesCount,
-      pageNumber,
-      pageSize,
-      totalCount,
-      postsRaw[0].data ?? [],
-    );
-
-    data.map((user) => this._mapPostToView(user));
-    return new ResultDTO(InternalCode.Success, data);
-  }*/
 
   async findPostById(
     postId: string,
