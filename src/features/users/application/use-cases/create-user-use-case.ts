@@ -3,6 +3,7 @@ import { genSalt, hash } from 'bcrypt';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import add from 'date-fns/add';
+import { GlobalConfigService } from '../../../../config/globalConfig.service';
 
 export class CreateUserCommand {
   constructor(
@@ -15,13 +16,16 @@ export class CreateUserCommand {
 
 @CommandHandler(CreateUserCommand)
 export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
-  constructor(private UsersRepository: UsersRepository) {}
+  constructor(
+    private UsersRepository: UsersRepository,
+    private configService: GlobalConfigService,
+  ) {}
 
-  //TODO количество раундов должно сидеть в env
   async execute(
     command: CreateUserCommand,
   ): Promise<ResultDTO<{ userId: string }>> {
-    const passwordSalt = await genSalt(10);
+    const round = this.configService.getRound();
+    const passwordSalt = await genSalt(+round);
     const passwordHash = await hash(command.password, passwordSalt);
     const expirationDate = add(new Date(), { hours: 3 });
 

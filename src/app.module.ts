@@ -84,6 +84,7 @@ import { BloggerUsersController } from './features/users/api/blogger/blogger-use
 import { BanUnbanBlogUseCase } from './features/blogs/application/use-cases/ban-unban-blog-use-case';
 import { BanUnbanForSpecificBlogUseCase } from './features/users/application/use-cases/ban-unban-for-specific-blog-use-case';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 const useCases = [
   CreateBlogUseCase,
@@ -122,21 +123,81 @@ const useCases = [
   BanUnbanBlogUseCase,
   BanUnbanForSpecificBlogUseCase,
 ];
+const controllers = [
+  AppController,
+  SaBlogsController,
+  BloggerBlogsController,
+  PublicBlogsController,
+  PostsController,
+  SaUsersController,
+  BloggerUsersController,
+  AuthController,
+  DevicesController,
+  CommentsController,
+];
+const services = [
+  AppService,
+  BlogsService,
+  PostsService,
+  UsersService,
+  AuthService,
+  BusinessService,
+  DevicesService,
+  CommentsService,
+  GlobalConfigService,
+];
+const repositories = [
+  BlogsQueryRepository,
+  PostsQueryRepository,
+  UsersQueryRepository,
+  AuthQueryRepository,
+  CommentsQueryRepository,
+  DevicesQueryRepository,
+  BlogsRepository,
+  PostsRepository,
+  UsersRepository,
+  AuthRepository,
+  DevicesRepository,
+  CommentsRepository,
+];
+const validators = [
+  ConfirmationCodeValidator,
+  ConfirmEmailValidator,
+  UniqueLoginAndEmailValidator,
+  ExistUserValidator,
+  ExistPostValidator,
+  ExistBlogValidator,
+];
+const strategies = [
+  LocalAuthStrategy,
+  BasicAuthStrategy,
+  JwtAccessAuthStrategy,
+  JwtRefreshAuthStrategy,
+];
+const pipes = [
+  ExistingUserPipe,
+  ExistingPostPipe,
+  ExistingCommentPipe,
+  ExistingBlogPipe,
+];
 
 @Module({
   imports: [
     CqrsModule,
     configModule,
-    TypeOrmModule.forRoot({
-      //TODO перенести всю инфу в env
-      type: 'postgres',
-      host: 'dumbo.db.elephantsql.com',
-      port: 5432,
-      username: 'eoyeenox',
-      password: 'nraqwyB6soTBZ_ITAJP0NuNZMnuUjiJE',
-      database: 'eoyeenox',
-      autoLoadEntities: false,
-      synchronize: false,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('db').postgres.POSTGRES_HOST,
+        port: configService.get('db').postgres.POSTGRES_PORT,
+        username: configService.get('db').postgres.DB_USERNAME,
+        password: configService.get('db').postgres.DB_PASSWORD,
+        database: configService.get('db').postgres.DB_NAME,
+        autoLoadEntities: false,
+        synchronize: false,
+      }),
+      inject: [ConfigService],
     }),
     PassportModule,
     JwtModule.register({
@@ -144,58 +205,16 @@ const useCases = [
       secret: process.env.JWT_SECRET,
     }),
   ],
-  controllers: [
-    AppController,
-    SaBlogsController,
-    BloggerBlogsController,
-    PublicBlogsController,
-    PostsController,
-    SaUsersController,
-    BloggerUsersController,
-    AuthController,
-    DevicesController,
-    CommentsController,
-  ],
+  controllers: controllers,
   providers: [
-    //TODO создать массив с разбиением на сущности, и добавить сюда через деструктуризацию
-    AppService,
-    BlogsService,
-    PostsService,
-    UsersService,
-    AuthService,
-    BusinessService,
-    DevicesService,
-    CommentsService,
-    GlobalConfigService,
-    BlogsQueryRepository,
-    PostsQueryRepository,
-    UsersQueryRepository,
-    AuthQueryRepository,
-    CommentsQueryRepository,
-    DevicesQueryRepository,
-    BlogsRepository,
-    PostsRepository,
-    UsersRepository,
-    AuthRepository,
-    DevicesRepository,
-    CommentsRepository,
+    ...services,
+    ...repositories,
+    ...validators,
+    ...strategies,
+    ...pipes,
+    ...useCases,
     EmailManager,
     EmailAdapter,
-    ConfirmationCodeValidator,
-    ConfirmEmailValidator,
-    UniqueLoginAndEmailValidator,
-    ExistUserValidator,
-    ExistPostValidator,
-    ExistBlogValidator,
-    LocalAuthStrategy,
-    BasicAuthStrategy,
-    JwtAccessAuthStrategy,
-    JwtRefreshAuthStrategy,
-    ExistingUserPipe,
-    ExistingPostPipe,
-    ExistingCommentPipe,
-    ExistingBlogPipe,
-    ...useCases,
   ],
 })
 export class AppModule {}

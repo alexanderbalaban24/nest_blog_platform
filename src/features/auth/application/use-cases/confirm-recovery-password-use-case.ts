@@ -3,6 +3,7 @@ import { genSalt, hash } from 'bcrypt';
 import { AuthRepository } from '../../infrastructure/auth.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { AuthAction } from '../../../../shared/enums';
+import { GlobalConfigService } from '../../../../config/globalConfig.service';
 
 export class ConfirmRecoveryPasswordCommand {
   constructor(public newPassword: string, public code: string) {}
@@ -12,7 +13,10 @@ export class ConfirmRecoveryPasswordCommand {
 export class ConfirmRecoveryPasswordUseCase
   implements ICommandHandler<ConfirmRecoveryPasswordCommand>
 {
-  constructor(private AuthRepository: AuthRepository) {}
+  constructor(
+    private AuthRepository: AuthRepository,
+    private configService: GlobalConfigService,
+  ) {}
 
   async execute(
     command: ConfirmRecoveryPasswordCommand,
@@ -23,8 +27,8 @@ export class ConfirmRecoveryPasswordUseCase
     );
     if (userResult.hasError()) return userResult as ResultDTO<null>;
 
-    // TODO раунд должен храниться в env
-    const passwordSalt = await genSalt(10);
+    const round = this.configService.getRound();
+    const passwordSalt = await genSalt(+round);
     const passwordHash = await hash(command.newPassword, passwordSalt);
 
     return this.AuthRepository.updatePasswordHash(

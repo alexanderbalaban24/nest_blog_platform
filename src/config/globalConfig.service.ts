@@ -36,6 +36,16 @@ export class GlobalConfigService {
     return this.defaultConfigService.get('db', { infer: true }).mongo.MONGO_URL;
   }
 
+  getPostgresData() {
+    return this.defaultConfigService.get('db', { infer: true }).postgres;
+  }
+
+  getRound() {
+    return this.defaultConfigService.get('SALT_GENERATE_ROUND', {
+      infer: true,
+    });
+  }
+
   getPort() {
     const port = Number(this.defaultConfigService.get('PORT', { infer: true }));
     if (isNaN(port)) {
