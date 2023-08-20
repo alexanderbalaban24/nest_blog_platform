@@ -240,7 +240,7 @@ export class CommentsQueryRepository {
     'myStatus', td."myStatus"
     ), 'postInfo',
     json_build_object(
-    'id', td."postId",
+    'id', CAST(td."postId" AS TEXT),
     'title', td."title",
     'blogId', CAST(td."blogId" AS TEXT),
     'blogName', td."blogName"
