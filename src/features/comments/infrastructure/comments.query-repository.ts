@@ -266,8 +266,8 @@ export class CommentsQueryRepository {
       id: comment.id.toString(),
       content: comment.content,
       commentatorInfo: {
-        userId: comment.userId,
-        userLogin: comment.userLogin,
+        userId: comment.commentatorInfo.userId,
+        userLogin: comment.commentatorInfo.userLogin,
       },
       createdAt: new Date(comment.createdAt).toISOString(),
       likesInfo: {
