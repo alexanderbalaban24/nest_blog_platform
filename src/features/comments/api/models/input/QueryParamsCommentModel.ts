@@ -1,7 +1,12 @@
-// TODO перевести все такие типы на классы
-export type QueryParamsCommentModel = {
+import { IsOptional } from 'class-validator';
+
+export class QueryParamsCommentModel {
+  @IsOptional()
   pageNumber: string;
+  @IsOptional()
   pageSize: string;
+  @IsOptional()
   sortBy: string;
+  @IsOptional()
   sortDirection: 'asc' | 'desc';
-};
+}

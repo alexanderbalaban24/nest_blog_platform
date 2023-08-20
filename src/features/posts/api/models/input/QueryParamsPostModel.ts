@@ -1,7 +1,12 @@
-// TODO добавить декоратор IsOptional
+import { IsOptional } from 'class-validator';
+
 export class QueryParamsPostModel {
-  sortBy?: string;
-  sortDirection?: "desc" | "asc";
-  pageNumber?: string;
-  pageSize?: string;
+  @IsOptional()
+  sortBy: string;
+  @IsOptional()
+  sortDirection: 'desc' | 'asc';
+  @IsOptional()
+  pageNumber: string;
+  @IsOptional()
+  pageSize: string;
 }

@@ -1,7 +1,14 @@
+import { IsOptional } from 'class-validator';
+
 export class QueryParamsBlogModel {
-  searchNameTerm?: string;
-  sortBy?: string;
-  sortDirection?: 'desc' | 'asc';
-  pageNumber?: string;
-  pageSize?: string;
+  @IsOptional()
+  searchNameTerm: string;
+  @IsOptional()
+  sortBy: string;
+  @IsOptional()
+  sortDirection: 'desc' | 'asc';
+  @IsOptional()
+  pageNumber: string;
+  @IsOptional()
+  pageSize: string;
 }
