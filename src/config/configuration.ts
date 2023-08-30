@@ -1,5 +1,3 @@
-import * as process from 'process';
-
 export const getConfiguration = () => ({
   jwt: {
     JWT_SECRET: process.env.JWT_SECRET,
