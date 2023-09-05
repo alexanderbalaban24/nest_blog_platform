@@ -4,16 +4,8 @@ import { QueryParamsUserModel } from '../../api/models/input/QueryParamsUserMode
 import { QueryBuildDTO, ResultDTO } from '../../../../shared/dto';
 import { BanStatus, InternalCode } from '../../../../shared/enums';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import {
-  DataSource,
-  FindOneOptions,
-  FindOperator,
-  FindOptions,
-  ILike,
-  Repository,
-} from 'typeorm';
+import { DataSource, FindOperator, ILike, Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
-import { UserBan } from '../../entities/user-ban.entity';
 
 @Injectable()
 export class UsersQueryRepository {
