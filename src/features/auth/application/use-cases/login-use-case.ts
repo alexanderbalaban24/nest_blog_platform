@@ -28,7 +28,7 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
     const userResult = await this.AuthRepository.findByCredentials(
       command.loginOrEmail,
     );
-    if (userResult.hasError() || userResult.payload.ban.isBanned)
+    if (userResult.hasError() || userResult.payload?.ban?.isBanned)
       return new ResultDTO(InternalCode.Unauthorized);
 
     const isValidCredentials = await compare(

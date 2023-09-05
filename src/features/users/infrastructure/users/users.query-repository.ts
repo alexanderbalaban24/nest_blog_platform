@@ -31,17 +31,17 @@ export class UsersQueryRepository {
     const pageNumber = query.pageNumber ? +query.pageNumber : 1;
     const pageSize = query.pageSize ? +query.pageSize : 10;
     const offset = pageSize * (pageNumber - 1);
-    const queryData: {
+    const queryData: Array<{
       login?: FindOperator<string>;
       email?: FindOperator<string>;
-    } = {};
+    }> = [];
 
     if (query.searchLoginTerm) {
-      queryData.login = ILike(`%${query.searchLoginTerm}%`);
+      queryData.push({ login: ILike(`%${query.searchLoginTerm}%`) });
     }
 
     if (query.searchEmailTerm) {
-      queryData.email = ILike(`%${query.searchEmailTerm}%`);
+      queryData.push({ email: ILike(`%${query.searchEmailTerm}%`) });
     }
     console.log(queryData);
     const users = await this.usersRepo.findAndCount({
