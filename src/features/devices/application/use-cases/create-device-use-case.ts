@@ -5,7 +5,7 @@ import { Device } from '../../entities/device.entity';
 
 export class CreateDeviceCommand {
   constructor(
-    public userId: string,
+    public userId: number,
     public ip: string,
     public deviceName: string,
   ) {}
@@ -21,10 +21,11 @@ export class CreateDeviceUseCase
     command: CreateDeviceCommand,
   ): Promise<ResultDTO<{ deviceId: string }>> {
     const device = new Device();
-    device.userId = +command.userId;
+    device.userId = command.userId;
     device.ip = command.ip;
     device.deviceName = command.deviceName;
     device.issuedAt = new Date();
+
     return this.DeviceRepository.create(device);
   }
 }

@@ -140,9 +140,6 @@ export class UsersQueryRepository {
 
   async findUserById(userId: string): Promise<ResultDTO<ViewUserModel>> {
     const user = await this.usersRepo.findOne({
-      relations: {
-        ban: true,
-      },
       where: { id: +userId },
     });
     return new ResultDTO(InternalCode.Success, this._mapUserToView(user));

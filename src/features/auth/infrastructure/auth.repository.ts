@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { ResultDTO } from '../../../shared/dto';
 import { AuthAction, InternalCode } from '../../../shared/enums';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 @Injectable()
 export class AuthRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(User) private usersRepo: Repository<User>,
+  ) {}
 
   async findByConfirmationCode(
     code: string,
@@ -25,23 +29,16 @@ export class AuthRepository {
     return new ResultDTO(InternalCode.Success, users[0]);
   }
 
-  async findByCredentials(loginOrEmail: string): Promise<ResultDTO<any>> {
-    const users = await this.dataSource.query(
-      `
-    SELECT u.*, ub."isBanned", uec."isConfirmed"
-    FROM "users" as u
-    LEFT JOIN "users_ban" as ub
-    ON ub."userId" = u."id"
-    LEFT JOIN "users_email_confirmation" as uec
-    ON uec."userId" = u."id"
-    WHERE u."login" = $1
-    OR u."email" = $1
-    `,
-      [loginOrEmail],
-    );
-    if (!users.length) return new ResultDTO(InternalCode.NotFound);
+  async findByCredentials(loginOrEmail: string): Promise<ResultDTO<User>> {
+    const user = await this.usersRepo.findOne({
+      relations: {
+        ban: true,
+      },
+      where: [{ login: loginOrEmail }, { email: loginOrEmail }],
+    });
+    if (!user) return new ResultDTO(InternalCode.NotFound);
 
-    return new ResultDTO(InternalCode.Success, users[0]);
+    return new ResultDTO(InternalCode.Success, user);
   }
 
   async confirmEmail(userId: string): Promise<ResultDTO<null>> {
