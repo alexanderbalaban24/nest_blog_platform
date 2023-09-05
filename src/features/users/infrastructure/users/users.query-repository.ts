@@ -46,7 +46,7 @@ export class UsersQueryRepository {
     console.log(queryData);
     const users = await this.usersRepo.findAndCount({
       where: queryData,
-      order: { [`LOWER(${sortBy})`]: sortDirection },
+      order: { [sortBy]: sortDirection },
       skip: offset,
       take: pageSize,
       relations: {

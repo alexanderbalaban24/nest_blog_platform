@@ -14,10 +14,10 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
   @Index()
-  @Column()
+  @Column({ collation: 'C' })
   login: string;
   @Index()
-  @Column()
+  @Column({ collation: 'C' })
   email: string;
   @Column()
   passwordHash: string;
