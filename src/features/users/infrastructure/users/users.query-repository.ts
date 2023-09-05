@@ -151,11 +151,11 @@ export class UsersQueryRepository {
       login: user.login,
       email: user.email,
       createdAt: new Date(user.createdAt).toISOString(),
-      banInfo: {
+      /*banInfo: {
         isBanned: user.ban?.isBanned ?? null,
         banDate: user.ban?.banDate ?? null,
         banReason: user.ban?.banReason ?? null,
-      },
+      },*/
     };
   }
 }
