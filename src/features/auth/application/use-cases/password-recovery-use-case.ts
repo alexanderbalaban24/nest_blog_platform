@@ -29,6 +29,8 @@ export class PasswordRecoveryUseCase
     const expirationDate = add(new Date(), { hours: 3 });
     const confirmationCodeResult =
       await this.AuthRepository.createPasswordRecoveryData(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
         userResult.payload.id,
         code,
         expirationDate,

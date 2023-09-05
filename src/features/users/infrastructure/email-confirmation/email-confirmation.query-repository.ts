@@ -13,7 +13,7 @@ export class EmailConfirmationQueryRepository {
     private emailConfirmRepo: Repository<UserEmailConfirmation>,
   ) {}
 
-  async findConfirmationOrRecoveryDataByCode(
+  async findConfirmationByCode(
     code: string,
   ): Promise<ResultDTO<UserEmailConfirmation>> {
     const res = await this.emailConfirmRepo.findOneBy({

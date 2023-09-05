@@ -20,9 +20,7 @@ export class ConfirmationCodeValidator implements ValidatorConstraintInterface {
   async validate(code: string): Promise<boolean> {
     try {
       const findConfirmResult =
-        await this.emailConfirmQueryRepository.findConfirmationOrRecoveryDataByCode(
-          code,
-        );
+        await this.emailConfirmQueryRepository.findConfirmationByCode(code);
       console.log(findConfirmResult, findConfirmResult.hasError());
       /*const findRecoveryResult =
         await this.authQueryRepository.findConfirmationOrRecoveryDataByCode(

@@ -33,6 +33,7 @@ export class AuthRepository {
     const user = await this.usersRepo.findOne({
       relations: {
         ban: true,
+        emailConfirm: true,
       },
       where: [{ login: loginOrEmail }, { email: loginOrEmail }],
     });

@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { UserBan } from './user-ban.entity';
 import { Device } from '../../devices/entities/device.entity';
+import { UserEmailConfirmation } from './user-email-confirmation.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -24,6 +25,10 @@ export class User {
   createdAt: Date;
   @OneToOne(() => UserBan, (ub) => ub.user, { onDelete: 'CASCADE' })
   ban: UserBan;
+  @OneToOne(() => UserEmailConfirmation, (uec) => uec.user, {
+    onDelete: 'CASCADE',
+  })
+  emailConfirm: UserEmailConfirmation;
   @OneToMany(() => Device, (d) => d.user)
   devices: Device[];
 }
