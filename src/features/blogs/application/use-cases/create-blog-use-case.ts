@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ResultDTO } from '../../../../shared/dto';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
-import { UsersQueryRepository } from '../../../users/infrastructure/users.query-repository';
+import { UsersQueryRepository } from '../../../users/infrastructure/users/users.query-repository';
 import { InternalCode } from '../../../../shared/enums';
 
 export class CreateBlogCommand {

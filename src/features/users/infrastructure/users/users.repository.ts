@@ -1,46 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { ResultDTO } from '../../../shared/dto';
-import { InternalCode } from '../../../shared/enums';
+import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { ResultDTO } from '../../../../shared/dto';
+import { InternalCode } from '../../../../shared/enums';
+import { User } from '../../entities/user.entity';
 
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(User) private usersRepo: Repository<User>,
+  ) {}
 
-  async createUser(
-    login: string,
-    email: string,
-    passwordHash: string,
-    isConfirmed: boolean,
-    expirationDate: Date,
-  ): Promise<ResultDTO<{ userId: string }>> {
-    const res = await this.dataSource.query<{ userId: string }[]>(
-      `
-      WITH "user_temp" AS (
-    INSERT INTO "users" AS u
-    ("login", "email", "passwordHash")
-    VALUES($1, $2, $3)
-    RETURNING "id" AS "userId"
-    ),
-    "user_confirm_temp" AS (
-    INSERT INTO "users_email_confirmation"
-    ("userId", "expirationDate", "isConfirmed")
-    VALUES((SELECT "userId" from "user_temp"), $4, $5)
-    RETURNING "userId"
-    )
-    INSERT INTO "users_ban" AS ub
-    ("userId", "isBanned")
-    VALUES((SELECT "userId" from "user_confirm_temp"), $6)
-    RETURNING "userId"
-    `,
-      [login, email, passwordHash, expirationDate, isConfirmed, false],
-    );
-    return new ResultDTO(InternalCode.Success, res[0]);
+  async create(user: User): Promise<ResultDTO<{ userId: string }>> {
+    const res = await this.usersRepo.save(user);
+
+    return new ResultDTO(InternalCode.Success, { userId: res.id.toString() });
+  }
+
+  async save(user: User): Promise<ResultDTO<{ userId: string }>> {
+    const res = await this.usersRepo.save(user);
+
+    return new ResultDTO(InternalCode.Success, { userId: res.id.toString() });
   }
 
   async deleteById(userId: string): Promise<ResultDTO<null>> {
-    await this.dataSource.query(
+    const res = await this.usersRepo.delete(userId);
+    /*await this.dataSource.query(
       `
     DELETE FROM "users_email_confirmation" as uec
     WHERE uec."userId" = $1  
@@ -70,28 +56,36 @@ export class UsersRepository {
     WHERE u."id" = $1
     `,
       [userId],
-    );
+    );*/
+    if (res.affected !== 1) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(InternalCode.Success);
   }
 
   async findById(userId: string): Promise<ResultDTO<any>> {
-    const users = await this.dataSource.query(
-      `
-    SELECT u.*, ub."isBanned", ub."banDate", ub."banReason"
-    FROM "users" as u
-    LEFT JOIN "users_ban" as ub
-    ON ub."userId" = u."id"
-    WHERE u."id" = $1
-    `,
-      [userId],
-    );
-    if (!users.length) return new ResultDTO(InternalCode.NotFound);
+    const user = await this.usersRepo.findOne({
+      relations: {
+        ban: true,
+      },
+      where: { id: +userId },
+    });
 
-    return new ResultDTO(InternalCode.Success, users[0]);
+    if (!user) return new ResultDTO(InternalCode.NotFound);
+
+    return new ResultDTO(InternalCode.Success, user);
   }
 
-  async banUser(
+  /*async banUser(
+    userId: string,
+    isBanned: boolean,
+    banReason: string,
+    banDate: Date,
+  ): Promise<ResultDTO<null>> {
+    await this.usersRepo.upsert();
+
+    return new ResultDTO(InternalCode.Success);
+  }*/
+  /*async banUser(
     userId: string,
     isBanned: boolean,
     banReason: string,
@@ -107,7 +101,7 @@ export class UsersRepository {
     );
 
     return new ResultDTO(InternalCode.Success);
-  }
+  }*/
 
   async banUserForSpecificBlog(
     userId: string,

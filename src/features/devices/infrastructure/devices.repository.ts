@@ -1,56 +1,37 @@
 import { Injectable } from '@nestjs/common';
 import { ResultDTO } from '../../../shared/dto';
 import { InternalCode } from '../../../shared/enums';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Equal, Not, Repository } from 'typeorm';
+import { Device } from '../entities/device.entity';
 
 @Injectable()
 export class DevicesRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Device) private deviceRepo: Repository<Device>,
+  ) {}
 
-  async createDevice(
-    userId: string,
-    ip: string,
-    deviceName: string,
-    issuedAt: Date,
-  ): Promise<ResultDTO<{ deviceId: string }>> {
-    const devices = await this.dataSource.query(
-      `
-    INSERT INTO "users_devices" as ud
-    ("userId", "ip", "deviceName", "issuedAt")
-    VALUES($1, $2, $3, $4)
-    RETURNING "id" as "deviceId"
-    `,
-      [userId, ip, deviceName, issuedAt],
-    );
-    console.log(devices);
-    return new ResultDTO(InternalCode.Success, devices[0]);
+  async create(device: Device): Promise<ResultDTO<{ deviceId: string }>> {
+    const res = await this.deviceRepo.save(device);
+
+    return new ResultDTO(InternalCode.Success, { deviceId: res.id });
   }
 
-  async updateSessionTime(
-    deviceId: string,
-    newSessionTime: Date,
-  ): Promise<ResultDTO<null>> {
-    await this.dataSource.query(
-      `
-    UPDATE "users_devices"
-    SET "issuedAt" = $1
-    WHERE "id" = $2
-    `,
-      [newSessionTime, deviceId],
-    );
+  async save(device: Device): Promise<ResultDTO<null>> {
+    await this.deviceRepo.save(device);
+
+    return new ResultDTO(InternalCode.Success);
+  }
+
+  async delete(userId: string): Promise<ResultDTO<null>> {
+    await this.deviceRepo.delete({ userId: +userId });
 
     return new ResultDTO(InternalCode.Success);
   }
 
   async deleteById(deviceId: string): Promise<ResultDTO<null>> {
-    await this.dataSource.query(
-      `
-    DELETE FROM "users_devices" as ud
-    WHERE ud."id" = $1
-    `,
-      [deviceId],
-    );
+    await this.deviceRepo.delete(deviceId);
 
     return new ResultDTO(InternalCode.Success);
   }
@@ -59,41 +40,18 @@ export class DevicesRepository {
     userId: string,
     excludeId: string,
   ): Promise<ResultDTO<null>> {
-    await this.dataSource.query(
-      `
-    DELETE FROM "users_devices" as ud
-    WHERE ud."userId" = $1 AND
-    ud."id" != $2
-    `,
-      [userId, excludeId],
-    );
+    await this.deviceRepo.delete({
+      userId: +userId,
+      id: Not(Equal(excludeId)),
+    });
 
     return new ResultDTO(InternalCode.Success);
   }
 
-  async deleteAllDevices(userId: string): Promise<ResultDTO<null>> {
-    await this.dataSource.query(
-      `
-    DELETE FROM "users_devices" as ud
-    WHERE ud."userId" = $1
-    `,
-      [userId],
-    );
+  async findById(deviceId: string): Promise<ResultDTO<Device>> {
+    const device = await this.deviceRepo.findOneBy({ id: deviceId });
+    if (!device?.id) return new ResultDTO(InternalCode.NotFound);
 
-    return new ResultDTO(InternalCode.Success);
-  }
-
-  async findById(deviceId: string): Promise<ResultDTO<any>> {
-    const deviceRaw = await this.dataSource.query(
-      `
-    SELECT *
-    FROM "users_devices" AS ud
-    WHERE ud."id" = $1
-    `,
-      [deviceId],
-    );
-    if (!deviceRaw.length) return new ResultDTO(InternalCode.NotFound);
-
-    return new ResultDTO(InternalCode.Success, deviceRaw[0]);
+    return new ResultDTO(InternalCode.Success, device);
   }
 }

@@ -68,7 +68,7 @@ export class DevicesController extends ExceptionAndResponseHelper {
     const deviceResult = await this.DevicesQueryRepository.findDeviceById(
       deviceId,
     );
-    if (currentUserId !== deviceResult.payload.userId) {
+    if (+currentUserId !== deviceResult.payload.userId) {
       throw new ForbiddenException();
     }
 

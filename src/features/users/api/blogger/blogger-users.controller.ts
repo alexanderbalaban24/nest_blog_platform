@@ -17,7 +17,7 @@ import { ExceptionAndResponseHelper } from '../../../../shared/helpers';
 import { ApproachType, InternalCode } from '../../../../shared/enums';
 import { ExistingBlogPipe } from '../../../../infrastructure/pipes/ExistingBlog.pipe';
 import { QueryParamsUserModel } from '../models/input/QueryParamsUserModel';
-import { UsersQueryRepository } from '../../infrastructure/users.query-repository';
+import { UsersQueryRepository } from '../../infrastructure/users/users.query-repository';
 import { CurrentUserId } from '../../../infrastructure/decorators/params/current-user-id.param.decorator';
 import { JwtAccessAuthGuard } from '../../../auth/guards/jwt-access-auth.guard';
 import { BlogsQueryRepository } from '../../../blogs/infrastructure/blogs.query-repository';

@@ -2,28 +2,27 @@ import { Injectable } from '@nestjs/common';
 import { ResultDTO } from '../../../shared/dto';
 import { ViewDeviceModel } from '../api/models/view/ViewDeviceModel';
 import { InternalCode } from '../../../shared/enums';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Device } from '../entities/device.entity';
 
 @Injectable()
 export class DevicesQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Device) private devicesRepo: Repository<Device>,
+  ) {}
 
   async findDeviceByUserId(
     userId: string,
   ): Promise<ResultDTO<ViewDeviceModel[]>> {
-    const sessionsRaw = await this.dataSource.query(
-      `
-    SELECT *
-    FROM "users_devices" as ud
-    WHERE ud."userId" = $1
-    `,
-      [userId],
-    );
+    const sessions = await this.devicesRepo.find({
+      where: { userId: +userId },
+    });
 
-    if (!sessionsRaw.length) return new ResultDTO(InternalCode.NotFound);
+    if (!sessions.length) return new ResultDTO(InternalCode.NotFound);
 
-    const sessionsData = sessionsRaw.map((session) => ({
+    const sessionsData = sessions.map((session) => ({
       ip: session.ip,
       title: session.deviceName,
       lastActiveDate: new Date(session.issuedAt).toISOString(),
@@ -33,25 +32,10 @@ export class DevicesQueryRepository {
     return new ResultDTO(InternalCode.Success, sessionsData);
   }
 
-  async findDeviceById(deviceId: string): Promise<
-    ResultDTO<{
-      id: string;
-      userId: string;
-      deviceName: string;
-      ip: string;
-      issuedAt: Date;
-    }>
-  > {
-    const devices = await this.dataSource.query(
-      `
-    SELECT *
-    FROM "users_devices" as ud
-    WHERE ud."id" = $1
-    `,
-      [deviceId],
-    );
-    if (!devices.length) return new ResultDTO(InternalCode.NotFound);
+  async findDeviceById(deviceId: string): Promise<ResultDTO<Device>> {
+    const device = await this.devicesRepo.findOneBy({ id: deviceId });
+    if (!device) return new ResultDTO(InternalCode.NotFound);
 
-    return new ResultDTO(InternalCode.Success, devices[0]);
+    return new ResultDTO(InternalCode.Success, device);
   }
 }

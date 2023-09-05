@@ -4,6 +4,7 @@ import { AuthRepository } from '../../infrastructure/auth.repository';
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DoOperationCommand } from '../../../email/application/use-cases/do-operation-use-case';
 import { v4 as uuidv4 } from 'uuid';
+import add from 'date-fns/add';
 
 export class ResendingEmailRegistrationCommand {
   constructor(public email: string) {}
@@ -22,7 +23,7 @@ export class ResendingEmailRegistrationUseCase
     command: ResendingEmailRegistrationCommand,
   ): Promise<ResultDTO<null>> {
     const newCode = uuidv4();
-    const newExpirationDate = new Date();
+    const newExpirationDate = add(new Date(), { hours: 3 });
 
     const updatedResult =
       await this.AuthRepository.updateConfirmationOrRecoveryData(

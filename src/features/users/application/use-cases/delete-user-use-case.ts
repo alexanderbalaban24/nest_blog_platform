@@ -1,5 +1,5 @@
 import { ResultDTO } from '../../../../shared/dto';
-import { UsersRepository } from '../../infrastructure/users.repository';
+import { UsersRepository } from '../../infrastructure/users/users.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class DeleteUserCommand {

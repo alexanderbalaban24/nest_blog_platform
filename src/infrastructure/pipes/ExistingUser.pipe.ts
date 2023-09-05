@@ -4,7 +4,7 @@ import {
   NotFoundException,
   PipeTransform,
 } from '@nestjs/common';
-import { UsersRepository } from '../../features/users/infrastructure/users.repository';
+import { UsersRepository } from '../../features/users/infrastructure/users/users.repository';
 
 @Injectable()
 export class ExistingUserPipe implements PipeTransform {

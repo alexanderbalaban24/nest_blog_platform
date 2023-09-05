@@ -1,10 +1,10 @@
 import { ResultDTO } from '../../../../shared/dto';
 import { InternalCode } from '../../../../shared/enums';
 import { PostsQueryRepository } from '../../../posts/infrastructure/posts.query-repository';
-import { UsersQueryRepository } from '../../../users/infrastructure/users.query-repository';
+import { UsersQueryRepository } from '../../../users/infrastructure/users/users.query-repository';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersRepository } from '../../../users/infrastructure/users.repository';
+import { UsersRepository } from '../../../users/infrastructure/users/users.repository';
 
 export class CreateCommentCommand {
   constructor(

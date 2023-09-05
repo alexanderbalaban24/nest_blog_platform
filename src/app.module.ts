@@ -12,8 +12,8 @@ import { PostsRepository } from './features/posts/infrastructure/posts.repositor
 import { PostsController } from './features/posts/api/posts.controller';
 import { SaUsersController } from './features/users/api/sa/sa-users.controller';
 import { UsersService } from './features/users/application/users.service';
-import { UsersQueryRepository } from './features/users/infrastructure/users.query-repository';
-import { UsersRepository } from './features/users/infrastructure/users.repository';
+import { UsersQueryRepository } from './features/users/infrastructure/users/users.query-repository';
+import { UsersRepository } from './features/users/infrastructure/users/users.repository';
 import { AuthController } from './features/auth/api/publicApi/auth.controller';
 import { AuthService } from './features/auth/application/auth.service';
 import { AuthQueryRepository } from './features/auth/infrastructure/auth.query-repository';
@@ -85,6 +85,14 @@ import { BanUnbanBlogUseCase } from './features/blogs/application/use-cases/ban-
 import { BanUnbanForSpecificBlogUseCase } from './features/users/application/use-cases/ban-unban-for-specific-blog-use-case';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { User } from './features/users/entities/user.entity';
+import { UserBan } from './features/users/entities/user-ban.entity';
+import { UserEmailConfirmation } from './features/users/entities/user-email-confirmation.entity';
+import { BansRepository } from './features/users/infrastructure/bans/bans.repository';
+import { Device } from './features/devices/entities/device.entity';
+import { CreateUserEmailConfirmationUseCase } from './features/users/application/use-cases/create-user-email-confirmation-use-case';
+import { EmailConfirmationRepository } from './features/users/infrastructure/email-confirmation/email-confirmation.repository';
+import { EmailConfirmationQueryRepository } from './features/users/infrastructure/email-confirmation/email-confirmation.query-repository';
 
 const useCases = [
   CreateBlogUseCase,
@@ -99,6 +107,7 @@ const useCases = [
   DeleteCommentUseCase,
   LikeStatusCommentUseCase,
   CreateUserUseCase,
+  CreateUserEmailConfirmationUseCase,
   DeleteUserUseCase,
   DoOperationUseCase,
   RegistrationUseCase,
@@ -159,6 +168,9 @@ const repositories = [
   AuthRepository,
   DevicesRepository,
   CommentsRepository,
+  BansRepository,
+  EmailConfirmationRepository,
+  EmailConfirmationQueryRepository,
 ];
 const validators = [
   ConfirmationCodeValidator,
@@ -194,11 +206,12 @@ const pipes = [
         username: configService.get('db').postgres.DB_USERNAME,
         password: configService.get('db').postgres.DB_PASSWORD,
         database: configService.get('db').postgres.DB_NAME,
-        autoLoadEntities: false,
-        synchronize: false,
+        autoLoadEntities: true,
+        synchronize: true,
       }),
       inject: [ConfigService],
     }),
+    TypeOrmModule.forFeature([User, UserBan, UserEmailConfirmation, Device]),
     PassportModule,
     JwtModule.register({
       global: true,

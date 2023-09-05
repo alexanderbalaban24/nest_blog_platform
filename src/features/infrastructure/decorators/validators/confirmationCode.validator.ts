@@ -7,34 +7,37 @@ import {
 import { Injectable } from '@nestjs/common';
 import { AuthQueryRepository } from '../../../auth/infrastructure/auth.query-repository';
 import { isAfter } from 'date-fns';
-import { AuthAction } from '../../../../shared/enums';
+import { EmailConfirmationQueryRepository } from '../../../users/infrastructure/email-confirmation/email-confirmation.query-repository';
 
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class ConfirmationCodeValidator implements ValidatorConstraintInterface {
-  constructor(private authQueryRepository: AuthQueryRepository) {}
+  constructor(
+    private authQueryRepository: AuthQueryRepository,
+    private emailConfirmQueryRepository: EmailConfirmationQueryRepository,
+  ) {}
 
   async validate(code: string): Promise<boolean> {
     try {
       const findConfirmResult =
-        await this.authQueryRepository.findConfirmationOrRecoveryDataByCode(
+        await this.emailConfirmQueryRepository.findConfirmationOrRecoveryDataByCode(
           code,
-          AuthAction.Confirmation,
         );
-      const findRecoveryResult =
+      console.log(findConfirmResult, findConfirmResult.hasError());
+      /*const findRecoveryResult =
         await this.authQueryRepository.findConfirmationOrRecoveryDataByCode(
           code,
           AuthAction.Recovery,
-        );
+        );*/
 
-      if (findConfirmResult.hasError() && findRecoveryResult.hasError())
+      if (findConfirmResult.hasError() /* && findRecoveryResult.hasError()*/)
         return false;
 
       if (
         findConfirmResult.payload?.isConfirmed ||
-        findRecoveryResult.payload?.isConfirmed ||
-        (isAfter(new Date(), findConfirmResult.payload?.expirationDate) &&
-          isAfter(new Date(), findRecoveryResult.payload?.expirationDate))
+        /*findRecoveryResult.payload?.isConfirmed ||*/
+        isAfter(new Date(), findConfirmResult.payload?.expirationDate) /* &&
+          isAfter(new Date(), findRecoveryResult.payload?.expirationDate)*/
       ) {
         return false;
       }

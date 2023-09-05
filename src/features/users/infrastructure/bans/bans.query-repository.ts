@@ -1,71 +1,67 @@
 import { Injectable } from '@nestjs/common';
-import { ViewUserModel } from '../api/models/view/ViewUserModel';
-import { QueryParamsUserModel } from '../api/models/input/QueryParamsUserModel';
-import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
-import { BanStatus, InternalCode } from '../../../shared/enums';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { ViewUserModel } from '../../api/models/view/ViewUserModel';
+import { QueryParamsUserModel } from '../../api/models/input/QueryParamsUserModel';
+import { QueryBuildDTO, ResultDTO } from '../../../../shared/dto';
+import { BanStatus, InternalCode } from '../../../../shared/enums';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import {
+  DataSource,
+  FindOneOptions,
+  FindOperator,
+  FindOptions,
+  ILike,
+  Repository,
+} from 'typeorm';
+import { User } from '../../entities/user.entity';
+import { UserBan } from '../../entities/user-ban.entity';
 
 @Injectable()
-export class UsersQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+export class BansQueryRepository {
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(UserBan) private bansRepo: Repository<UserBan>,
+  ) {}
 
-  async findUsers(
+  /*async findUsers(
     query: QueryParamsUserModel,
   ): Promise<ResultDTO<QueryBuildDTO<any, ViewUserModel>>> {
-    const banStatus = query.banStatus ?? BanStatus.All;
+    //const banStatus = query.banStatus ?? BanStatus.All;
     const sortBy = query.sortBy ?? 'createdAt';
     const sortDirection = query.sortDirection ?? 'desc';
     const pageNumber = query.pageNumber ? +query.pageNumber : 1;
     const pageSize = query.pageSize ? +query.pageSize : 10;
     const offset = pageSize * (pageNumber - 1);
-    const searchLoginTerm = `%${query.searchLoginTerm ?? ''}%`;
-    const searchEmailTerm = `%${query.searchEmailTerm ?? ''}%`;
+    const queryData: {
+      login?: FindOperator<string>;
+      email?: FindOperator<string>;
+    } = {};
 
-    const usersRow = await this.dataSource.query(
-      `
-     WITH temp_data as (SELECT u.*, ub."isBanned", ub."banDate", ub."banReason"  
-    FROM "users" as u
-    LEFT JOIN "users_ban" as ub
-    ON ub."userId" = u."id"
-    WHERE ub."isBanned" = CASE 
-    WHEN $1 = '${BanStatus.Banned}' THEN true
-    WHEN $1 = '${BanStatus.NotBanned}' THEN false
-    ELSE ub."isBanned" END AND
-    (CASE WHEN u."login" ILIKE $2 THEN true 
-    ELSE u."email" ILIKE $3 END)
-    ),
-    temp_data1 as (
-    SELECT * FROM "temp_data" as td
-    ORDER BY "${sortBy}" ${
-        sortBy !== 'createdAt' ? 'COLLATE "C" ' : ''
-      } ${sortDirection}
-    LIMIT ${pageSize} OFFSET ${offset}
-    )
-    SELECT (
-    SELECT COUNT(*)
-    FROM temp_data
-    ) as "totalCount",
-    (SELECT json_agg(
-    json_build_object(
-    'id', td."id", 'login', td."login", 'email', td."email", 'createdAt', td."createdAt", 
-    'banInfo', json_build_object(
-    'isBanned', td."isBanned", 'banDate', td."banDate", 'banReason', td."banReason"
-    )
-    )
-    ) FROM temp_data1 as td) as "json_data"
-    `,
-      [banStatus, searchLoginTerm, searchEmailTerm],
-    );
+    if (query.searchLoginTerm) {
+      queryData.login = ILike(`%${query.searchLoginTerm}%`);
+    }
 
-    const totalCount = +usersRow[0].totalCount;
+    if (query.searchEmailTerm) {
+      queryData.email = ILike(`%${query.searchEmailTerm}%`);
+    }
+    console.log(queryData);
+    const users = await this.usersRepo.findAndCount({
+      where: queryData,
+      order: { [sortBy]: sortDirection },
+      skip: offset,
+      take: pageSize,
+      relations: {
+        ban: true,
+      },
+    });
+
+    const totalCount = +users[1];
     const pagesCount = Math.ceil(totalCount / pageSize);
     const data = new QueryBuildDTO<any, any>(
       pagesCount,
       pageNumber,
       pageSize,
       totalCount,
-      usersRow[0].json_data ?? [],
+      users[0],
     );
 
     data.map((user) => this._mapUserToView(user));
@@ -143,29 +139,13 @@ export class UsersQueryRepository {
   }
 
   async findUserById(userId: string): Promise<ResultDTO<ViewUserModel>> {
-    const users = await this.dataSource.query(
-      `
-    SELECT json_agg(
-    json_build_object(
-    'id', u."id", 'login', u."login", 'email', u."email", 'createdAt', u."createdAt", 
-    'banInfo', json_build_object(
-    'isBanned', ub."isBanned", 'banDate', ub."banDate", 'banReason', ub."banReason"
-    )
-    )
-    )  
-    FROM "users" as u
-    LEFT JOIN "users_ban" as ub
-    ON ub."userId" = u."id"
-    WHERE u."id" = $1
-    `,
-      [userId],
-    );
-    if (!users[0].json_agg.length) return new ResultDTO(InternalCode.NotFound);
-
-    return new ResultDTO(
-      InternalCode.Success,
-      this._mapUserToView(users[0].json_agg[0]),
-    );
+    const user = await this.usersRepo.findOne({
+      relations: {
+        ban: true,
+      },
+      where: { id: +userId },
+    });
+    return new ResultDTO(InternalCode.Success, this._mapUserToView(user));
   }
 
   _mapUserToView(user): ViewUserModel {
@@ -175,12 +155,10 @@ export class UsersQueryRepository {
       email: user.email,
       createdAt: new Date(user.createdAt).toISOString(),
       banInfo: {
-        isBanned: user.banInfo.isBanned,
-        banDate: user.banInfo.banDate
-          ? new Date(user.banInfo.banDate).toISOString()
-          : user.banInfo.banDate,
-        banReason: user.banInfo.banReason,
+        isBanned: user.ban?.isBanned ?? null,
+        banDate: user.ban?.banDate ?? null,
+        banReason: user.ban?.banReason ?? null,
       },
     };
-  }
+  }*/
 }

@@ -32,7 +32,7 @@ export class RefreshSessionUseCase
       return new ResultDTO(InternalCode.Unauthorized);
 
     if (
-      deviceResult.payload.userId !== command.userId ||
+      deviceResult.payload.userId !== +command.userId ||
       command.iat !== Math.trunc(+deviceResult.payload.issuedAt / 1000)
     )
       return new ResultDTO(InternalCode.Unauthorized);

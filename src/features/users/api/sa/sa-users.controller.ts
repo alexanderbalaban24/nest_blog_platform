@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserModel } from '../models/input/CreateUserModel';
 import { UsersService } from '../../application/users.service';
-import { UsersQueryRepository } from '../../infrastructure/users.query-repository';
+import { UsersQueryRepository } from '../../infrastructure/users/users.query-repository';
 import { QueryParamsUserModel } from '../models/input/QueryParamsUserModel';
 import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
 import { ExistingUserPipe } from '../../../../infrastructure/pipes/ExistingUser.pipe';
@@ -56,7 +56,6 @@ export class SaUsersController extends ExceptionAndResponseHelper {
         inputModel.login,
         inputModel.email,
         inputModel.password,
-        true,
       ),
     );
     this.sendExceptionOrResponse(createdUserResult);

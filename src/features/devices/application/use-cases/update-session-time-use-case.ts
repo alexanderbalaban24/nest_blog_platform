@@ -13,9 +13,9 @@ export class UpdateSessionTimeUseCase
   constructor(private DeviceRepository: DevicesRepository) {}
 
   async execute(command: UpdateSessionTimeCommand): Promise<ResultDTO<null>> {
-    return this.DeviceRepository.updateSessionTime(
-      command.deviceId,
-      new Date(),
-    );
+    const device = await this.DeviceRepository.findById(command.deviceId);
+
+    device.payload.issuedAt = new Date();
+    return this.DeviceRepository.save(device.payload);
   }
 }

@@ -1,0 +1,52 @@
+{
+  "address": "0xba50933c268f567bdc86e1ac131be072c6b0b71a",
+  "riskScore": 40,
+  "riskGroup": "Low",
+  "isProxy": false,
+  "w3aWhitelist": false,
+  "w3aBlacklist": false,
+  "externalVerification": true,
+  "externalAudit": false,
+  "hasOwner": false,
+  "txOrigin": false,
+  "balanceChange": false,
+  "restriction": {
+    "whitelistBlacklist": false,
+    "emptyPayable": false,
+    "lockedEther": false
+  },
+  "sourceCodeChange": {
+    "suicidal/selfDestruct": false,
+    "upgradable": false,
+    "metamorphic": false
+  },
+  "delegateCall": {
+    "found": true,
+    "loop": true
+  },
+  "uncheckedOperation": {
+    "transfer": false,
+    "send": false,
+    "lowLevel": false
+  },
+  "arbitrarySend": {
+    "eth": false,
+    "erc20": false,
+    "erc20Permit": false
+  },
+  "reentrancy": {
+    "eth": false,
+    "noEth": false,
+    "benign": false,
+    "events": false
+  },
+  "wrongInterfaces": {
+    "erc721": false,
+    "erc20": false
+  },
+  "hardcodedAddresses": {
+    "found": false,
+    "userAddresses": false,
+    "contractAddresses": false
+  }
+}

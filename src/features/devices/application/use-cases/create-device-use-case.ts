@@ -1,6 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ResultDTO } from '../../../../shared/dto';
 import { DevicesRepository } from '../../infrastructure/devices.repository';
+import { Device } from '../../entities/device.entity';
 
 export class CreateDeviceCommand {
   constructor(
@@ -19,11 +20,11 @@ export class CreateDeviceUseCase
   async execute(
     command: CreateDeviceCommand,
   ): Promise<ResultDTO<{ deviceId: string }>> {
-    return this.DeviceRepository.createDevice(
-      command.userId,
-      command.ip,
-      command.deviceName,
-      new Date(),
-    );
+    const device = new Device();
+    device.userId = +command.userId;
+    device.ip = command.ip;
+    device.deviceName = command.deviceName;
+    device.issuedAt = new Date();
+    return this.DeviceRepository.create(device);
   }
 }
