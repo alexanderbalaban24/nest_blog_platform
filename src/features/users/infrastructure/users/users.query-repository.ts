@@ -137,6 +137,19 @@ export class UsersQueryRepository {
     return new ResultDTO(InternalCode.Success, this._mapUserToView(user));
   }
 
+  async findMe(
+    userId: string,
+  ): Promise<ResultDTO<{ email: string; login: string; userId: number }>> {
+    const user = await this.usersRepo.findOne({
+      where: { id: +userId },
+    });
+    return new ResultDTO(InternalCode.Success, {
+      userId: user.id,
+      email: user.email,
+      login: user.login,
+    });
+  }
+
   _mapUserToView(user): ViewUserModel {
     return {
       id: user.id.toString(),

@@ -11,7 +11,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { RegistrationUserModel } from '../models/input/RegistrationUserModel';
-import { AuthService } from '../../application/auth.service';
 import { ConfirmRegistrationModel } from '../models/input/ConfirmRegistrationModel';
 import { ResendRegistrationModel } from '../models/input/ResendRegistrationModel';
 import { PasswordRecoveryModel } from '../models/input/PasswordRecoveryModel';
@@ -21,7 +20,6 @@ import { Response } from 'express';
 import { LocalAuthGuard } from '../../guards/local-auth.guard';
 import { JwtAccessAuthGuard } from '../../guards/jwt-access-auth.guard';
 import { CurrentUserId } from '../../../infrastructure/decorators/params/current-user-id.param.decorator';
-import { AuthQueryRepository } from '../../infrastructure/auth.query-repository';
 import { JwtRefreshAuthGuard } from '../../guards/jwt-refresh-auth.guard';
 import { RefreshTokenPayload } from '../../../infrastructure/decorators/params/refresh-token-payload.param.decorator';
 import { RefreshTokenPayloadType } from '../../../infrastructure/decorators/params/types';
@@ -37,14 +35,14 @@ import { LoginCommand } from '../../application/use-cases/login-use-case';
 import { RefreshSessionCommand } from '../../application/use-cases/refresh-session-use-case';
 import { LogoutCommand } from '../../application/use-cases/logout-use-case';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { UsersQueryRepository } from '../../../users/infrastructure/users/users.query-repository';
 
 @Controller('auth')
 @UseGuards(ThrottlerGuard)
 export class AuthController extends ExceptionAndResponseHelper {
   constructor(
-    private CommandBus: CommandBus,
-    private AuthServices: AuthService,
-    private AuthQueryRepository: AuthQueryRepository,
+    private commandBus: CommandBus,
+    private usersQueryRepository: UsersQueryRepository,
   ) {
     super(ApproachType.http);
   }
@@ -52,7 +50,7 @@ export class AuthController extends ExceptionAndResponseHelper {
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   async registration(@Body() inputModel: RegistrationUserModel): Promise<void> {
-    const registrationResult = await this.CommandBus.execute(
+    const registrationResult = await this.commandBus.execute(
       new RegistrationCommand(
         inputModel.login,
         inputModel.email,
@@ -68,7 +66,7 @@ export class AuthController extends ExceptionAndResponseHelper {
   async resendRegistration(
     @Body() inputModel: ResendRegistrationModel,
   ): Promise<void> {
-    const resendingResult = await this.CommandBus.execute(
+    const resendingResult = await this.commandBus.execute(
       new ResendingEmailRegistrationCommand(inputModel.email),
     );
 
@@ -80,7 +78,7 @@ export class AuthController extends ExceptionAndResponseHelper {
   async confirmRegistration(
     @Body() inputModel: ConfirmRegistrationModel,
   ): Promise<void> {
-    const confirmResult = await this.CommandBus.execute(
+    const confirmResult = await this.commandBus.execute(
       new ConfirmRegistrationCommand(inputModel.code),
     );
 
@@ -92,7 +90,7 @@ export class AuthController extends ExceptionAndResponseHelper {
   async passwordRecovery(
     @Body() inputMode: PasswordRecoveryModel,
   ): Promise<void> {
-    const recoverResult = await this.CommandBus.execute(
+    const recoverResult = await this.commandBus.execute(
       new PasswordRecoveryCommand(inputMode.email),
     );
 
@@ -104,7 +102,7 @@ export class AuthController extends ExceptionAndResponseHelper {
   async confirmRecoveryPassword(
     @Body() inputModel: UpdatePasswordModel,
   ): Promise<void> {
-    const confirmedResult = await this.CommandBus.execute(
+    const confirmedResult = await this.commandBus.execute(
       new ConfirmRecoveryPasswordCommand(
         inputModel.newPassword,
         inputModel.recoveryCode,
@@ -116,7 +114,6 @@ export class AuthController extends ExceptionAndResponseHelper {
 
   @Post('login')
   @UseGuards(LocalAuthGuard)
-  //@Throttle({ default: { limit: 2, ttl: 10000 } })
   @HttpCode(HttpStatus.OK)
   async login(
     @Headers('user-agent') deviceName: string,
@@ -124,7 +121,7 @@ export class AuthController extends ExceptionAndResponseHelper {
     @Ip() ip: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
-    const loginResult = await this.CommandBus.execute(
+    const loginResult = await this.commandBus.execute(
       new LoginCommand(
         inputModel.loginOrEmail,
         inputModel.password,
@@ -146,7 +143,7 @@ export class AuthController extends ExceptionAndResponseHelper {
   async getMe(
     @CurrentUserId() currentUserId: string,
   ): Promise<{ email: string; login: string; userId: string }> {
-    const userResult = await this.AuthQueryRepository.findMe(currentUserId);
+    const userResult = await this.usersQueryRepository.findMe(currentUserId);
 
     return this.sendExceptionOrResponse(userResult);
   }
@@ -159,7 +156,7 @@ export class AuthController extends ExceptionAndResponseHelper {
     @RefreshTokenPayload() refreshTokenPayload: RefreshTokenPayloadType,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
-    const refreshResult = await this.CommandBus.execute(
+    const refreshResult = await this.commandBus.execute(
       new RefreshSessionCommand(
         currentUserId,
         refreshTokenPayload.deviceId,
@@ -182,7 +179,7 @@ export class AuthController extends ExceptionAndResponseHelper {
     @CurrentUserId() currentUserId: string,
     @RefreshTokenPayload() refreshTokenPayload: RefreshTokenPayloadType,
   ): Promise<void> {
-    const logoutResult = await this.CommandBus.execute(
+    const logoutResult = await this.commandBus.execute(
       new LogoutCommand(
         currentUserId,
         refreshTokenPayload.deviceId,

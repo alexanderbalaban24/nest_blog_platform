@@ -18,10 +18,10 @@ export class UsersRepository {
     return new ResultDTO(InternalCode.Success, { userId: res.id.toString() });
   }
 
-  async save(user: User): Promise<ResultDTO<{ userId: string }>> {
-    const res = await this.usersRepo.save(user);
+  async save(user: User): Promise<ResultDTO<null>> {
+    await this.usersRepo.save(user);
 
-    return new ResultDTO(InternalCode.Success, { userId: res.id.toString() });
+    return new ResultDTO(InternalCode.Success);
   }
 
   async deleteById(userId: string): Promise<ResultDTO<null>> {
@@ -62,7 +62,7 @@ export class UsersRepository {
     return new ResultDTO(InternalCode.Success);
   }
 
-  async findById(userId: string): Promise<ResultDTO<any>> {
+  async findById(userId: number): Promise<ResultDTO<User>> {
     const user = await this.usersRepo.findOne({
       relations: {
         ban: true,
@@ -70,6 +70,19 @@ export class UsersRepository {
       where: { id: +userId },
     });
 
+    if (!user) return new ResultDTO(InternalCode.NotFound);
+
+    return new ResultDTO(InternalCode.Success, user);
+  }
+
+  async findByCredentials(loginOrEmail: string): Promise<ResultDTO<User>> {
+    const user = await this.usersRepo.findOne({
+      relations: {
+        ban: true,
+        emailConfirm: true,
+      },
+      where: [{ login: loginOrEmail }, { email: loginOrEmail }],
+    });
     if (!user) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(InternalCode.Success, user);

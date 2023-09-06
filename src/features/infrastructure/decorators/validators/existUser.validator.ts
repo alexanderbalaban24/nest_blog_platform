@@ -15,7 +15,7 @@ export class ExistUserValidator implements ValidatorConstraintInterface {
   async validate(id: string): Promise<boolean> {
     debugger;
     try {
-      const userResult = await this.usersRepository.findById(id);
+      const userResult = await this.usersRepository.findById(+id);
       return !userResult.hasError();
     } catch (e) {
       return false;

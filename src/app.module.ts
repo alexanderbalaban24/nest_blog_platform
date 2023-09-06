@@ -16,12 +16,10 @@ import { UsersQueryRepository } from './features/users/infrastructure/users/user
 import { UsersRepository } from './features/users/infrastructure/users/users.repository';
 import { AuthController } from './features/auth/api/publicApi/auth.controller';
 import { AuthService } from './features/auth/application/auth.service';
-import { AuthQueryRepository } from './features/auth/infrastructure/auth.query-repository';
 import { EmailManager } from './features/email/manager/email.manager';
 import { EmailAdapter } from './features/email/adapter/email.adapter';
 import { BusinessService } from './features/email/application/business.service';
 import { ConfirmationCodeValidator } from './features/infrastructure/decorators/validators/confirmationCode.validator';
-import { AuthRepository } from './features/auth/infrastructure/auth.repository';
 import { ConfirmEmailValidator } from './features/infrastructure/decorators/validators/confirmEmail.validator';
 import { UniqueLoginAndEmailValidator } from './features/infrastructure/decorators/validators/uniqueLoginAndEmail.validator';
 import { JwtModule } from '@nestjs/jwt';
@@ -90,10 +88,12 @@ import { UserBan } from './features/users/entities/user-ban.entity';
 import { UserEmailConfirmation } from './features/users/entities/user-email-confirmation.entity';
 import { BansRepository } from './features/users/infrastructure/bans/bans.repository';
 import { Device } from './features/devices/entities/device.entity';
-import { CreateUserEmailConfirmationUseCase } from './features/users/application/use-cases/create-user-email-confirmation-use-case';
 import { EmailConfirmationRepository } from './features/users/infrastructure/email-confirmation/email-confirmation.repository';
 import { EmailConfirmationQueryRepository } from './features/users/infrastructure/email-confirmation/email-confirmation.query-repository';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { UserPasswordRecovery } from './features/users/entities/user-password-recovery.entity';
+import { PasswordRecoveryRepository } from './features/users/infrastructure/password-recovery/password-recovery.repository';
+import { PasswordRecoveryQueryRepository } from './features/users/infrastructure/password-recovery/password-recovery.query-repository';
 
 const useCases = [
   CreateBlogUseCase,
@@ -108,7 +108,6 @@ const useCases = [
   DeleteCommentUseCase,
   LikeStatusCommentUseCase,
   CreateUserUseCase,
-  CreateUserEmailConfirmationUseCase,
   DeleteUserUseCase,
   DoOperationUseCase,
   RegistrationUseCase,
@@ -160,18 +159,18 @@ const repositories = [
   BlogsQueryRepository,
   PostsQueryRepository,
   UsersQueryRepository,
-  AuthQueryRepository,
   CommentsQueryRepository,
   DevicesQueryRepository,
   BlogsRepository,
   PostsRepository,
   UsersRepository,
-  AuthRepository,
   DevicesRepository,
   CommentsRepository,
   BansRepository,
   EmailConfirmationRepository,
   EmailConfirmationQueryRepository,
+  PasswordRecoveryRepository,
+  PasswordRecoveryQueryRepository,
 ];
 const validators = [
   ConfirmationCodeValidator,
@@ -212,7 +211,13 @@ const pipes = [
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([User, UserBan, UserEmailConfirmation, Device]),
+    TypeOrmModule.forFeature([
+      User,
+      UserBan,
+      UserEmailConfirmation,
+      UserPasswordRecovery,
+      Device,
+    ]),
     ThrottlerModule.forRoot([
       {
         ttl: 10000,

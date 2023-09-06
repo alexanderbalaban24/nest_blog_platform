@@ -15,12 +15,12 @@ export class LogoutCommand {
 @CommandHandler(LogoutCommand)
 export class LogoutUseCase implements ICommandHandler<LogoutCommand> {
   constructor(
-    private CommandBus: CommandBus,
-    private DeviceQueryRepository: DevicesQueryRepository,
+    private commandBus: CommandBus,
+    private devicesQueryRepository: DevicesQueryRepository,
   ) {}
 
   async execute(command: LogoutCommand): Promise<ResultDTO<null>> {
-    const deviceResult = await this.DeviceQueryRepository.findDeviceById(
+    const deviceResult = await this.devicesQueryRepository.findDeviceById(
       command.deviceId,
     );
     if (deviceResult.hasError())
@@ -32,7 +32,7 @@ export class LogoutUseCase implements ICommandHandler<LogoutCommand> {
     )
       return new ResultDTO(InternalCode.Unauthorized);
 
-    return this.CommandBus.execute(
+    return this.commandBus.execute(
       new DeleteUserSessionCommand(command.deviceId),
     );
   }

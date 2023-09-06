@@ -5,7 +5,6 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { AuthQueryRepository } from '../../../auth/infrastructure/auth.query-repository';
 import { isAfter } from 'date-fns';
 import { EmailConfirmationQueryRepository } from '../../../users/infrastructure/email-confirmation/email-confirmation.query-repository';
 
@@ -13,7 +12,6 @@ import { EmailConfirmationQueryRepository } from '../../../users/infrastructure/
 @Injectable()
 export class ConfirmationCodeValidator implements ValidatorConstraintInterface {
   constructor(
-    private authQueryRepository: AuthQueryRepository,
     private emailConfirmQueryRepository: EmailConfirmationQueryRepository,
   ) {}
 

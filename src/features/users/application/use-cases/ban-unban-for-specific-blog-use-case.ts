@@ -26,7 +26,7 @@ export class BanUnbanForSpecificBlogUseCase
   async execute(
     command: BanUnbanForSpecificBlogCommand,
   ): Promise<ResultDTO<null>> {
-    const userResult = await this.UsersRepository.findById(command.userId);
+    const userResult = await this.UsersRepository.findById(+command.userId);
     if (userResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
 

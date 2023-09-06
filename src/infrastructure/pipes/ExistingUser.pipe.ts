@@ -8,11 +8,11 @@ import { UsersRepository } from '../../features/users/infrastructure/users/users
 
 @Injectable()
 export class ExistingUserPipe implements PipeTransform {
-  constructor(private UserRepository: UsersRepository) {}
+  constructor(private usersRepository: UsersRepository) {}
 
   async transform(value: string, metadata: ArgumentMetadata) {
     try {
-      const userResult = await this.UserRepository.findById(value);
+      const userResult = await this.usersRepository.findById(+value);
       if (userResult.hasError()) throw new NotFoundException();
       return userResult.payload.id;
     } catch (e) {

@@ -22,7 +22,7 @@ export class CreateDeviceUseCase
   ): Promise<ResultDTO<{ deviceId: string }>> {
     const device = new Device();
     device.userId = command.userId;
-    device.ip = command.ip ?? '12';
+    device.ip = command.ip ?? '';
     device.deviceName = command.deviceName;
     device.issuedAt = new Date();
 

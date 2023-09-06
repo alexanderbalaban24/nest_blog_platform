@@ -5,16 +5,16 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { AuthRepository } from '../../../auth/infrastructure/auth.repository';
+import { UsersRepository } from '../../../users/infrastructure/users/users.repository';
 
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class ConfirmEmailValidator implements ValidatorConstraintInterface {
-  constructor(private authRepository: AuthRepository) {}
+  constructor(private usersRepository: UsersRepository) {}
 
   async validate(email: string): Promise<boolean> {
     try {
-      const userResult = await this.authRepository.findByCredentials(email);
+      const userResult = await this.usersRepository.findByCredentials(email);
       if (userResult.hasError() || userResult.payload.emailConfirm.isConfirmed)
         return false;
 

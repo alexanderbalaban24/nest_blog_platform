@@ -3,9 +3,9 @@ import { TokenPair } from '../../../../shared/types';
 import { InternalCode } from '../../../../shared/enums';
 import { compare } from 'bcrypt';
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { AuthRepository } from '../../infrastructure/auth.repository';
 import { JwtService } from '@nestjs/jwt';
 import { CreateDeviceCommand } from '../../../devices/application/use-cases/create-device-use-case';
+import { UsersRepository } from '../../../users/infrastructure/users/users.repository';
 
 export class LoginCommand {
   constructor(
@@ -19,13 +19,13 @@ export class LoginCommand {
 @CommandHandler(LoginCommand)
 export class LoginUseCase implements ICommandHandler<LoginCommand> {
   constructor(
-    private CommandBus: CommandBus,
-    private AuthRepository: AuthRepository,
-    private JwtService: JwtService,
+    private commandBus: CommandBus,
+    private usersRepository: UsersRepository,
+    private jwtService: JwtService,
   ) {}
 
   async execute(command: LoginCommand): Promise<ResultDTO<TokenPair>> {
-    const userResult = await this.AuthRepository.findByCredentials(
+    const userResult = await this.usersRepository.findByCredentials(
       command.loginOrEmail,
     );
     if (userResult.hasError() || userResult.payload?.ban?.isBanned)
@@ -37,7 +37,7 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
     );
     if (!isValidCredentials) return new ResultDTO(InternalCode.Unauthorized);
 
-    const createdDeviceResult = await this.CommandBus.execute(
+    const createdDeviceResult = await this.commandBus.execute(
       new CreateDeviceCommand(
         userResult.payload.id,
         command.ip,
@@ -47,11 +47,11 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
     if (createdDeviceResult.hasError())
       return createdDeviceResult as ResultDTO<null>;
 
-    const accessToken = await this.JwtService.signAsync(
+    const accessToken = await this.jwtService.signAsync(
       { userId: userResult.payload.id },
       { expiresIn: '10s' },
     );
-    const refreshToken = await this.JwtService.signAsync(
+    const refreshToken = await this.jwtService.signAsync(
       {
         userId: userResult.payload.id,
         deviceId: createdDeviceResult.payload.deviceId,
