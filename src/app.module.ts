@@ -93,6 +93,7 @@ import { Device } from './features/devices/entities/device.entity';
 import { CreateUserEmailConfirmationUseCase } from './features/users/application/use-cases/create-user-email-confirmation-use-case';
 import { EmailConfirmationRepository } from './features/users/infrastructure/email-confirmation/email-confirmation.repository';
 import { EmailConfirmationQueryRepository } from './features/users/infrastructure/email-confirmation/email-confirmation.query-repository';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 const useCases = [
   CreateBlogUseCase,
@@ -212,6 +213,12 @@ const pipes = [
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([User, UserBan, UserEmailConfirmation, Device]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 10000,
+        limit: 5,
+      },
+    ]),
     PassportModule,
     JwtModule.register({
       global: true,

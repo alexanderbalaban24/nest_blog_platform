@@ -36,8 +36,10 @@ import { ConfirmRecoveryPasswordCommand } from '../../application/use-cases/conf
 import { LoginCommand } from '../../application/use-cases/login-use-case';
 import { RefreshSessionCommand } from '../../application/use-cases/refresh-session-use-case';
 import { LogoutCommand } from '../../application/use-cases/logout-use-case';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('auth')
+@UseGuards(ThrottlerGuard)
 export class AuthController extends ExceptionAndResponseHelper {
   constructor(
     private CommandBus: CommandBus,
@@ -114,6 +116,7 @@ export class AuthController extends ExceptionAndResponseHelper {
 
   @Post('login')
   @UseGuards(LocalAuthGuard)
+  //@Throttle({ default: { limit: 2, ttl: 10000 } })
   @HttpCode(HttpStatus.OK)
   async login(
     @Headers('user-agent') deviceName: string,
