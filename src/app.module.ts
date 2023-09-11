@@ -207,7 +207,7 @@ const pipes = [
         password: configService.get('db').postgres.DB_PASSWORD,
         database: configService.get('db').postgres.DB_NAME,
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: false,
       }),
       inject: [ConfigService],
     }),

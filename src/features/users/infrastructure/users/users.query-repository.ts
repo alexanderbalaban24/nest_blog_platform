@@ -139,12 +139,12 @@ export class UsersQueryRepository {
 
   async findMe(
     userId: string,
-  ): Promise<ResultDTO<{ email: string; login: string; userId: number }>> {
+  ): Promise<ResultDTO<{ email: string; login: string; userId: string }>> {
     const user = await this.usersRepo.findOne({
       where: { id: +userId },
     });
     return new ResultDTO(InternalCode.Success, {
-      userId: user.id,
+      userId: user.id.toString(),
       email: user.email,
       login: user.login,
     });
