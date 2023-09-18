@@ -8,18 +8,42 @@ export class AppService {
 
   async deleteAllData(): Promise<boolean> {
     try {
-      await this.dataSource.query(`DELETE FROM "users_ban"`);
-      await this.dataSource.query(`DELETE FROM "users_email_confirmation"`);
-      await this.dataSource.query(`DELETE FROM "users_password_recovery"`);
-      await this.dataSource.query(`DELETE FROM "users_devices"`);
-      await this.dataSource.query(`DELETE FROM "blogs_ban"`);
-      await this.dataSource.query(`DELETE FROM "users_ban_for_blog"`);
-      await this.dataSource.query(`DELETE FROM "posts_comments_likes"`);
-      await this.dataSource.query(`DELETE FROM "posts_comments"`);
-      await this.dataSource.query(`DELETE FROM "posts_likes"`);
-      await this.dataSource.query(`DELETE FROM "posts"`);
-      await this.dataSource.query(`DELETE FROM "blogs"`);
-      await this.dataSource.query(`DELETE FROM "users"`);
+      await this.dataSource.query(
+        `TRUNCATE TABLE "users_ban" RESTART IDENTITY CASCADE`,
+      );
+      await this.dataSource.query(
+        `TRUNCATE TABLE "users_email_confirmation" RESTART IDENTITY CASCADE`,
+      );
+      await this.dataSource.query(
+        `TRUNCATE TABLE "users_password_recovery" RESTART IDENTITY CASCADE`,
+      );
+      await this.dataSource.query(
+        `TRUNCATE TABLE "users_devices" RESTART IDENTITY CASCADE`,
+      );
+      await this.dataSource.query(
+        `TRUNCATE TABLE "blogs_ban" RESTART IDENTITY CASCADE`,
+      );
+      await this.dataSource.query(
+        `TRUNCATE TABLE "users_ban_for_blog" RESTART IDENTITY CASCADE`,
+      );
+      await this.dataSource.query(
+        `TRUNCATE TABLE "posts_comments_likes" RESTART IDENTITY CASCADE`,
+      );
+      await this.dataSource.query(
+        `TRUNCATE TABLE "posts_comments" RESTART IDENTITY CASCADE`,
+      );
+      await this.dataSource.query(
+        `TRUNCATE TABLE "posts_likes" RESTART IDENTITY CASCADE`,
+      );
+      await this.dataSource.query(
+        `TRUNCATE TABLE "posts" RESTART IDENTITY CASCADE`,
+      );
+      await this.dataSource.query(
+        `TRUNCATE TABLE "blogs" RESTART IDENTITY CASCADE`,
+      );
+      await this.dataSource.query(
+        `TRUNCATE TABLE "users" RESTART IDENTITY CASCADE`,
+      );
 
       return true;
     } catch (e) {
