@@ -24,6 +24,8 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
 
   async execute(command: UpdatePostCommand): Promise<ResultDTO<null>> {
     const blogResult = await this.BlogsQueryRepository.findBlogById(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
       command.blogId,
     );
     if (blogResult.hasError())
@@ -34,6 +36,8 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
       return new ResultDTO(InternalCode.Internal_Server);
 
     if (
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
       blogResult.payload.blogOwnerInfo.userId !== command.userId ||
       postResult.payload.blogId !== blogResult.payload.id
     )

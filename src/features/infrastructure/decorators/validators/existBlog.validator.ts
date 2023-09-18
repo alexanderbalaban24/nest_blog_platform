@@ -14,7 +14,7 @@ export class ExistBlogValidator implements ValidatorConstraintInterface {
 
   async validate(id: string): Promise<boolean> {
     try {
-      const blogResult = await this.BlogsRepository.findById(id);
+      const blogResult = await this.BlogsRepository.findById(+id);
       return !blogResult.hasError();
     } catch (e) {
       return false;

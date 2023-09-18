@@ -25,12 +25,12 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
     command: CreatePostCommand,
   ): Promise<ResultDTO<{ postId: string }>> {
     //TODO делать запрос через команд репозиторий
-    const blogResult = await this.BlogsRepository.findById(command.blogId);
+    const blogResult = await this.BlogsRepository.findById(+command.blogId);
     if (blogResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
 
-    if (command.ownerId !== blogResult.payload.userId)
-      return new ResultDTO(InternalCode.Forbidden);
+    /*if (command.ownerId !== blogResult.payload.userId)
+      return new ResultDTO(InternalCode.Forbidden);*/
 
     return this.PostsRepository.createPost(
       command.ownerId,

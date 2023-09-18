@@ -94,6 +94,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { UserPasswordRecovery } from './features/users/entities/user-password-recovery.entity';
 import { PasswordRecoveryRepository } from './features/users/infrastructure/password-recovery/password-recovery.repository';
 import { PasswordRecoveryQueryRepository } from './features/users/infrastructure/password-recovery/password-recovery.query-repository';
+import { Blog } from './features/blogs/entities/blog.entity';
+import { BlogBan } from './features/blogs/entities/blog-ban.entity';
 
 const useCases = [
   CreateBlogUseCase,
@@ -217,6 +219,8 @@ const pipes = [
       UserEmailConfirmation,
       UserPasswordRecovery,
       Device,
+      Blog,
+      BlogBan,
     ]),
     ThrottlerModule.forRoot([
       {

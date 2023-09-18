@@ -5,12 +5,12 @@ export type ViewBlogModel = {
   websiteUrl: string;
   createdAt: string;
   isMembership: boolean;
-  blogOwnerInfo?: {
+  /*blogOwnerInfo?: {
     userId: string;
     userLogin: string;
   };
   banInfo?: {
     isBanned: boolean;
     banDate: string;
-  };
+  };*/
 };
