@@ -85,7 +85,7 @@ export class BlogsQueryRepository {
 
     const res = await this.blogsRepo
       .createQueryBuilder('b')
-      .orderBy(`b.${sortBy}`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
+      .orderBy(`b.${sortBy}`, sortDirection as 'ASC' | 'DESC')
       .where('b.name ILIKE :searchNameTerm', { searchNameTerm })
       .offset(offset)
       .limit(pageSize)
@@ -94,7 +94,7 @@ export class BlogsQueryRepository {
     const blogs = res[0];
     const totalCount = res[1];
     const pagesCount = Math.ceil(totalCount / pageSize);
-    const data = new QueryBuildDTO<any, any>(
+    const data = new QueryBuildDTO<Blog, ViewBlogModel>(
       pagesCount,
       pageNumber,
       pageSize,

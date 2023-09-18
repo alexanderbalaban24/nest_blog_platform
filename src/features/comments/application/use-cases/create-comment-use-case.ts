@@ -8,7 +8,7 @@ import { UsersRepository } from '../../../users/infrastructure/users/users.repos
 
 export class CreateCommentCommand {
   constructor(
-    public postId: string,
+    public postId: number,
     public content: string,
     public userId: string,
   ) {}

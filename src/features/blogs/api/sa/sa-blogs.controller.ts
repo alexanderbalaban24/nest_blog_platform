@@ -28,13 +28,24 @@ import { CreateBlogModel } from '../models/input/CreateBlogModel';
 import { CreateBlogCommand } from '../../application/use-cases/create-blog-use-case';
 import { DeleteBlogCommand } from '../../application/use-cases/delete-blog-use-case';
 import { UpdateBlogCommand } from '../../application/use-cases/update-blog-use-case';
+import { CreatePostWithoutIdModel } from '../models/input/CreatePostWithoutIdModel';
+import { ViewPostModel } from '../../../posts/api/models/view/ViewPostModel';
+import { CreatePostCommand } from '../../../posts/application/use-cases/create-post-use-case';
+import { PostsQueryRepository } from '../../../posts/infrastructure/posts.query-repository';
+import { CreatePostModel } from '../../../posts/api/models/input/CreatePostModel';
+import { ExistingPostPipe } from '../../../../infrastructure/pipes/ExistingPost.pipe';
+import { CurrentUserId } from '../../../infrastructure/decorators/params/current-user-id.param.decorator';
+import { UpdatePostCommand } from '../../application/use-cases/update-post-in-blog-use-case';
+import { DeletePostCommand } from '../../application/use-cases/delete-post-in-blog-use-case';
+import { QueryParamsPostModel } from '../../../posts/api/models/input/QueryParamsPostModel';
 
 @UseGuards(BasicAuthGuard)
 @Controller('sa/blogs')
 export class SaBlogsController extends ExceptionAndResponseHelper {
   constructor(
-    private CommandBus: CommandBus,
-    private BlogsQueryRepository: BlogsQueryRepository,
+    private commandBus: CommandBus,
+    private blogsQueryRepository: BlogsQueryRepository,
+    private postsQueryRepository: PostsQueryRepository,
   ) {
     super(ApproachType.http);
   }
@@ -43,7 +54,7 @@ export class SaBlogsController extends ExceptionAndResponseHelper {
   async getAllBlogs(
     @Query() queryData: QueryParamsBlogModel,
   ): Promise<QueryBuildDTO<any, ViewBlogModel>> {
-    const blogResult = await this.BlogsQueryRepository.findBlogsForSA(
+    const blogResult = await this.blogsQueryRepository.findBlogsForSA(
       queryData,
     );
 
@@ -54,7 +65,7 @@ export class SaBlogsController extends ExceptionAndResponseHelper {
   async createBlog(
     @Body() inputModel: CreateBlogModel,
   ): Promise<ViewBlogModel> {
-    const createdBlogResult = await this.CommandBus.execute(
+    const createdBlogResult = await this.commandBus.execute(
       new CreateBlogCommand(
         inputModel.name,
         inputModel.description,
@@ -63,7 +74,7 @@ export class SaBlogsController extends ExceptionAndResponseHelper {
     );
     this.sendExceptionOrResponse(createdBlogResult);
 
-    const blogResult = await this.BlogsQueryRepository.findBlogById(
+    const blogResult = await this.blogsQueryRepository.findBlogById(
       createdBlogResult.payload.blogId,
     );
 
@@ -76,7 +87,7 @@ export class SaBlogsController extends ExceptionAndResponseHelper {
     @Param('blogId', ExistingBlogPipe) blogId: string,
     @Param('userId', ExistingUserPipe) userId: string,
   ): Promise<void> {
-    const bindResult = await this.CommandBus.execute(
+    const bindResult = await this.commandBus.execute(
       new BindUserCommand(blogId, userId),
     );
 
@@ -89,7 +100,7 @@ export class SaBlogsController extends ExceptionAndResponseHelper {
     @Param('blogId', ExistingBlogPipe) blogId: string,
     @Body() inputData: BanBlogModel,
   ): Promise<void> {
-    const banResult = await this.CommandBus.execute(
+    const banResult = await this.commandBus.execute(
       new BanUnbanBlogCommand(blogId, inputData.isBanned),
     );
 
@@ -102,7 +113,7 @@ export class SaBlogsController extends ExceptionAndResponseHelper {
     @Param('id', ExistingBlogPipe) blogId: string,
     @Body() inputModel: CreateBlogModel,
   ): Promise<void> {
-    const updatedResult = await this.CommandBus.execute(
+    const updatedResult = await this.commandBus.execute(
       new UpdateBlogCommand(
         blogId,
         inputModel.name,
@@ -119,8 +130,75 @@ export class SaBlogsController extends ExceptionAndResponseHelper {
   async deleteBlog(
     @Param('id', ExistingBlogPipe) blogId: string,
   ): Promise<void> {
-    const deletedResult = await this.CommandBus.execute(
+    const deletedResult = await this.commandBus.execute(
       new DeleteBlogCommand(blogId),
+    );
+
+    return this.sendExceptionOrResponse(deletedResult);
+  }
+
+  @Get(':id/posts')
+  async getPostsByBlogId(
+    @Param('id', ExistingBlogPipe) blogId: string,
+    @Query() queryData: QueryParamsPostModel,
+  ): Promise<QueryBuildDTO<any, ViewPostModel>> {
+    const postResult = await this.postsQueryRepository.findPosts(
+      queryData,
+      blogId,
+    );
+
+    return this.sendExceptionOrResponse(postResult);
+  }
+
+  @Post(':id/posts')
+  async createPostByBlogId(
+    @Param('id', ExistingBlogPipe) blogId: string,
+    @Body() inputData: CreatePostWithoutIdModel,
+  ): Promise<ViewPostModel> {
+    const createdPostResult = await this.commandBus.execute(
+      new CreatePostCommand(
+        blogId,
+        inputData.title,
+        inputData.shortDescription,
+        inputData.content,
+      ),
+    );
+    this.sendExceptionOrResponse(createdPostResult);
+
+    const postResult = await this.postsQueryRepository.findPostById(
+      createdPostResult.payload.postId,
+    );
+    return this.sendExceptionOrResponse(postResult);
+  }
+
+  @Put(':blogId/posts/:postId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updatePost(
+    @Body() inputData: CreatePostModel,
+    @Param('blogId', ExistingBlogPipe) blogId: string,
+    @Param('postId', ExistingPostPipe) postId: string,
+  ): Promise<void> {
+    const updateResult = await this.commandBus.execute(
+      new UpdatePostCommand(
+        blogId,
+        postId,
+        inputData.title,
+        inputData.shortDescription,
+        inputData.content,
+      ),
+    );
+
+    return this.sendExceptionOrResponse(updateResult);
+  }
+
+  @Delete(':blogId/posts/:postId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deletePost(
+    @Param('blogId', ExistingBlogPipe) blogId: string,
+    @Param('postId', ExistingPostPipe) postId: string,
+  ): Promise<void> {
+    const deletedResult = await this.commandBus.execute(
+      new DeletePostCommand(blogId, postId),
     );
 
     return this.sendExceptionOrResponse(deletedResult);

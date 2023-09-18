@@ -50,7 +50,6 @@ export class PostsController extends ExceptionAndResponseHelper {
     const postResult = await this.PostsQueryRepository.findPosts(
       queryData,
       undefined,
-      currentUserId,
     );
 
     return this.sendExceptionOrResponse(postResult);
@@ -61,10 +60,7 @@ export class PostsController extends ExceptionAndResponseHelper {
     @Param('id', ExistingPostPipe) postId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<ViewPostModel> {
-    const postResult = await this.PostsQueryRepository.findPostById(
-      postId,
-      currentUserId,
-    );
+    const postResult = await this.PostsQueryRepository.findPostById(+postId);
 
     return this.sendExceptionOrResponse(postResult);
   }
@@ -77,7 +73,7 @@ export class PostsController extends ExceptionAndResponseHelper {
     @CurrentUserId() currentUserId: string,
   ): Promise<ViewCommentModel> {
     const createdCommentResult = await this.CommandBus.execute(
-      new CreateCommentCommand(postId, inputModel.content, currentUserId),
+      new CreateCommentCommand(+postId, inputModel.content, currentUserId),
     );
     this.sendExceptionOrResponse(createdCommentResult);
 

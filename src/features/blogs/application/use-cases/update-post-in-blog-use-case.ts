@@ -7,7 +7,6 @@ export class UpdatePostCommand {
   constructor(
     public blogId: string,
     public postId: string,
-    public userId: string,
     public title: string,
     public shortDescription: string,
     public content: string,
@@ -19,23 +18,24 @@ export class UpdatePostInBlogUseCase
   implements ICommandHandler<UpdatePostCommand>
 {
   constructor(
-    private BlogsService: BlogsService,
-    private PostsRepository: PostsRepository,
+    private blogsService: BlogsService,
+    private postsRepository: PostsRepository,
   ) {}
 
   async execute(command: UpdatePostCommand): Promise<ResultDTO<null>> {
-    const result = await this.BlogsService.validatePostData(
-      command.blogId,
-      command.postId,
-      command.userId,
+    const result = await this.blogsService.validatePostData(
+      +command.blogId,
+      +command.postId,
     );
     if (result.hasError()) return result as ResultDTO<null>;
 
-    return this.PostsRepository.updateById(
-      command.title,
-      command.shortDescription,
-      command.content,
-      command.postId,
-    );
+    const post = await this.postsRepository.findById(+command.postId);
+    if (post.hasError()) return post as ResultDTO<null>;
+
+    post.payload.title = command.title;
+    post.payload.shortDescription = command.shortDescription;
+    post.payload.content = command.content;
+
+    return this.postsRepository.save(post.payload);
   }
 }

@@ -1,12 +1,10 @@
 import { ResultDTO } from '../../../../shared/dto';
-import { InternalCode } from '../../../../shared/enums';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsRepository } from '../../infrastructure/posts.repository';
-import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository';
+import { Post } from '../../entities/post.entity';
 
 export class CreatePostCommand {
   constructor(
-    public ownerId: string,
     public blogId: string,
     public title: string,
     public shortDescription: string,
@@ -16,28 +14,17 @@ export class CreatePostCommand {
 
 @CommandHandler(CreatePostCommand)
 export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
-  constructor(
-    private PostsRepository: PostsRepository,
-    private BlogsRepository: BlogsRepository,
-  ) {}
+  constructor(private PostsRepository: PostsRepository) {}
 
   async execute(
     command: CreatePostCommand,
-  ): Promise<ResultDTO<{ postId: string }>> {
-    //TODO делать запрос через команд репозиторий
-    const blogResult = await this.BlogsRepository.findById(+command.blogId);
-    if (blogResult.hasError())
-      return new ResultDTO(InternalCode.Internal_Server);
+  ): Promise<ResultDTO<{ postId: number }>> {
+    const post = new Post();
+    post.title = command.title;
+    post.shortDescription = command.shortDescription;
+    post.content = command.content;
+    post.blogId = +command.blogId;
 
-    /*if (command.ownerId !== blogResult.payload.userId)
-      return new ResultDTO(InternalCode.Forbidden);*/
-
-    return this.PostsRepository.createPost(
-      command.ownerId,
-      command.title,
-      command.shortDescription,
-      command.content,
-      command.blogId,
-    );
+    return this.PostsRepository.create(post);
   }
 }

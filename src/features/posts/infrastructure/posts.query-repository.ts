@@ -3,20 +3,66 @@ import { ViewPostModel } from '../api/models/view/ViewPostModel';
 import { QueryParamsPostModel } from '../api/models/input/QueryParamsPostModel';
 import { QueryBuildDTO, ResultDTO } from '../../../shared/dto';
 import { InternalCode, LikeStatusEnum } from '../../../shared/enums';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Post } from '../entities/post.entity';
 
 @Injectable()
 export class PostsQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Post) private postsRepo: Repository<Post>,
+  ) {}
 
   async findPosts(
     query: QueryParamsPostModel,
     blogId?: string,
-    userId?: string,
+  ): Promise<ResultDTO<QueryBuildDTO<Post, ViewPostModel>>> {
+    const sortBy = query.sortBy ?? 'createdAt';
+    const sortDirection = query.sortDirection?.toUpperCase() ?? 'DESC';
+    const pageNumber = query.pageNumber ? +query.pageNumber : 1;
+    const pageSize = query.pageSize ? +query.pageSize : 10;
+    const offset = pageSize * (pageNumber - 1);
+
+    const res = await this.postsRepo
+      .createQueryBuilder('p')
+      .orderBy(`p.${sortBy}`, sortDirection as 'ASC' | 'DESC')
+      .select([
+        'p.id',
+        'p.title',
+        'p.shortDescription',
+        'p.content',
+        'p.createdAt',
+        'p.blogId',
+        'b.name',
+      ])
+      .leftJoin('p.blog', 'b')
+      .where('b.id = :blogId', { blogId })
+      .offset(offset)
+      .limit(pageSize)
+      .getManyAndCount();
+
+    const posts = res[0];
+    const totalCount = res[1];
+    const pagesCount = Math.ceil(totalCount / pageSize);
+    const data = new QueryBuildDTO<Post, ViewPostModel>(
+      pagesCount,
+      pageNumber,
+      pageSize,
+      totalCount,
+      posts,
+    );
+
+    data.map((post) => this._mapPostToView(post));
+    return new ResultDTO(InternalCode.Success, data);
+  }
+
+  /*async findPosts(
+    query: QueryParamsPostModel,
+    blogId?: string,
   ): Promise<ResultDTO<QueryBuildDTO<any, ViewPostModel>>> {
     const sortBy = query.sortBy ?? 'createdAt';
-    const sortDirection = query.sortDirection ?? 'desc';
+    const sortDirection = query.sortDirection.toUpperCase() ?? 'DESC';
     const pageNumber = query.pageNumber ? +query.pageNumber : 1;
     const pageSize = query.pageSize ? +query.pageSize : 10;
     const offset = pageSize * (pageNumber - 1);
@@ -57,7 +103,7 @@ export class PostsQueryRepository {
      'login', u."login"
      )
      )
-     FROM (SELECT * 
+     FROM (SELECT *
      FROM "posts_likes" AS pl
      WHERE pl."postId" = p."id"
      ORDER BY pl."addedAt" DESC
@@ -90,11 +136,11 @@ export class PostsQueryRepository {
     ) AS "totalCount",
     (SELECT json_agg(
     json_build_object(
-    'id', td."id", 'title', td."title", 'shortDescription', td."shortDescription", 'content', td."content", 'blogId', td."blogId", 'blogName', td."blogName", 'createdAt', td."createdAt", 
+    'id', td."id", 'title', td."title", 'shortDescription', td."shortDescription", 'content', td."content", 'blogId', td."blogId", 'blogName', td."blogName", 'createdAt', td."createdAt",
     'myStatus', td."myStatus", 'likesCount', td."likesCount", 'dislikesCount', td."dislikesCount", 'newestLikes', td."newestLikes"
-    ) 
+    )
     ) FROM "temp_data2" AS td
-    
+
     ) AS "data"
     `,
       [`${blogId}`, userId],
@@ -112,93 +158,42 @@ export class PostsQueryRepository {
 
     data.map((user) => this._mapPostToView(user));
     return new ResultDTO(InternalCode.Success, data);
+  }*/
+
+  async findPostById(postId: number): Promise<ResultDTO<ViewPostModel>> {
+    const post = await this.postsRepo
+      .createQueryBuilder('p')
+      .select([
+        'p.id',
+        'p.title',
+        'p.shortDescription',
+        'p.content',
+        'p.createdAt',
+        'p.blogId',
+        'b.name',
+      ])
+      .leftJoin('p.blog', 'b')
+      .where('p.id = :postId', { postId })
+      .getOne();
+
+    if (!post) return new ResultDTO(InternalCode.NotFound);
+    return new ResultDTO(InternalCode.Success, this._mapPostToView(post));
   }
 
-  async findPostById(
-    postId: string,
-    userId?: string,
-  ): Promise<ResultDTO<ViewPostModel>> {
-    const postsRaw = await this.dataSource.query(
-      `
-    SELECT p.*, b."name" AS "blogName", bb."isBanned",
-     (SELECT CAST(COUNT(*) AS INTEGER)
-     FROM "posts_likes" AS pl
-     LEFT JOIN "like_status_enum" AS lse
-     ON lse."id" = pl."status"
-     LEFT JOIN "users_ban" AS ub
-     ON ub."userId" = pl."userId"
-     WHERE lse."status" = '${LikeStatusEnum.Like}' AND ub."isBanned" != true
-     AND pl."postId" = $1
-     ) AS "likesCount",
-     (SELECT CAST(COUNT(*) AS INTEGER)
-     FROM "posts_likes" AS pl
-     LEFT JOIN "like_status_enum" AS lse
-     ON lse."id" = pl."status"
-     LEFT JOIN "users_ban" AS ub
-     ON ub."userId" = pl."userId"
-     WHERE lse."status" = '${LikeStatusEnum.Dislike}' AND ub."isBanned" != true
-     AND pl."postId" = $1
-     ) AS "dislikesCount",
-     (SELECT lse."status"
-     FROM "posts_likes" AS pl
-     LEFT JOIN "like_status_enum" AS lse
-     ON lse."id" = pl."status"
-     WHERE lse."status" != '${LikeStatusEnum.None}' AND
-     pl."userId" = $2 AND pl."postId" = $1
-     ) AS "myStatus",
-     (SELECT array_agg(
-     json_build_object(
-     'addedAt', pl."addedAt",
-     'userId', CAST(pl."userId" AS TEXT),
-     'login', u."login"
-     )
-     )
-     FROM (SELECT * 
-     FROM "posts_likes" AS pl
-     WHERE pl."postId" = $1
-     ORDER BY pl."addedAt" DESC
-     LIMIT 3
-     ) AS pl
-     LEFT JOIN "users" AS u
-     ON u."id" = pl."userId"
-     LEFT JOIN "users_ban" AS ub
-     ON ub."userId" = u."id"
-     LEFT JOIN "like_status_enum" AS lse
-     ON lse."id" = pl."status"
-     WHERE lse."status" = '${LikeStatusEnum.Like}' AND ub."isBanned" != true
-     ) AS "newestLikes"
-    FROM "posts" AS p
-    LEFT JOIN "blogs" AS b
-    ON p."blogId" = b."id"
-    LEFT JOIN "blogs_ban" AS bb
-    ON bb."blogId" = p."blogId"
-    WHERE (bb."isBanned" != true OR bb."isBanned" IS NULL) AND p."id" = $1
-    `,
-      [postId, userId],
-    );
-
-    if (!postsRaw.length) return new ResultDTO(InternalCode.NotFound);
-
-    return new ResultDTO(
-      InternalCode.Success,
-      this._mapPostToView(postsRaw[0]),
-    );
-  }
-
-  _mapPostToView(post): ViewPostModel {
+  _mapPostToView(post: Post): ViewPostModel {
     return {
       id: post.id.toString(),
       title: post.title,
       shortDescription: post.shortDescription,
       content: post.content,
       blogId: post.blogId.toString(),
-      blogName: post.blogName,
-      createdAt: new Date(post.createdAt).toISOString(),
+      blogName: post?.blog.name,
+      createdAt: post.createdAt.toISOString(),
       extendedLikesInfo: {
-        likesCount: post.likesCount,
-        dislikesCount: post.dislikesCount,
-        myStatus: post.myStatus ?? LikeStatusEnum.None,
-        newestLikes: post.newestLikes ?? [],
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: LikeStatusEnum.None,
+        newestLikes: [],
       },
     };
   }

@@ -12,7 +12,7 @@ export class ExistingPostPipe implements PipeTransform {
 
   async transform(value: string, metadata: ArgumentMetadata) {
     try {
-      const postResult = await this.PostRepository.findById(value);
+      const postResult = await this.PostRepository.findById(+value);
       if (postResult.hasError()) throw new NotFoundException();
       return postResult.payload.id;
     } catch (e) {
