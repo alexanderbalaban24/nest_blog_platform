@@ -14,8 +14,8 @@ import { ViewBlogModel } from '../models/view/ViewBlogModel';
 @Controller('blogs')
 export class PublicBlogsController extends ExceptionAndResponseHelper {
   constructor(
-    private BlogsQueryRepository: BlogsQueryRepository,
-    private PostsQueryRepository: PostsQueryRepository,
+    private blogsQueryRepository: BlogsQueryRepository,
+    private postsQueryRepository: PostsQueryRepository,
   ) {
     super(ApproachType.http);
   }
@@ -24,7 +24,9 @@ export class PublicBlogsController extends ExceptionAndResponseHelper {
   async getAllBlogs(
     @Query() queryData: QueryParamsBlogModel,
   ): Promise<QueryBuildDTO<any, ViewBlogModel>> {
-    const blogResult = await this.BlogsQueryRepository.findBlogs(queryData);
+    const blogResult = await this.blogsQueryRepository.findBlogsForSA(
+      queryData,
+    );
 
     return this.sendExceptionOrResponse(blogResult);
   }
@@ -33,9 +35,7 @@ export class PublicBlogsController extends ExceptionAndResponseHelper {
   async getBlog(
     @Param('id', ExistingBlogPipe) blogId: string,
   ): Promise<ViewBlogModel> {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    const blogResult = await this.BlogsQueryRepository.findBlogById(blogId);
+    const blogResult = await this.blogsQueryRepository.findBlogById(+blogId);
 
     return this.sendExceptionOrResponse(blogResult);
   }
@@ -44,12 +44,12 @@ export class PublicBlogsController extends ExceptionAndResponseHelper {
   async getPostsByBlogId(
     @Param('id', ExistingBlogPipe) blogId: string,
     @Query() queryData: QueryParamsPostModel,
-    @CurrentUserId() currentUserId: string,
+    //@CurrentUserId() currentUserId: string,
   ): Promise<QueryBuildDTO<any, ViewPostModel>> {
-    const postResult = await this.PostsQueryRepository.findPosts(
+    const postResult = await this.postsQueryRepository.findPosts(
       queryData,
       blogId,
-      currentUserId,
+      //currentUserId,
     );
 
     return this.sendExceptionOrResponse(postResult);

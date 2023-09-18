@@ -31,7 +31,7 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
     if (blogResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
 
-    const postResult = await this.PostsRepository.findById(command.postId);
+    const postResult = await this.PostsRepository.findById(+command.postId);
     if (postResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
 
@@ -39,6 +39,8 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       blogResult.payload.blogOwnerInfo.userId !== command.userId ||
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
       postResult.payload.blogId !== blogResult.payload.id
     )
       return new ResultDTO(InternalCode.Forbidden);

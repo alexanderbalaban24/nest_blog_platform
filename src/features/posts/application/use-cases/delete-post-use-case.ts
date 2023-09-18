@@ -9,14 +9,9 @@ export class DeletePostCommand {
 
 @CommandHandler(DeletePostCommand)
 export class DeletePostUseCase implements ICommandHandler<DeletePostCommand> {
-  constructor(private PostsRepository: PostsRepository) {}
+  constructor(private postsRepository: PostsRepository) {}
 
   async execute(command: DeletePostCommand): Promise<ResultDTO<null>> {
-    const postResult = await this.PostsRepository.findById(command.postId);
-    if (postResult.hasError()) return postResult as ResultDTO<null>;
-
-    await postResult.payload.deleteOne();
-
-    return new ResultDTO(InternalCode.Success);
+    return this.postsRepository.deleteById(+command.postId);
   }
 }

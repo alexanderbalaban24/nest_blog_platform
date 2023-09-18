@@ -1,10 +1,33 @@
 import { ResultDTO } from '../../../shared/dto';
 import { InternalCode, LikeStatusEnum } from '../../../shared/enums';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Post } from '../entities/post.entity';
 
 export class PostsRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Post) private postsRepo: Repository<Post>,
+  ) {}
+
+  async create(post: Post): Promise<ResultDTO<{ postId: number }>> {
+    const res = await this.postsRepo.save(post);
+
+    return new ResultDTO(InternalCode.Success, { postId: res.id });
+  }
+
+  async save(post: Post): Promise<ResultDTO<null>> {
+    await this.postsRepo.save(post);
+
+    return new ResultDTO(InternalCode.Success);
+  }
+
+  async findById(postId: number): Promise<ResultDTO<Post>> {
+    const post = await this.postsRepo.findOneBy({ id: postId });
+    if (!post) return new ResultDTO(InternalCode.NotFound);
+
+    return new ResultDTO(InternalCode.Success, post);
+  }
 
   async createPost(
     ownerId: string,
@@ -26,20 +49,6 @@ export class PostsRepository {
     return new ResultDTO(InternalCode.Success, res[0]);
   }
 
-  async findById(postId: string): Promise<ResultDTO<any>> {
-    const postsRaw = await this.dataSource.query(
-      `
-    SELECT p."id", p."ownerId" AS "userId", p."title", p."shortDescription", p."content", p."blogId", p."createdAt"
-    FROM "posts" AS p
-    WHERE p."id" = $1
-    `,
-      [postId],
-    );
-    if (!postsRaw.length) return new ResultDTO(InternalCode.NotFound);
-
-    return new ResultDTO(InternalCode.Success, postsRaw[0]);
-  }
-
   async updateById(
     title: string,
     shortDescription: string,
@@ -58,14 +67,10 @@ export class PostsRepository {
     return new ResultDTO(InternalCode.Success);
   }
 
-  async deleteById(postId: string): Promise<ResultDTO<null>> {
-    await this.dataSource.query(
-      `
-    DELETE FROM "posts" AS p
-    WHERE p."id" = $1
-    `,
-      [postId],
-    );
+  async deleteById(postId: number): Promise<ResultDTO<null>> {
+    const res = await this.postsRepo.delete(postId);
+
+    if (res.affected !== 1) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(InternalCode.Success);
   }

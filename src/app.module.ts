@@ -96,6 +96,7 @@ import { PasswordRecoveryRepository } from './features/users/infrastructure/pass
 import { PasswordRecoveryQueryRepository } from './features/users/infrastructure/password-recovery/password-recovery.query-repository';
 import { Blog } from './features/blogs/entities/blog.entity';
 import { BlogBan } from './features/blogs/entities/blog-ban.entity';
+import { Post } from './features/posts/entities/post.entity';
 
 const useCases = [
   CreateBlogUseCase,
@@ -221,6 +222,7 @@ const pipes = [
       Device,
       Blog,
       BlogBan,
+      Post,
     ]),
     ThrottlerModule.forRoot([
       {

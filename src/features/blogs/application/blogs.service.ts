@@ -12,22 +12,18 @@ export class BlogsService {
   ) {}
 
   async validatePostData(
-    blogId: string,
-    postId: string,
-    userId: string,
+    blogId: number,
+    postId: number,
   ): Promise<ResultDTO<null>> {
-    const blogResult = await this.BlogsRepository.findById(+blogId);
+    //const blogResult = await this.BlogsRepository.findById(+blogId);
     const postResult = await this.PostsRepository.findById(postId);
 
-    if (blogResult.hasError()) return blogResult as ResultDTO<null>;
+    //if (blogResult.hasError()) return blogResult as ResultDTO<null>;
     if (postResult.hasError()) return postResult as ResultDTO<null>;
 
     /*if (blogResult.payload.userId !== userId)
       return new ResultDTO(InternalCode.Forbidden);*/
-    if (
-      postResult.payload.blogId !== blogId ||
-      userId !== postResult.payload.userId
-    )
+    if (postResult.payload.blogId !== blogId)
       return new ResultDTO(InternalCode.Forbidden);
 
     return new ResultDTO(InternalCode.Success);

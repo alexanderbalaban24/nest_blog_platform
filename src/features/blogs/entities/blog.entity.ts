@@ -1,12 +1,12 @@
 import {
   Column,
   Entity,
-  ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
 import { BlogBan } from './blog-ban.entity';
+import { Post } from '../../posts/entities/post.entity';
 
 @Entity('blogs')
 export class Blog {
@@ -28,4 +28,6 @@ export class Blog {
   ownerId: number;*/
   @OneToOne(() => BlogBan, (bb) => bb.blog)
   ban: BlogBan;
+  @OneToMany(() => Post, (p) => p.blog)
+  posts: Post[];
 }
