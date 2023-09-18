@@ -37,7 +37,7 @@ export class PostsQueryRepository {
         'b.name',
       ])
       .leftJoin('p.blog', 'b')
-      .where('b.id = :blogId', { blogId })
+      .where(blogId ? 'b.id = :blogId' : 'b.id = b.id', { blogId })
       .offset(offset)
       .limit(pageSize)
       .getManyAndCount();
