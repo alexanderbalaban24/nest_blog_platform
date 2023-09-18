@@ -86,7 +86,7 @@ export class UsersQueryRepository {
     ELSE u."email" ILIKE $3 END)
     ),
     "temp_data2" AS (
-    SELECT * FROM "temp_data1" AS td
+    SELECT * FROM "temp_data1" as td
     ORDER BY "${sortBy}" ${
         sortBy !== 'createdAt' ? 'COLLATE "C" ' : ''
       } ${sortDirection}

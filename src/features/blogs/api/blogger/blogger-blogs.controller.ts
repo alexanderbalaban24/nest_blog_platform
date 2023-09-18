@@ -62,61 +62,6 @@ export class BloggerBlogsController extends ExceptionAndResponseHelper {
     return this.sendExceptionOrResponse(blogResult);
   }
 
-  @Post()
-  async createBlog(
-    @Body() inputModel: CreateBlogModel,
-    @CurrentUserId() currentUserId: string,
-  ): Promise<ViewBlogModel> {
-    const createdBlogResult = await this.CommandBus.execute(
-      new CreateBlogCommand(
-        inputModel.name,
-        inputModel.description,
-        inputModel.websiteUrl,
-        currentUserId,
-      ),
-    );
-    this.sendExceptionOrResponse(createdBlogResult);
-
-    const blogResult = await this.BlogsQueryRepository.findBlogById(
-      createdBlogResult.payload.blogId,
-    );
-
-    return this.sendExceptionOrResponse(blogResult);
-  }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBlog(
-    @Param('id', ExistingBlogPipe) blogId: string,
-    @CurrentUserId() currentUserId: string,
-  ): Promise<void> {
-    const deletedResult = await this.CommandBus.execute(
-      new DeleteBlogCommand(currentUserId, blogId),
-    );
-
-    return this.sendExceptionOrResponse(deletedResult);
-  }
-
-  @Put(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async updateBlog(
-    @Param('id', ExistingBlogPipe) blogId: string,
-    @Body() inputModel: CreateBlogModel,
-    @CurrentUserId() userId: string,
-  ): Promise<void> {
-    const updatedResult = await this.CommandBus.execute(
-      new UpdateBlogCommand(
-        userId,
-        blogId,
-        inputModel.name,
-        inputModel.description,
-        inputModel.websiteUrl,
-      ),
-    );
-
-    return this.sendExceptionOrResponse(updatedResult);
-  }
-
   @Get(':id/posts')
   async getPostsByBlogId(
     @Param('id', ExistingBlogPipe) blogId: string,

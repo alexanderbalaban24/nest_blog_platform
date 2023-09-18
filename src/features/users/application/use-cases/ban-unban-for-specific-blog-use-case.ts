@@ -30,12 +30,12 @@ export class BanUnbanForSpecificBlogUseCase
     if (userResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
 
-    const blogResult = await this.BlogsRepository.findById(command.blogId);
+    const blogResult = await this.BlogsRepository.findById(+command.blogId);
     if (blogResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
 
-    if (blogResult.payload.userId !== command.currentUserId)
-      return new ResultDTO(InternalCode.Forbidden);
+    /*if (blogResult.payload.userId !== command.currentUserId)
+      return new ResultDTO(InternalCode.Forbidden);*/
 
     return this.UsersRepository.banUserForSpecificBlog(
       command.userId,

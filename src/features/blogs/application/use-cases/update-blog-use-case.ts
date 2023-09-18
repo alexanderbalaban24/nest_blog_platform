@@ -5,7 +5,6 @@ import { InternalCode } from '../../../../shared/enums';
 
 export class UpdateBlogCommand {
   constructor(
-    public userId: string,
     public blogId: string,
     public name: string,
     public description: string,
@@ -15,20 +14,19 @@ export class UpdateBlogCommand {
 
 @CommandHandler(UpdateBlogCommand)
 export class UpdateBlogUseCase implements ICommandHandler<UpdateBlogCommand> {
-  constructor(private BlogsRepository: BlogsRepository) {}
+  constructor(private blogsRepository: BlogsRepository) {}
 
   async execute(command: UpdateBlogCommand): Promise<ResultDTO<null>> {
-    const blogResult = await this.BlogsRepository.findById(command.blogId);
+    const blogResult = await this.blogsRepository.findById(+command.blogId);
     if (blogResult.hasError()) return new ResultDTO(blogResult.code);
 
-    if (blogResult.payload.userId !== command.userId)
-      return new ResultDTO(InternalCode.Forbidden);
+    const blog = await this.blogsRepository.findById(+command.blogId);
+    if (blog.hasError()) return blog as ResultDTO<null>;
 
-    return this.BlogsRepository.updateById(
-      command.blogId,
-      command.name,
-      command.description,
-      command.websiteUrl,
-    );
+    blog.payload.name = command.name;
+    blog.payload.description = command.description;
+    blog.payload.websiteUrl = command.websiteUrl;
+
+    return this.blogsRepository.save(blog.payload);
   }
 }

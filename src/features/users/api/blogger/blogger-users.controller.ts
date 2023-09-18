@@ -42,13 +42,16 @@ export class BloggerUsersController extends ExceptionAndResponseHelper {
   ) {
     const blogsResult = await this.BlogsQueryRepository.findBlogById(
       blogId,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
       true,
     );
     if (blogsResult.hasError())
       return this.sendExceptionOrResponse(
         new ResultDTO(InternalCode.Internal_Server),
       );
-
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
     if (blogsResult.payload.blogOwnerInfo.userId !== currentUserId.toString())
       return this.sendExceptionOrResponse(
         new ResultDTO(InternalCode.Forbidden),

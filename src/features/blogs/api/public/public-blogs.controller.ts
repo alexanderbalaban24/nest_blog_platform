@@ -33,6 +33,8 @@ export class PublicBlogsController extends ExceptionAndResponseHelper {
   async getBlog(
     @Param('id', ExistingBlogPipe) blogId: string,
   ): Promise<ViewBlogModel> {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
     const blogResult = await this.BlogsQueryRepository.findBlogById(blogId);
 
     return this.sendExceptionOrResponse(blogResult);

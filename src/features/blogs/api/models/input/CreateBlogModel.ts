@@ -7,13 +7,11 @@ export class CreateBlogModel {
   @IsNotEmpty()
   @MaxLength(15)
   name: string;
-
   @IsString()
   @Transform(({ value }) => value.trim())
   @IsNotEmpty()
   @MaxLength(500)
   description: string;
-
   @IsString()
   @Transform(({ value }) => value.trim())
   @MaxLength(100)

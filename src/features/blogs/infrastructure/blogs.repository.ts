@@ -1,12 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { ResultDTO } from '../../../shared/dto';
 import { InternalCode } from '../../../shared/enums';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Blog } from '../entities/blog.entity';
 
 @Injectable()
 export class BlogsRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Blog) private blogsRepo: Repository<Blog>,
+  ) {}
+
+  async create(blog: Blog): Promise<ResultDTO<{ blogId: number }>> {
+    const res = await this.blogsRepo.save(blog);
+
+    return new ResultDTO(InternalCode.Success, { blogId: res.id });
+  }
+
+  async save(blog: Blog): Promise<ResultDTO<null>> {
+    const res = await this.blogsRepo.save(blog);
+
+    return new ResultDTO(InternalCode.Success);
+  }
 
   async createBlog(
     name: string,
@@ -33,22 +49,11 @@ export class BlogsRepository {
     return new ResultDTO(InternalCode.Success, res[0]);
   }
 
-  async findById(blogId: string): Promise<ResultDTO<any>> {
-    const blogsRaw = await this.dataSource.query(
-      `
-    SELECT b."id", b."name", b."description", b."websiteUrl", b."isMembership", b."ownerId" as "userId", b."createdAt", u."login" as "userLogin", bb."isBanned"
-    FROM "blogs" AS b
-    LEFT JOIN "blogs_ban" AS bb
-    ON bb."blogId" = b."id"
-    LEFT JOIN "users" AS u
-    ON u."id" = b."ownerId"
-    WHERE b."id" = $1
-    `,
-      [blogId],
-    );
-    if (!blogsRaw.length) return new ResultDTO(InternalCode.NotFound);
+  async findById(blogId: number): Promise<ResultDTO<Blog>> {
+    const blog = await this.blogsRepo.findOneBy({ id: blogId });
+    if (!blog) return new ResultDTO(InternalCode.NotFound);
 
-    return new ResultDTO(InternalCode.Success, blogsRaw[0]);
+    return new ResultDTO(InternalCode.Success, blog);
   }
 
   async updateById(
@@ -70,17 +75,9 @@ export class BlogsRepository {
   }
 
   async deleteById(blogId: string): Promise<ResultDTO<null>> {
-    await this.dataSource.query(
-      `
-    WITH delete_temp AS (
-    DELETE FROM "blogs_ban" as bb
-    WHERE bb."blogId" = $1
-    )
-    DELETE FROM "blogs" as b
-    WHERE b."id" = $1
-    `,
-      [blogId],
-    );
+    const res = await this.blogsRepo.delete(blogId);
+
+    if (res.affected !== 1) return new ResultDTO(InternalCode.NotFound);
 
     return new ResultDTO(InternalCode.Success);
   }

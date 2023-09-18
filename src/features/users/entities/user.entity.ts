@@ -9,6 +9,7 @@ import {
 import { UserBan } from './user-ban.entity';
 import { Device } from '../../devices/entities/device.entity';
 import { UserEmailConfirmation } from './user-email-confirmation.entity';
+import { Blog } from '../../blogs/entities/blog.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -31,4 +32,6 @@ export class User {
   emailConfirm: UserEmailConfirmation;
   @OneToMany(() => Device, (d) => d.user)
   devices: Device[];
+  /*@OneToMany(() => Blog, (b) => b.owner)
+  blogs: Blog[];*/
 }

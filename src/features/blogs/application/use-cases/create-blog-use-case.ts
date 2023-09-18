@@ -3,37 +3,29 @@ import { ResultDTO } from '../../../../shared/dto';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { UsersQueryRepository } from '../../../users/infrastructure/users/users.query-repository';
 import { InternalCode } from '../../../../shared/enums';
+import { Blog } from '../../entities/blog.entity';
 
 export class CreateBlogCommand {
   constructor(
     public name: string,
     public description: string,
     public websiteUrl: string,
-    public userId: string,
+    public userId?: string,
   ) {}
 }
 
 @CommandHandler(CreateBlogCommand)
 export class CreateBlogUseCase implements ICommandHandler<CreateBlogCommand> {
-  constructor(
-    private BlogsRepository: BlogsRepository,
-    private UsersQueryRepository: UsersQueryRepository,
-  ) {}
+  constructor(private blogsRepository: BlogsRepository) {}
 
   async execute(
     command: CreateBlogCommand,
-  ): Promise<ResultDTO<{ blogId: string }>> {
-    const userResult = await this.UsersQueryRepository.findUserById(
-      command.userId,
-    );
-    if (userResult.hasError())
-      return new ResultDTO(InternalCode.Internal_Server);
+  ): Promise<ResultDTO<{ blogId: number }>> {
+    const blog = new Blog();
+    blog.name = command.name;
+    blog.description = command.description;
+    blog.websiteUrl = command.websiteUrl;
 
-    return this.BlogsRepository.createBlog(
-      command.name,
-      command.description,
-      command.websiteUrl,
-      command.userId,
-    );
+    return this.blogsRepository.create(blog);
   }
 }

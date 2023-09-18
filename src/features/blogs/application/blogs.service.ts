@@ -16,14 +16,14 @@ export class BlogsService {
     postId: string,
     userId: string,
   ): Promise<ResultDTO<null>> {
-    const blogResult = await this.BlogsRepository.findById(blogId);
+    const blogResult = await this.BlogsRepository.findById(+blogId);
     const postResult = await this.PostsRepository.findById(postId);
 
     if (blogResult.hasError()) return blogResult as ResultDTO<null>;
     if (postResult.hasError()) return postResult as ResultDTO<null>;
 
-    if (blogResult.payload.userId !== userId)
-      return new ResultDTO(InternalCode.Forbidden);
+    /*if (blogResult.payload.userId !== userId)
+      return new ResultDTO(InternalCode.Forbidden);*/
     if (
       postResult.payload.blogId !== blogId ||
       userId !== postResult.payload.userId
