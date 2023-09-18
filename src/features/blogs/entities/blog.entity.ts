@@ -26,8 +26,8 @@ export class Blog {
   owner: User;
   @Column()
   ownerId: number;*/
-  @OneToOne(() => BlogBan, (bb) => bb.blog)
+  @OneToOne(() => BlogBan, (bb) => bb.blog, { onDelete: 'CASCADE' })
   ban: BlogBan;
-  @OneToMany(() => Post, (p) => p.blog)
+  @OneToMany(() => Post, (p) => p.blog, { onDelete: 'CASCADE' })
   posts: Post[];
 }

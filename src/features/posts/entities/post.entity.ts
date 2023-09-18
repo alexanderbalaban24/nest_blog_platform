@@ -13,7 +13,7 @@ export class Post {
   content: string;
   @Column({ default: () => 'now()', type: 'timestamp' })
   createdAt: Date;
-  @ManyToOne(() => Blog, (b) => b.posts)
+  @ManyToOne(() => Blog, (b) => b.posts, { onDelete: 'CASCADE' })
   blog: Blog;
   @Column()
   blogId: number;
