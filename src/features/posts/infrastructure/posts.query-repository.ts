@@ -26,7 +26,10 @@ export class PostsQueryRepository {
 
     const res = await this.postsRepo
       .createQueryBuilder('p')
-      .orderBy(`p.${sortBy}`, sortDirection as 'ASC' | 'DESC')
+      .orderBy(
+        sortBy !== 'blogName' ? `p.${sortBy}` : 'b.name',
+        sortDirection as 'ASC' | 'DESC',
+      )
       .select([
         'p.id',
         'p.title',
