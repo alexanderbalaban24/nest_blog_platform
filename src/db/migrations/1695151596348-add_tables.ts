@@ -1,12 +1,12 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddTables1695071861402 implements MigrationInterface {
-    name = 'AddTables1695071861402'
+export class AddTables1695151596348 implements MigrationInterface {
+    name = 'AddTables1695151596348'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "blogs_ban" ("isBanned" boolean NOT NULL DEFAULT false, "bandDate" TIMESTAMP NOT NULL DEFAULT now(), "blogId" integer NOT NULL, CONSTRAINT "PK_ea8588a14c8bbfbbd15b6c85a6c" PRIMARY KEY ("blogId"))`);
         await queryRunner.query(`CREATE TABLE "posts" ("id" SERIAL NOT NULL, "title" character varying NOT NULL, "shortDescription" character varying NOT NULL, "content" character varying NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "blogId" integer NOT NULL, CONSTRAINT "PK_2829ac61eff60fcec60d7274b9e" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "blogs" ("id" SERIAL NOT NULL, "name" character varying NOT NULL, "description" character varying NOT NULL, "websiteUrl" character varying NOT NULL, "isMembership" boolean NOT NULL DEFAULT false, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_e113335f11c926da929a625f118" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "blogs" ("id" SERIAL NOT NULL, "name" character varying COLLATE "C" NOT NULL, "description" character varying COLLATE "C" NOT NULL, "websiteUrl" character varying NOT NULL, "isMembership" boolean NOT NULL DEFAULT false, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_e113335f11c926da929a625f118" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "users_ban" ("isBanned" boolean NOT NULL DEFAULT false, "banReason" character varying, "banDate" TIMESTAMP DEFAULT now(), "userId" integer NOT NULL, CONSTRAINT "PK_58080afe4aea10f647a9eaea5d9" PRIMARY KEY ("userId"))`);
         await queryRunner.query(`CREATE TABLE "users_devices" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "ip" character varying NOT NULL, "deviceName" character varying NOT NULL, "issuedAt" TIMESTAMP NOT NULL, "userId" integer NOT NULL, CONSTRAINT "PK_984434640f7ccaa3c1419312ff1" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "users_email_confirmation" ("confirmationCode" character varying NOT NULL DEFAULT uuid_generate_v4(), "expirationDate" TIMESTAMP NOT NULL, "isConfirmed" boolean NOT NULL DEFAULT false, "userId" integer NOT NULL, CONSTRAINT "PK_c71869984394d889dfec9602354" PRIMARY KEY ("userId"))`);
