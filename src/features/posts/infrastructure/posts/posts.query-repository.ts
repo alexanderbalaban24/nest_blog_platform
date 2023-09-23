@@ -46,13 +46,15 @@ export class PostsQueryRepository {
         return qb
           .select('COUNT(*)', 'likesCount')
           .from('post_likes', 'l')
-          .where({ status: LikeStatusEnum.Like });
+          .where({ status: LikeStatusEnum.Like })
+          .andWhere('p.id = l."postId"');
       })
       .addSelect((qb) => {
         return qb
           .select('COUNT(*)', 'dislikesCount')
           .from('post_likes', 'l')
-          .where({ status: LikeStatusEnum.Dislike });
+          .where({ status: LikeStatusEnum.Dislike })
+          .andWhere('p.id = l."postId"');
       })
       .addSelect((qb) => {
         return qb
@@ -61,42 +63,7 @@ export class PostsQueryRepository {
           .where({ userId })
           .andWhere('p.id = l."postId"');
       })
-      .leftJoin('p.blog', 'b') /*
-      .leftJoinAndMapMany(
-        'p.newestLikes',
-        (qb) =>
-          qb
-            .select([
-              'pl.createdAt as "addedAt"',
-              'pl."postId"',
-              'pl."userId"',
-              'u."login"',
-            ])
-            .from('post_likes', 'pl')
-            .leftJoin('pl.user', 'u')
-            .orderBy('pl."createdAt"', 'DESC')
-            .limit(3),
-        'pl',
-        'pl."postId" = p.id',
-      )*/
-      //.leftJoinAndSelect('post_likes', 'pl', 'pl.postId = p.id')
-      /* .leftJoin(
-        (qb) =>
-          qb
-            .select([
-              'l.createdAt AS "addedAt"',
-              'l."userId"',
-              'u.id AS "userIds"',
-              'u.login',
-            ])
-            .leftJoin((qb) => qb.select([]).from('users', 'u'), 'u', 'u = u')
-            .from('post_likes', 'l')
-            .where({ status: LikeStatusEnum.Like })
-            .orderBy('l."createdAt"', 'DESC')
-            .limit(3),
-        'l',
-        'l."userId" = l."userIds"',
-      )*/
+      .leftJoin('p.blog', 'b')
       .where(blogId ? 'b.id = :blogId' : 'b.id = b.id', { blogId });
 
     const postsRaw = await postsBuilder
@@ -332,7 +299,7 @@ export class PostsQueryRepository {
     if (!likes?.length) return [];
 
     return likes.map((like) => ({
-      addedAt: like.createdAt,
+      addedAt: like.createdAt?.toISOString(),
       userId: like.user.id.toString(),
       login: like.user.login,
     }));
