@@ -5,7 +5,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
+import { PostsRepository } from '../../../posts/infrastructure/posts/posts.repository';
 
 @ValidatorConstraint({ async: true })
 @Injectable()

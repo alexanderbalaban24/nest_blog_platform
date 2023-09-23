@@ -31,7 +31,7 @@ import { UpdateBlogCommand } from '../../application/use-cases/update-blog-use-c
 import { CreatePostWithoutIdModel } from '../models/input/CreatePostWithoutIdModel';
 import { ViewPostModel } from '../../../posts/api/models/view/ViewPostModel';
 import { CreatePostCommand } from '../../../posts/application/use-cases/create-post-use-case';
-import { PostsQueryRepository } from '../../../posts/infrastructure/posts.query-repository';
+import { PostsQueryRepository } from '../../../posts/infrastructure/posts/posts.query-repository';
 import { CreatePostModel } from '../../../posts/api/models/input/CreatePostModel';
 import { ExistingPostPipe } from '../../../../infrastructure/pipes/ExistingPost.pipe';
 import { CurrentUserId } from '../../../infrastructure/decorators/params/current-user-id.param.decorator';

@@ -1,10 +1,12 @@
 import { ResultDTO } from '../../../../shared/dto';
 import { InternalCode } from '../../../../shared/enums';
-import { PostsQueryRepository } from '../../../posts/infrastructure/posts.query-repository';
+import { PostsQueryRepository } from '../../../posts/infrastructure/posts/posts.query-repository';
 import { UsersQueryRepository } from '../../../users/infrastructure/users/users.query-repository';
-import { CommentsRepository } from '../../infrastructure/comments.repository';
+import { CommentsRepository } from '../../infrastructure/comment/comments.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../../users/infrastructure/users/users.repository';
+import { Comment } from '../../entities/comment.entity';
+import { PostsRepository } from '../../../posts/infrastructure/posts/posts.repository';
 
 export class CreateCommentCommand {
   constructor(
@@ -19,36 +21,30 @@ export class CreateCommentUseCase
   implements ICommandHandler<CreateCommentCommand>
 {
   constructor(
-    private CommentRepository: CommentsRepository,
-    private PostsQueryRepository: PostsQueryRepository,
-    private UsersQueryRepository: UsersQueryRepository,
-    private UsersRepository: UsersRepository,
+    private commentsRepository: CommentsRepository,
+    private postsRepository: PostsRepository,
+    private usersRepository: UsersRepository,
   ) {}
 
   async execute(
     command: CreateCommentCommand,
-  ): Promise<ResultDTO<{ commentId: string }>> {
-    const postResult = await this.PostsQueryRepository.findPostById(
-      command.postId,
-    );
+  ): Promise<ResultDTO<{ commentId: number }>> {
+    const postResult = await this.postsRepository.findById(+command.postId);
     if (postResult.hasError()) return new ResultDTO(InternalCode.NotFound);
 
-    const userResult = await this.UsersQueryRepository.findUserById(
-      command.userId,
-    );
+    const userResult = await this.usersRepository.findById(+command.userId);
     if (userResult.hasError())
       return new ResultDTO(InternalCode.Internal_Server);
-    console.log(command.userId, postResult.payload.blogId);
-    const checkAccess = await this.UsersRepository.checkUserAccessForBlog(
+    /*const checkAccess = await this.UsersRepository.checkUserAccessForBlog(
       command.userId,
       postResult.payload.blogId,
     );
-    if (!checkAccess.payload) return new ResultDTO(InternalCode.Forbidden);
+    if (!checkAccess.payload) return new ResultDTO(InternalCode.Forbidden);*/
+    const comment = new Comment();
+    comment.content = command.content;
+    comment.postId = postResult.payload.id;
+    comment.userId = userResult.payload.id;
 
-    return this.CommentRepository.createComment(
-      postResult.payload.id,
-      command.content,
-      userResult.payload.id,
-    );
+    return this.commentsRepository.create(comment);
   }
 }

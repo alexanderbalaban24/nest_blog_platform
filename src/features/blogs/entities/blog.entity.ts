@@ -12,9 +12,9 @@ import { Post } from '../../posts/entities/post.entity';
 export class Blog {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
+  @Column({ collation: 'C' })
   name: string;
-  @Column()
+  @Column({ collation: 'C' })
   description: string;
   @Column()
   websiteUrl: string;

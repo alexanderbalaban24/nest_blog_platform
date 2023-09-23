@@ -14,7 +14,7 @@ export type QueryDataType = {
 export type UserLikeType = {
   userId: string;
   login: string;
-  likeStatus: LikeStatusEnum;
+  likeStatus?: LikeStatusEnum;
   addedAt: Date;
 };
 

@@ -1,7 +1,9 @@
 import { LikeStatusEnum } from '../../../../shared/enums';
 import { ResultDTO } from '../../../../shared/dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostsRepository } from '../../infrastructure/posts.repository';
+import { PostsRepository } from '../../infrastructure/posts/posts.repository';
+import { PostLike } from '../../entities/post-like.entity';
+import { PostsLikeRepository } from '../../infrastructure/posts-likes/likes.repository';
 
 export class LikeStatusPostCommand {
   constructor(
@@ -15,14 +17,15 @@ export class LikeStatusPostCommand {
 export class LikeStatusPostUseCase
   implements ICommandHandler<LikeStatusPostCommand>
 {
-  constructor(private PostsRepository: PostsRepository) {}
+  constructor(private likesRepository: PostsLikeRepository) {}
 
   async execute(command: LikeStatusPostCommand): Promise<ResultDTO<null>> {
-    return this.PostsRepository.likeById(
-      command.postId,
-      command.userId,
-      command.likeStatus,
-      new Date(),
-    );
+    const like = new PostLike();
+    like.postId = +command.postId;
+    like.userId = +command.userId;
+    like.status = command.likeStatus;
+    like.createdAt = new Date();
+
+    return this.likesRepository.save(like);
   }
 }

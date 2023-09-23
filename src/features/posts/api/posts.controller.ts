@@ -11,13 +11,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { QueryParamsPostModel } from './models/input/QueryParamsPostModel';
-import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
+import { PostsQueryRepository } from '../infrastructure/posts/posts.query-repository';
 import { PostsService } from '../application/posts.service';
 import { CreateCommentModel } from './models/input/CreateCommentModel';
 import { CommentsService } from '../../comments/application/comments.service';
 import { CurrentUserId } from '../../infrastructure/decorators/params/current-user-id.param.decorator';
 import { JwtAccessAuthGuard } from '../../auth/guards/jwt-access-auth.guard';
-import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
+import { CommentsQueryRepository } from '../../comments/infrastructure/comment/comments.query-repository';
 import { QueryParamsCommentModel } from '../../comments/api/models/input/QueryParamsCommentModel';
 import { ExistingPostPipe } from '../../../infrastructure/pipes/ExistingPost.pipe';
 import { LikeStatusModel } from './models/input/LikeStatusModel';
@@ -50,6 +50,7 @@ export class PostsController extends ExceptionAndResponseHelper {
     const postResult = await this.PostsQueryRepository.findPosts(
       queryData,
       undefined,
+      +currentUserId,
     );
 
     return this.sendExceptionOrResponse(postResult);
@@ -60,7 +61,10 @@ export class PostsController extends ExceptionAndResponseHelper {
     @Param('id', ExistingPostPipe) postId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<ViewPostModel> {
-    const postResult = await this.PostsQueryRepository.findPostById(+postId);
+    const postResult = await this.PostsQueryRepository.findPostById(
+      +postId,
+      +currentUserId,
+    );
 
     return this.sendExceptionOrResponse(postResult);
   }

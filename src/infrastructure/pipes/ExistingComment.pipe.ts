@@ -4,7 +4,7 @@ import {
   NotFoundException,
   PipeTransform,
 } from '@nestjs/common';
-import { CommentsRepository } from '../../features/comments/infrastructure/comments.repository';
+import { CommentsRepository } from '../../features/comments/infrastructure/comment/comments.repository';
 
 @Injectable()
 export class ExistingCommentPipe implements PipeTransform {
@@ -12,7 +12,7 @@ export class ExistingCommentPipe implements PipeTransform {
 
   async transform(value: string, metadata: ArgumentMetadata) {
     try {
-      const commentResult = await this.CommentsRepository.findById(value);
+      const commentResult = await this.CommentsRepository.findById(+value);
       if (commentResult.hasError()) throw new NotFoundException();
       return commentResult.payload.id;
     } catch (e) {
