@@ -14,7 +14,7 @@ import {
 import { CreateBlogModel } from '../models/input/CreateBlogModel';
 import { BlogsQueryRepository } from '../../infrastructure/blogs.query-repository';
 import { QueryParamsBlogModel } from '../models/input/QueryParamsBlogModel';
-import { PostsQueryRepository } from '../../../posts/infrastructure/posts.query-repository';
+import { PostsQueryRepository } from '../../../posts/infrastructure/posts/posts.query-repository';
 import { QueryParamsPostModel } from '../../../posts/api/models/input/QueryParamsPostModel';
 import { CreatePostWithoutIdModel } from '../models/input/CreatePostWithoutIdModel';
 import { CurrentUserId } from '../../../infrastructure/decorators/params/current-user-id.param.decorator';
@@ -33,7 +33,7 @@ import { ExistingPostPipe } from '../../../../infrastructure/pipes/ExistingPost.
 import { CreatePostModel } from '../../../posts/api/models/input/CreatePostModel';
 import { UpdatePostCommand } from '../../application/use-cases/update-post-in-blog-use-case';
 import { DeletePostCommand } from '../../application/use-cases/delete-post-in-blog-use-case';
-import { CommentsQueryRepository } from '../../../comments/infrastructure/comments.query-repository';
+import { CommentsQueryRepository } from '../../../comments/infrastructure/comment/comments.query-repository';
 import { JwtAccessAuthGuard } from '../../../auth/guards/jwt-access-auth.guard';
 import { QueryParamsCommentModel } from '../../../comments/api/models/input/QueryParamsCommentModel';
 

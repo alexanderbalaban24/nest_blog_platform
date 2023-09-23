@@ -7,8 +7,8 @@ import { BlogsService } from './features/blogs/application/blogs.service';
 import { BlogsQueryRepository } from './features/blogs/infrastructure/blogs.query-repository';
 import { BlogsRepository } from './features/blogs/infrastructure/blogs.repository';
 import { PostsService } from './features/posts/application/posts.service';
-import { PostsQueryRepository } from './features/posts/infrastructure/posts.query-repository';
-import { PostsRepository } from './features/posts/infrastructure/posts.repository';
+import { PostsQueryRepository } from './features/posts/infrastructure/posts/posts.query-repository';
+import { PostsRepository } from './features/posts/infrastructure/posts/posts.repository';
 import { PostsController } from './features/posts/api/posts.controller';
 import { SaUsersController } from './features/users/api/sa/sa-users.controller';
 import { UsersService } from './features/users/application/users.service';
@@ -33,8 +33,8 @@ import { ExistUserValidator } from './features/infrastructure/decorators/validat
 import { ExistingUserPipe } from './infrastructure/pipes/ExistingUser.pipe';
 import { JwtAccessAuthStrategy } from './features/auth/strategies/jwt-access-auth.strategy';
 import { CommentsService } from './features/comments/application/comments.service';
-import { CommentsQueryRepository } from './features/comments/infrastructure/comments.query-repository';
-import { CommentsRepository } from './features/comments/infrastructure/comments.repository';
+import { CommentsQueryRepository } from './features/comments/infrastructure/comment/comments.query-repository';
+import { CommentsRepository } from './features/comments/infrastructure/comment/comments.repository';
 import { ExistPostValidator } from './features/infrastructure/decorators/validators/existPost.validator';
 import { ExistingPostPipe } from './infrastructure/pipes/ExistingPost.pipe';
 import { ExistingCommentPipe } from './infrastructure/pipes/ExistingComment.pipe';
@@ -97,6 +97,12 @@ import { PasswordRecoveryQueryRepository } from './features/users/infrastructure
 import { Blog } from './features/blogs/entities/blog.entity';
 import { BlogBan } from './features/blogs/entities/blog-ban.entity';
 import { Post } from './features/posts/entities/post.entity';
+import { Comment } from './features/comments/entities/comment.entity';
+import { CommentLike } from './features/comments/entities/comment-like.entity';
+import { CommentsLikeRepository } from './features/comments/infrastructure/like/like.repository';
+import { PostLike } from './features/posts/entities/post-like.entity';
+import { PostsLikeRepository } from './features/posts/infrastructure/posts-likes/likes.repository';
+import { PostsLikeQueryRepository } from './features/posts/infrastructure/posts-likes/likes.query-repository';
 
 const useCases = [
   CreateBlogUseCase,
@@ -174,6 +180,9 @@ const repositories = [
   EmailConfirmationQueryRepository,
   PasswordRecoveryRepository,
   PasswordRecoveryQueryRepository,
+  CommentsLikeRepository,
+  PostsLikeRepository,
+  PostsLikeQueryRepository,
 ];
 const validators = [
   ConfirmationCodeValidator,
@@ -223,6 +232,9 @@ const pipes = [
       Blog,
       BlogBan,
       Post,
+      Comment,
+      CommentLike,
+      PostLike,
     ]),
     ThrottlerModule.forRoot([
       {

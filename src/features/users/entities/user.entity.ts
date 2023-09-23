@@ -9,6 +9,10 @@ import {
 import { UserBan } from './user-ban.entity';
 import { Device } from '../../devices/entities/device.entity';
 import { UserEmailConfirmation } from './user-email-confirmation.entity';
+import { Comment } from '../../comments/entities/comment.entity';
+import { CommentLike } from '../../comments/entities/comment-like.entity';
+import { PostLike } from '../../posts/entities/post-like.entity';
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -31,6 +35,12 @@ export class User {
   emailConfirm: UserEmailConfirmation;
   @OneToMany(() => Device, (d) => d.user)
   devices: Device[];
+  @OneToMany(() => Comment, (c) => c.user)
+  comments: Comment[];
+  @OneToMany(() => CommentLike, (cl) => cl.user)
+  commentLikes: CommentLike[];
+  @OneToMany(() => PostLike, (pl) => pl.user)
+  postLikes: PostLike[];
   /*@OneToMany(() => Blog, (b) => b.owner)
   blogs: Blog[];*/
 }

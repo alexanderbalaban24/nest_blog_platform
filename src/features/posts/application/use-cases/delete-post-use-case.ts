@@ -1,6 +1,6 @@
 import { ResultDTO } from '../../../../shared/dto';
 import { InternalCode } from '../../../../shared/enums';
-import { PostsRepository } from '../../infrastructure/posts.repository';
+import { PostsRepository } from '../../infrastructure/posts/posts.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class DeletePostCommand {

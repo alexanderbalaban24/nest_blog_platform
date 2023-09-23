@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ExistingCommentPipe } from '../../../../infrastructure/pipes/ExistingComment.pipe';
-import { CommentsQueryRepository } from '../../infrastructure/comments.query-repository';
+import { CommentsQueryRepository } from '../../infrastructure/comment/comments.query-repository';
 import { JwtAccessAuthGuard } from '../../../auth/guards/jwt-access-auth.guard';
 import { UpdateCommentModel } from '../models/input/UpdateCommentModel';
 import { CurrentUserId } from '../../../infrastructure/decorators/params/current-user-id.param.decorator';
@@ -26,8 +26,8 @@ import { LikeStatusCommentCommand } from '../../application/use-cases/like-statu
 @Controller('comments')
 export class CommentsController extends ExceptionAndResponseHelper {
   constructor(
-    private CommandBus: CommandBus,
-    private CommentsQueryRepository: CommentsQueryRepository,
+    private commandBus: CommandBus,
+    private commentsQueryRepository: CommentsQueryRepository,
   ) {
     super(ApproachType.http);
   }
@@ -37,8 +37,8 @@ export class CommentsController extends ExceptionAndResponseHelper {
     @Param('id', ExistingCommentPipe) commentId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<ViewCommentModel> {
-    const commentResult = await this.CommentsQueryRepository.findCommentById(
-      commentId,
+    const commentResult = await this.commentsQueryRepository.findCommentById(
+      +commentId,
       currentUserId,
     );
 
@@ -53,7 +53,7 @@ export class CommentsController extends ExceptionAndResponseHelper {
     @Body() inputModel: UpdateCommentModel,
     @CurrentUserId() currentUserId: string,
   ): Promise<void> {
-    const updatedResult = await this.CommandBus.execute(
+    const updatedResult = await this.commandBus.execute(
       new UpdateCommentCommand(commentId, inputModel.content, currentUserId),
     );
 
@@ -67,7 +67,7 @@ export class CommentsController extends ExceptionAndResponseHelper {
     @Param('id', ExistingCommentPipe) commentId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<void> {
-    const deletedResult = await this.CommandBus.execute(
+    const deletedResult = await this.commandBus.execute(
       new DeleteCommentCommand(commentId, currentUserId),
     );
 
@@ -82,7 +82,7 @@ export class CommentsController extends ExceptionAndResponseHelper {
     @CurrentUserId() currentUserId: string,
     @Body() inputModel: LikeStatusModel,
   ): Promise<void> {
-    const likeResult = await this.CommandBus.execute(
+    const likeResult = await this.commandBus.execute(
       new LikeStatusCommentCommand(
         commentId,
         currentUserId,

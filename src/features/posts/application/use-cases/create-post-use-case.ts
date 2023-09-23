@@ -1,6 +1,6 @@
 import { ResultDTO } from '../../../../shared/dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostsRepository } from '../../infrastructure/posts.repository';
+import { PostsRepository } from '../../infrastructure/posts/posts.repository';
 import { Post } from '../../entities/post.entity';
 
 export class CreatePostCommand {

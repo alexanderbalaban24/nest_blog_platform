@@ -1,8 +1,8 @@
-import { ResultDTO } from '../../../shared/dto';
-import { InternalCode, LikeStatusEnum } from '../../../shared/enums';
+import { ResultDTO } from '../../../../shared/dto';
+import { InternalCode, LikeStatusEnum } from '../../../../shared/enums';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { Post } from '../entities/post.entity';
+import { Post } from '../../entities/post.entity';
 
 export class PostsRepository {
   constructor(

@@ -1,7 +1,7 @@
 import { ResultDTO } from '../../../../shared/dto';
 import { InternalCode } from '../../../../shared/enums';
 import { BlogsQueryRepository } from '../../../blogs/infrastructure/blogs.query-repository';
-import { PostsRepository } from '../../infrastructure/posts.repository';
+import { PostsRepository } from '../../infrastructure/posts/posts.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class UpdatePostCommand {

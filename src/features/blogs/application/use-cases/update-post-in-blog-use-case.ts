@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ResultDTO } from '../../../../shared/dto';
-import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
+import { PostsRepository } from '../../../posts/infrastructure/posts/posts.repository';
 import { BlogsService } from '../blogs.service';
 
 export class UpdatePostCommand {

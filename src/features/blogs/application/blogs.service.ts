@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BlogsRepository } from '../infrastructure/blogs.repository';
-import { PostsRepository } from '../../posts/infrastructure/posts.repository';
+import { PostsRepository } from '../../posts/infrastructure/posts/posts.repository';
 import { ResultDTO } from '../../../shared/dto';
 import { InternalCode } from '../../../shared/enums';
 

@@ -1,44 +1,38 @@
 import { Injectable } from '@nestjs/common';
-import { ResultDTO } from '../../../shared/dto';
-import { InternalCode, LikeStatusEnum } from '../../../shared/enums';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { ResultDTO } from '../../../../shared/dto';
+import { InternalCode, LikeStatusEnum } from '../../../../shared/enums';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Comment } from '../../entities/comment.entity';
 
 @Injectable()
 export class CommentsRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Comment) private commentRepo: Repository<Comment>,
+  ) {}
 
-  async findById(commentId: string): Promise<ResultDTO<any>> {
-    const commentRaw = await this.dataSource.query(
-      `
-     SELECT pc."id", pc."content", u."id" AS "userId", u."login" AS "userLogin", pc."createdAt"
-    FROM "posts_comments" AS pc
-    LEFT JOIN "users" AS u
-    ON u."id" = pc."commentatorId"
-    LEFT JOIN "posts" AS p
-    ON p."id" = pc."postId"
-    LEFT JOIN "blogs_ban" AS bb
-    ON bb."blogId" = p."blogId"
-    LEFT JOIN "posts_comments_likes" AS pcl
-    ON pcl."commentId" = $1
-    WHERE pc."id" = $1 AND
-    bb."isBanned" != true
-    `,
-      [commentId],
-    );
-    if (!commentRaw.length) return new ResultDTO(InternalCode.NotFound);
+  async create(comment: Comment): Promise<ResultDTO<{ commentId: number }>> {
+    const res = await this.commentRepo.save(comment);
 
-    return new ResultDTO(InternalCode.Success, commentRaw[0]);
+    return new ResultDTO(InternalCode.Success, { commentId: res.id });
+  }
+
+  async save(comment: Comment): Promise<ResultDTO<null>> {
+    await this.commentRepo.save(comment);
+
+    return new ResultDTO(InternalCode.Success);
+  }
+
+  async findById(commentId: number): Promise<ResultDTO<Comment>> {
+    const comment = await this.commentRepo.findOneBy({ id: commentId });
+    if (!comment) return new ResultDTO(InternalCode.NotFound);
+
+    return new ResultDTO(InternalCode.Success, comment);
   }
 
   async deleteById(commentId: string): Promise<ResultDTO<null>> {
-    await this.dataSource.query(
-      `
-    DELETE FROM "posts_comments" AS pc
-    WHERE pc."id" = $1
-    `,
-      [commentId],
-    );
+    await this.commentRepo.delete(commentId);
 
     return new ResultDTO(InternalCode.Success);
   }

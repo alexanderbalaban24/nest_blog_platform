@@ -1,6 +1,6 @@
 import { ResultDTO } from '../../../../shared/dto';
 import { InternalCode } from '../../../../shared/enums';
-import { CommentsRepository } from '../../infrastructure/comments.repository';
+import { CommentsRepository } from '../../infrastructure/comment/comments.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class UpdateCommentCommand {
@@ -15,20 +15,19 @@ export class UpdateCommentCommand {
 export class UpdateCommentUseCase
   implements ICommandHandler<UpdateCommentCommand>
 {
-  constructor(private CommentRepository: CommentsRepository) {}
+  constructor(private commentsRepository: CommentsRepository) {}
 
   async execute(command: UpdateCommentCommand): Promise<ResultDTO<null>> {
-    const commentResult = await this.CommentRepository.findById(
-      command.commentId,
+    const commentResult = await this.commentsRepository.findById(
+      +command.commentId,
     );
     if (commentResult.hasError()) return commentResult as ResultDTO<null>;
 
-    if (commentResult.payload.userId !== command.currentUserId)
+    if (commentResult.payload.userId !== +command.currentUserId)
       return new ResultDTO(InternalCode.Forbidden);
 
-    return this.CommentRepository.updateById(
-      command.commentId,
-      command.content,
-    );
+    commentResult.payload.content = command.content;
+
+    return this.commentsRepository.save(commentResult.payload);
   }
 }
