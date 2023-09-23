@@ -147,7 +147,7 @@ export class PostsQueryRepository {
         return qb
           .select('l."status"', 'myStatus')
           .from('post_likes', 'l')
-          .where({ userId: userId ? userId : undefined })
+          .where('l.userId = :userId', { userId: userId ? userId : undefined })
           .andWhere('p.id = l."postId"');
       })
       .leftJoin('p.blog', 'b')
