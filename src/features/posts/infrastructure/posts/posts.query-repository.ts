@@ -295,14 +295,15 @@ export class PostsQueryRepository {
     const newestLikes = await this.dataSource
       .getRepository(PostLike)
       .createQueryBuilder('l')
-      .select(['l.createdAt'])
+      .select(['l.createdAt', 'l.status'])
       .addSelect(['u.id', 'u.login'])
+      .where('l.postId = :postId', { postId: post.id })
+      .andWhere('l.status = :status', { status: 'Like' })
       .leftJoin('l.user', 'u')
-      .where({ status: LikeStatusEnum.Like })
       .orderBy('l."createdAt"', 'DESC')
       .limit(3)
       .getMany();
-
+    console.log(newestLikes);
     return new ResultDTO(
       InternalCode.Success,
       this._mapPostToView(post, newestLikes),
