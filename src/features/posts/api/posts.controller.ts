@@ -106,7 +106,7 @@ export class PostsController extends ExceptionAndResponseHelper {
 
   @Put(':id/like-status')
   @HttpCode(HttpStatus.NO_CONTENT)
-  //@UseGuards(JwtAccessAuthGuard)
+  @UseGuards(JwtAccessAuthGuard)
   async likeStatus(
     @Param('id', ExistingPostPipe) postId: string,
     @CurrentUserId() currentUserId: string,
