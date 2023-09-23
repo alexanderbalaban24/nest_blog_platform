@@ -26,15 +26,15 @@ export class AppService {
       /*await this.dataSource.query(
         `TRUNCATE TABLE "users_ban_for_blog" RESTART IDENTITY CASCADE`,
       );*/
-      /*await this.dataSource.query(
-        `TRUNCATE TABLE "posts_comments_likes" RESTART IDENTITY CASCADE`,
-      );*/
-      /*await this.dataSource.query(
-        `TRUNCATE TABLE "posts_comments" RESTART IDENTITY CASCADE`,
-      );*/
-      /* await this.dataSource.query(
-        `TRUNCATE TABLE "posts_likes" RESTART IDENTITY CASCADE`,
-      );*/
+      await this.dataSource.query(
+        `TRUNCATE TABLE "comment_likes" RESTART IDENTITY CASCADE`,
+      );
+      await this.dataSource.query(
+        `TRUNCATE TABLE "comments" RESTART IDENTITY CASCADE`,
+      );
+      await this.dataSource.query(
+        `TRUNCATE TABLE "post_likes" RESTART IDENTITY CASCADE`,
+      );
       await this.dataSource.query(
         `TRUNCATE TABLE "posts" RESTART IDENTITY CASCADE`,
       );
