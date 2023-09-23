@@ -108,7 +108,7 @@ export class PostsQueryRepository {
       //@ts-ignore
       postsRaw,
     );
-    console.log(likes);
+
     data.map((post) =>
       this._mapPostToView(post, ((post) => likes[post.id])(post)),
     );
@@ -120,6 +120,11 @@ export class PostsQueryRepository {
     postId: number,
     userId?: number,
   ): Promise<ResultDTO<ViewPostModel>> {
+    console.log(
+      'DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD',
+      postId,
+      userId,
+    );
     const post = await this.postsRepo
       .createQueryBuilder('p')
       .select([
@@ -167,7 +172,7 @@ export class PostsQueryRepository {
       .orderBy('l."createdAt"', 'DESC')
       .limit(3)
       .getMany();
-    console.log(newestLikes);
+
     return new ResultDTO(
       InternalCode.Success,
       this._mapPostToView(post, newestLikes),
