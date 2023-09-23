@@ -121,7 +121,7 @@ export class PostsQueryRepository {
     userId?: number,
   ): Promise<ResultDTO<ViewPostModel>> {
     console.log(
-      'DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD',
+      'DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD',
       postId,
       userId,
     );
