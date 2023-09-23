@@ -88,7 +88,7 @@ export class PostsQueryRepository {
       likesBuilder
         .filter((like) => like.postId === post.id)
         .forEach((like) => {
-          if (likes[post.id].length <= 3) {
+          if (likes[post.id].length < 3) {
             likes[post.id].push({
               createdAt: like?.createdAt,
               user: like?.user,
