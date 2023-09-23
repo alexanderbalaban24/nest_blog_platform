@@ -109,11 +109,11 @@ export class PostsController extends ExceptionAndResponseHelper {
   //@UseGuards(JwtAccessAuthGuard)
   async likeStatus(
     @Param('id', ExistingPostPipe) postId: string,
-    //@CurrentUserId() currentUserId: string,
+    @CurrentUserId() currentUserId: string,
     @Body() inputModel: LikeStatusModel,
   ): Promise<void> {
     const likeResult = await this.CommandBus.execute(
-      new LikeStatusPostCommand(postId, '2', inputModel.likeStatus),
+      new LikeStatusPostCommand(postId, currentUserId, inputModel.likeStatus),
     );
 
     return this.sendExceptionOrResponse(likeResult);
