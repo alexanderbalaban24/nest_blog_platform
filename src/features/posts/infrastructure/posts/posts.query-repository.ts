@@ -73,9 +73,10 @@ export class PostsQueryRepository {
 
     const likesBuilder = await this.dataSource
       .createQueryBuilder(PostLike, 'l')
+      .select(['l.postId', 'l.status', 'l.createdAt', 'u.login', 'u.id'])
       .orderBy('l.createdAt', 'DESC')
-      .select(['l.postId', 'l.createdAt', 'u.login', 'u.id'])
       .where('l.postId in (:...ids)', { ids: postsRaw.map((p) => p.id) })
+      .andWhere('l.status = :status', { status: LikeStatusEnum.Like })
       .leftJoin('l.user', 'u')
       .getMany();
 
@@ -114,110 +115,6 @@ export class PostsQueryRepository {
     //@ts-ignore
     return new ResultDTO(InternalCode.Success, data);
   }
-
-  /*async findPosts(
-    query: QueryParamsPostModel,
-    blogId?: string,
-    userId?: number,
-  ): Promise<ResultDTO<QueryBuildDTO<Post, ViewPostModel>>> {
-    const sortBy = query.sortBy ?? 'createdAt';
-    const sortDirection = query.sortDirection?.toUpperCase() ?? 'DESC';
-    const pageNumber = query.pageNumber ? +query.pageNumber : 1;
-    const pageSize = query.pageSize ? +query.pageSize : 10;
-    const offset = pageSize * (pageNumber - 1);
-
-    const postsBuilder = await this.postsRepo
-      .createQueryBuilder('p')
-      .orderBy(
-        sortBy !== 'blogName' ? `p.${sortBy}` : 'b.name',
-        sortDirection as 'ASC' | 'DESC',
-      )
-      .select([
-        'p.id',
-        'p.title',
-        'p.shortDescription',
-        'p.content',
-        'p.createdAt',
-        'p.blogId',
-        'b.name',
-      ])
-      .addSelect((qb) => {
-        return qb
-          .select('COUNT(*)', 'likesCount')
-          .from('post_likes', 'l')
-          .where({ status: LikeStatusEnum.Like });
-      }, 'p.test')
-      .addSelect((qb) => {
-        return qb
-          .select('COUNT(*)', 'dislikesCount')
-          .from('post_likes', 'l')
-          .where({ status: LikeStatusEnum.Dislike });
-      })
-      .addSelect((qb) => {
-        return qb
-          .select('l."status"', 'myStatus')
-          .from('post_likes', 'l')
-          .where({ userId })
-          .andWhere('p.id = l."postId"');
-      })
-      .leftJoin('p.blog', 'b')
-      .leftJoinAndMapMany(
-        'p.newestLikes',
-        (qb) =>
-          qb
-            .select([
-              'pl.createdAt as "addedAt"',
-              'pl."postId"',
-              'pl."userId"',
-              'u."login"',
-            ])
-            .from('post_likes', 'pl')
-            .leftJoin('pl.user', 'u')
-            .orderBy('pl."createdAt"', 'DESC')
-            .limit(3),
-        'pl',
-        'pl."postId" = p.id',
-      )
-      //.leftJoinAndSelect('post_likes', 'pl', 'pl.postId = p.id')
-      /!* .leftJoin(
-        (qb) =>
-          qb
-            .select([
-              'l.createdAt AS "addedAt"',
-              'l."userId"',
-              'u.id AS "userIds"',
-              'u.login',
-            ])
-            .leftJoin((qb) => qb.select([]).from('users', 'u'), 'u', 'u = u')
-            .from('post_likes', 'l')
-            .where({ status: LikeStatusEnum.Like })
-            .orderBy('l."createdAt"', 'DESC')
-            .limit(3),
-        'l',
-        'l."userId" = l."userIds"',
-      )*!/
-      .where(blogId ? 'b.id = :blogId' : 'b.id = b.id', { blogId });
-
-    const rawData = await builder.offset(offset).limit(pageSize).getRawMany();
-    const postsObj = {};
-
-    rawData.forEach((item) => {});
-
-    const totalCount = await builder.getCount();
-    console.log(totalCount);
-    const pagesCount = Math.ceil(totalCount / pageSize);
-    const data = new QueryBuildDTO<Post, ViewPostModel>(
-      pagesCount,
-      pageNumber,
-      pageSize,
-      totalCount,
-      rawData,
-    );
-    console.log(rawData);
-    //data.map((post) => this._mapPostToView(post, []));
-    //@ts-ignore
-    return new ResultDTO(InternalCode.Success, rawData);
-  }*/
 
   async findPostById(
     postId: number,
@@ -265,7 +162,7 @@ export class PostsQueryRepository {
       .select(['l.createdAt', 'l.status'])
       .addSelect(['u.id', 'u.login'])
       .where('l.postId = :postId', { postId: post.id })
-      .andWhere('l.status = :status', { status: 'Like' })
+      .andWhere('l.status = :status', { status: LikeStatusEnum.Like })
       .leftJoin('l.user', 'u')
       .orderBy('l."createdAt"', 'DESC')
       .limit(3)
