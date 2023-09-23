@@ -27,7 +27,7 @@ export class CommentsQueryRepository {
 
     const builder = await this.commentRepo
       .createQueryBuilder('c')
-      .orderBy(`p.${sortBy}`, sortDirection as 'ASC' | 'DESC')
+      .orderBy(`c.${sortBy}`, sortDirection as 'ASC' | 'DESC')
       .select(['c."id"', 'c."content"', 'c."createdAt"'])
       .addSelect((qb) => {
         return qb
