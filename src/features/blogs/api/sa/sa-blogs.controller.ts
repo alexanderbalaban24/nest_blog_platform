@@ -19,11 +19,7 @@ import { QueryBuildDTO } from '../../../../shared/dto';
 import { ViewBlogModel } from '../models/view/ViewBlogModel';
 import { CommandBus } from '@nestjs/cqrs';
 import { ExistingBlogPipe } from '../../../../infrastructure/pipes/ExistingBlog.pipe';
-import { ExistingUserPipe } from '../../../../infrastructure/pipes/ExistingUser.pipe';
-import { BindUserCommand } from '../../application/use-cases/bind-user-use-case';
 import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
-import { BanBlogModel } from '../models/input/BanBlogModel';
-import { BanUnbanBlogCommand } from '../../application/use-cases/ban-unban-blog-use-case';
 import { CreateBlogModel } from '../models/input/CreateBlogModel';
 import { CreateBlogCommand } from '../../application/use-cases/create-blog-use-case';
 import { DeleteBlogCommand } from '../../application/use-cases/delete-blog-use-case';
@@ -81,7 +77,7 @@ export class SaBlogsController extends ExceptionAndResponseHelper {
     return this.sendExceptionOrResponse(blogResult);
   }
 
-  @Put(':blogId/bind-with-user/:userId')
+  /*@Put(':blogId/bind-with-user/:userId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async bindUser(
     @Param('blogId', ExistingBlogPipe) blogId: string,
@@ -105,7 +101,7 @@ export class SaBlogsController extends ExceptionAndResponseHelper {
     );
 
     return this.sendExceptionOrResponse(banResult);
-  }
+  }*/
 
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)

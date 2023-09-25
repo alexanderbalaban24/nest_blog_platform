@@ -60,7 +60,9 @@ export class PostsQueryRepository {
         return qb
           .select('l."status"', 'myStatus')
           .from('post_likes', 'l')
-          .where({ userId })
+          .where(userId ? 'l.userId = :userId' : 'false', {
+            userId,
+          })
           .andWhere('p.id = l."postId"');
       })
       .leftJoin('p.blog', 'b')
@@ -120,11 +122,6 @@ export class PostsQueryRepository {
     postId: number,
     userId?: number,
   ): Promise<ResultDTO<ViewPostModel>> {
-    console.log(
-      'DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD',
-      postId,
-      userId,
-    );
     const post = await this.postsRepo
       .createQueryBuilder('p')
       .select([
