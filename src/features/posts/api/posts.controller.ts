@@ -98,7 +98,7 @@ export class PostsController extends ExceptionAndResponseHelper {
     const commentsResult = await this.CommentQueryRepository.findComments(
       postId,
       queryData,
-      currentUserId,
+      +currentUserId,
     );
 
     return this.sendExceptionOrResponse(commentsResult);
