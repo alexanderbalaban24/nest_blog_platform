@@ -47,7 +47,7 @@ export class CommentsQueryRepository {
         return qb
           .select('l."status"', 'myStatus')
           .from('comment_likes', 'l')
-          .where({ userId })
+          .where(userId ? 'l.userId = :userId' : 'false', { userId })
           .andWhere('c.id = l."commentId"');
       })
       .leftJoinAndSelect(
@@ -77,7 +77,7 @@ export class CommentsQueryRepository {
 
   async findCommentById(
     commentId: number,
-    userId?: string,
+    userId?: number,
   ): Promise<ResultDTO<ViewCommentModel>> {
     const comment = await this.commentRepo
       .createQueryBuilder('c')

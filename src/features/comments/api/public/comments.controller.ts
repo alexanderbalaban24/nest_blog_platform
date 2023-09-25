@@ -39,7 +39,7 @@ export class CommentsController extends ExceptionAndResponseHelper {
   ): Promise<ViewCommentModel> {
     const commentResult = await this.commentsQueryRepository.findCommentById(
       +commentId,
-      currentUserId,
+      +currentUserId,
     );
 
     return this.sendExceptionOrResponse(commentResult);
