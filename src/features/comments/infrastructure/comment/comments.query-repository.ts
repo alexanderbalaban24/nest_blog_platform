@@ -17,7 +17,7 @@ export class CommentsQueryRepository {
   async findComments(
     postId: string,
     query: QueryParamsCommentModel,
-    userId?: string,
+    userId?: number,
   ): Promise<ResultDTO<QueryBuildDTO<Comment, ViewCommentModel>>> {
     const sortBy = query.sortBy ?? 'createdAt';
     const sortDirection = query.sortDirection?.toUpperCase() ?? 'DESC';
@@ -27,7 +27,7 @@ export class CommentsQueryRepository {
 
     const builder = await this.commentRepo
       .createQueryBuilder('c')
-      .orderBy(`p.${sortBy}`, sortDirection as 'ASC' | 'DESC')
+      .orderBy(`c.${sortBy}`, sortDirection as 'ASC' | 'DESC')
       .select(['c."id"', 'c."content"', 'c."createdAt"'])
       .addSelect((qb) => {
         return qb

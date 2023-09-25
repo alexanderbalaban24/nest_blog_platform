@@ -98,7 +98,7 @@ export class PostsController extends ExceptionAndResponseHelper {
     const commentsResult = await this.CommentQueryRepository.findComments(
       postId,
       queryData,
-      currentUserId,
+      +currentUserId,
     );
 
     return this.sendExceptionOrResponse(commentsResult);
@@ -112,6 +112,7 @@ export class PostsController extends ExceptionAndResponseHelper {
     @CurrentUserId() currentUserId: string,
     @Body() inputModel: LikeStatusModel,
   ): Promise<void> {
+    console.log('-------------LIKE', currentUserId, inputModel.likeStatus);
     const likeResult = await this.CommandBus.execute(
       new LikeStatusPostCommand(postId, currentUserId, inputModel.likeStatus),
     );
