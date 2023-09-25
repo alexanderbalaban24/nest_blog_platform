@@ -19,7 +19,18 @@ export class LikeStatusCommentUseCase
   constructor(private likeRepository: CommentsLikeRepository) {}
 
   async execute(command: LikeStatusCommentCommand): Promise<ResultDTO<null>> {
-    const like = new CommentLike();
+    const likeResult = await this.likeRepository.findLike(
+      +command.commentId,
+      +command.userId,
+    );
+
+    let like: CommentLike;
+    if (likeResult.payload) {
+      like = likeResult.payload;
+    } else {
+      like = new CommentLike();
+    }
+
     like.status = LikeStatusEnum[command.likeStatus];
     like.userId = +command.userId;
     like.commentId = +command.commentId;

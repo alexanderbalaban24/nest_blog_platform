@@ -17,4 +17,15 @@ export class CommentsLikeRepository {
 
     return new ResultDTO(InternalCode.Success);
   }
+
+  async findLike(
+    commentId: number,
+    userId: number,
+  ): Promise<ResultDTO<CommentLike>> {
+    const like = await this.commentRepo.findOne({
+      where: { commentId, userId },
+    });
+
+    return new ResultDTO(InternalCode.Success, like);
+  }
 }

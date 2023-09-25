@@ -17,8 +17,8 @@ export class PostsLikeRepository {
   }
 
   async findLike(postId: number, userId: number): Promise<ResultDTO<PostLike>> {
-    const post = await this.likesRepo.findOne({ where: { postId, userId } });
+    const like = await this.likesRepo.findOne({ where: { postId, userId } });
 
-    return new ResultDTO(InternalCode.Success, post);
+    return new ResultDTO(InternalCode.Success, like);
   }
 }
