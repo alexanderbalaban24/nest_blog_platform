@@ -106,8 +106,8 @@ export class CommentsQueryRepository {
         return qb
           .select('l."status"', 'myStatus')
           .from('comment_likes', 'l')
-          .where({ userId })
-          .andWhere('c.id = l."commentId"');
+          .where(userId ? 'l.userId = :userId' : 'false', { userId })
+          .andWhere('l."commentId" = :commentId', { commentId });
       })
       .where('c.id = :commentId', { commentId })
       .getRawOne();
