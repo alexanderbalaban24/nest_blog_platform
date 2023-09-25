@@ -25,7 +25,7 @@ export class Post {
   blog: Blog;
   @Column()
   blogId: number;
-  @OneToMany(() => Comment, (c) => c.post)
+  @OneToMany(() => Comment, (c) => c.post, { onDelete: 'CASCADE' })
   comments: Comment[];
   @OneToMany(() => PostLike, (pl) => pl.postId)
   likes: PostLike[];
